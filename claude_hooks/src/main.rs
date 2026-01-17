@@ -1,6 +1,36 @@
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::io::{self, Read};
+use std::{
+    io::{self, Read},
+    sync::LazyLock,
+};
+
+// ============================================================================
+// Enums for type safety
+// ============================================================================
+
+/// Hook event names that can be returned in the output
+#[derive(Debug, Clone, Copy, Serialize)]
+pub enum HookEventName {
+    PermissionRequest,
+}
+
+/// Behavior for permission decisions
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DecisionBehavior {
+    Deny,
+    Allow,
+}
+
+/// Permission decision types for ask behavior
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PermissionDecision {
+    Ask,
+    Allow,
+    Deny,
+}
 
 // ============================================================================
 // Input structures
@@ -24,34 +54,31 @@ pub struct ToolInput {
 
 /// Output to be printed as JSON to stdout
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HookOutput {
-    #[serde(rename = "hookSpecificOutput")]
     pub hook_specific_output: HookSpecificOutput,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct HookSpecificOutput {
-    #[serde(rename = "hookEventName")]
-    pub hook_event_name: String,
+    pub hook_event_name: HookEventName,
 
     /// Used for deny behavior (block-rm)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub decision: Option<Decision>,
 
     /// Used for ask behavior (confirm-destructive-find)
-    #[serde(rename = "permissionDecision", skip_serializing_if = "Option::is_none")]
-    pub permission_decision: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub permission_decision: Option<PermissionDecision>,
 
-    #[serde(
-        rename = "permissionDecisionReason",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub permission_decision_reason: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct Decision {
-    pub behavior: String,
+    pub behavior: DecisionBehavior,
     pub message: String,
 }
 
@@ -59,17 +86,18 @@ pub struct Decision {
 // Hook implementations
 // ============================================================================
 
+static RM_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*/)?rm(\s|$)").unwrap()
+});
+
 /// Block rm command and suggest using trash instead
 fn block_rm(cmd: &str) -> Option<HookOutput> {
-    let rm_pattern =
-        Regex::new(r"(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*/)?rm(\s|$)").unwrap();
-
-    if rm_pattern.is_match(cmd) {
+    if RM_PATTERN.is_match(cmd) {
         return Some(HookOutput {
             hook_specific_output: HookSpecificOutput {
-                hook_event_name: "PermissionRequest".to_string(),
+                hook_event_name: HookEventName::PermissionRequest,
                 decision: Some(Decision {
-                    behavior: "deny".to_string(),
+                    behavior: DecisionBehavior::Deny,
                     message: "rm is forbidden. Use trash command to delete files. Example: trash <path...>".to_string(),
                 }),
                 permission_decision: None,
@@ -81,50 +109,51 @@ fn block_rm(cmd: &str) -> Option<HookOutput> {
     None
 }
 
+// Destructive patterns with descriptions
+const DESTRUCTIVE_PATTERNS: &[(&str, &str); 6] = &[
+    // find ... -delete
+    (r"find\s+.*-delete", "find with -delete option"),
+    // find ... -exec rm/rmdir ...
+    (
+        r"find\s+.*-exec\s+(sudo\s+)?(rm|rmdir)\s",
+        "find with -exec rm/rmdir",
+    ),
+    // find ... -execdir rm/rmdir ...
+    (
+        r"find\s+.*-execdir\s+(sudo\s+)?(rm|rmdir)\s",
+        "find with -execdir rm/rmdir",
+    ),
+    // find ... | xargs rm/rmdir
+    (
+        r"find\s+.*\|\s*(sudo\s+)?xargs\s+(sudo\s+)?(rm|rmdir)",
+        "find piped to xargs rm/rmdir",
+    ),
+    // find ... -exec mv ...
+    (r"find\s+.*-exec\s+(sudo\s+)?mv\s", "find with -exec mv"),
+    // find ... -ok rm/rmdir ...
+    (
+        r"find\s+.*-ok\s+(sudo\s+)?(rm|rmdir)\s",
+        "find with -ok rm/rmdir",
+    ),
+];
+
+static FIND_CHECK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(^|[;&|()]\s*)find\s").unwrap());
+
 /// Confirm destructive find commands
 fn confirm_destructive_find(cmd: &str) -> Option<HookOutput> {
     // First check if this is a find command
-    let find_check = Regex::new(r"(^|[;&|()]\s*)find\s").unwrap();
-    if !find_check.is_match(cmd) {
+    if !FIND_CHECK.is_match(cmd) {
         return None;
     }
 
-    // Destructive patterns with descriptions
-    let destructive_patterns: &[(&str, &str)] = &[
-        // find ... -delete
-        (r"find\s+.*-delete", "find with -delete option"),
-        // find ... -exec rm/rmdir ...
-        (
-            r"find\s+.*-exec\s+(sudo\s+)?(rm|rmdir)\s",
-            "find with -exec rm/rmdir",
-        ),
-        // find ... -execdir rm/rmdir ...
-        (
-            r"find\s+.*-execdir\s+(sudo\s+)?(rm|rmdir)\s",
-            "find with -execdir rm/rmdir",
-        ),
-        // find ... | xargs rm/rmdir
-        (
-            r"find\s+.*\|\s*(sudo\s+)?xargs\s+(sudo\s+)?(rm|rmdir)",
-            "find piped to xargs rm/rmdir",
-        ),
-        // find ... -exec mv ...
-        (r"find\s+.*-exec\s+(sudo\s+)?mv\s", "find with -exec mv"),
-        // find ... -ok rm/rmdir ...
-        (
-            r"find\s+.*-ok\s+(sudo\s+)?(rm|rmdir)\s",
-            "find with -ok rm/rmdir",
-        ),
-    ];
-
-    for (pattern, description) in destructive_patterns {
+    for (pattern, description) in DESTRUCTIVE_PATTERNS {
         let re = Regex::new(&format!("(?i){}", pattern)).unwrap();
         if re.is_match(cmd) {
             return Some(HookOutput {
                 hook_specific_output: HookSpecificOutput {
-                    hook_event_name: "PermissionRequest".to_string(),
+                    hook_event_name: HookEventName::PermissionRequest,
                     decision: None,
-                    permission_decision: Some("ask".to_string()),
+                    permission_decision: Some(PermissionDecision::Ask),
                     permission_decision_reason: Some(format!(
                         "Destructive find command detected: {}. \
                          This operation may delete or modify files. Please confirm.",
