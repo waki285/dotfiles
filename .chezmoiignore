@@ -2,3 +2,15 @@ README.md
 claude_hooks
 target
 .github
+
+{{- if eq .chezmoi.os "windows" -}}
+completions/
+dot_oh-my-zsh/
+dot_config/private_karabiner
+Library/
+dot_zprofile
+dot_zshenv
+dot_zshrc
+private_dot_zshrc.secrets.tmpl
+run_after_*.sh
+{{- end -}}
