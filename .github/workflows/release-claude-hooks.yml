@@ -1,0 +1,151 @@
+name: Release claude_hooks
+
+on:
+  push:
+    tags:
+      - 'claude_hooks-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., claude_hooks-v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: claude_hooks-macos-arm64
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: claude_hooks-linux-x86_64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: claude_hooks-linux-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo registry and build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: claude_hooks -> target
+          key: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Build release binary
+        working-directory: claude_hooks
+        run: |
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+          fi
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p dist
+          cp claude_hooks/target/${{ matrix.target }}/release/claude_hooks dist/${{ matrix.name }}
+          chmod +x dist/${{ matrix.name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: dist/${{ matrix.name }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Determine tag name
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create tag if not exists (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch --tags
+          if ! git rev-parse "${{ steps.tag.outputs.tag }}" >/dev/null 2>&1; then
+            git tag "${{ steps.tag.outputs.tag }}"
+            git push origin "${{ steps.tag.outputs.tag }}"
+          fi
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          for dir in artifacts/*/; do
+            name=$(basename "$dir")
+            cp "$dir/$name" "release/$name"
+            chmod +x "release/$name"
+          done
+          ls -la release/
+
+      - name: Create checksums
+        working-directory: release
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: claude_hooks ${{ steps.tag.outputs.tag }}
+          body: |
+            ## claude_hooks Release
+
+            ### Binaries
+            - `claude_hooks-macos-arm64` - macOS on Apple Silicon (arm64)
+            - `claude_hooks-linux-x86_64` - Linux on x86_64
+            - `claude_hooks-linux-arm64` - Linux on ARM64
+
+            ### Usage
+            ```bash
+            # Block rm commands
+            claude_hooks block-rm
+
+            # Confirm destructive find commands
+            claude_hooks confirm-destructive-find
+            ```
+
+            ### Verification
+            ```bash
+            sha256sum -c SHA256SUMS.txt
+            ```
+          files: |
+            release/*
+          draft: false
+          prerelease: false
