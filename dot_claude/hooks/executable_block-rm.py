@@ -6,11 +6,9 @@ tool_name = data.get("tool_name", "")
 tool_input = data.get("tool_input", {})
 cmd = tool_input.get("command", "") or ""
 
-# Bash 以外は何もしない
 if tool_name != "Bash" or not cmd:
     sys.exit(0)
 
-# 典型的な回避も含めて rm を検知（sudo / command / 絶対パス / \rm 等）
 rm_like = re.search(r'(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*/)?rm(\s|$)', cmd)
 
 if rm_like:

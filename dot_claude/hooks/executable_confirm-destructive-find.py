@@ -8,15 +8,12 @@ tool_name = data.get("tool_name", "")
 tool_input = data.get("tool_input", {})
 cmd = tool_input.get("command", "") or ""
 
-# Bash 以外は何もしない
 if tool_name != "Bash" or not cmd:
     sys.exit(0)
 
-# find コマンドが含まれているか確認
 if not re.search(r'(^|[;&|()]\s*)find\s', cmd):
     sys.exit(0)
 
-# 破壊的パターンを検知
 destructive_patterns = [
     # find ... -delete
     (r'find\s+.*-delete', "find with -delete option"),
@@ -26,9 +23,9 @@ destructive_patterns = [
     (r'find\s+.*-execdir\s+(sudo\s+)?(rm|rmdir)\s', "find with -execdir rm/rmdir"),
     # find ... | xargs rm/rmdir
     (r'find\s+.*\|\s*(sudo\s+)?xargs\s+(sudo\s+)?(rm|rmdir)', "find piped to xargs rm/rmdir"),
-    # find ... -exec mv ... (移動も破壊的な場合がある)
+    # find ... -exec mv ...
     (r'find\s+.*-exec\s+(sudo\s+)?mv\s', "find with -exec mv"),
-    # find ... -ok rm/rmdir ... (-ok は確認を求めるが念のため)
+    # find ... -ok rm/rmdir ...
     (r'find\s+.*-ok\s+(sudo\s+)?(rm|rmdir)\s', "find with -ok rm/rmdir"),
 ]
 
