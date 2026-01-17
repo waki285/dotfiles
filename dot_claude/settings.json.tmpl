@@ -104,9 +104,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe deny-rust-allow --expect=true"
+            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe deny-rust-allow --expect"
 {{- else }}
-            "command": "$HOME/.claude/hooks/claude_hooks deny-rust-allow --expect=true"
+            "command": "$HOME/.claude/hooks/claude_hooks deny-rust-allow --expect"
 {{- end }}
           }
         ]
