@@ -11,6 +11,7 @@ This repository contains the following configuration files:
 - **Editors**: Vim, Zed configurations
 - **Oh My Zsh**: Custom theme (`zenith`) and plugin settings
 - **AI Tools**: Claude Code, Codex, Gemini configurations
+- **claude_hooks**: Custom hook system for Claude Code (see [claude_hooks/README.md](claude_hooks/README.md))
 - **Others**: Karabiner-Elements, Deno completions, etc.
 
 ## Requirements
@@ -20,12 +21,23 @@ This repository contains the following configuration files:
 - [eza](https://github.com/eza-community/eza) - modern replacement for `ls`
 - [Zed](https://zed.dev/) - text editor (used as Git editor)
 - [GnuPG](https://gnupg.org/) - for Git commit signing
+- [Bitwarden CLI](https://bitwarden.com/help/cli/) - for secrets management
+
+## Platform Support
+
+| Platform | Support |
+|----------|---------|
+| macOS (arm64) | Full |
+| Linux (x86_64, arm64) | Partial (shell, git, editors) |
+| Windows | Partial (git, editors, AI tools) |
 
 ## Installation
 
 ```bash
 # Install chezmoi
-brew install chezmoi
+brew install chezmoi  # macOS
+# or
+sh -c "$(curl -fsLS get.chezmoi.io)"  # Linux/Windows
 
 # Apply dotfiles
 chezmoi init --apply <repository-url>
@@ -51,6 +63,7 @@ chezmoi add ~/.config/xxx
 
 ```
 .
+├── claude_hooks/         # Claude Code hook system (Apache 2.0 licensed)
 ├── completions/          # Shell completion files
 ├── dot_claude/           # Claude Code configuration
 ├── dot_codex/            # Codex configuration
@@ -59,10 +72,13 @@ chezmoi add ~/.config/xxx
 ├── dot_oh-my-zsh/        # Oh My Zsh customizations
 ├── Library/              # macOS application settings
 ├── dot_gitconfig.tmpl    # Git configuration (template)
-├── dot_vimrc             # Vim configuration
+├── dot_vimrc.tmpl        # Vim configuration (Unix)
+├── _vimrc.tmpl           # Vim configuration (Windows)
 ├── dot_zprofile          # Zsh profile
 ├── dot_zshenv            # Zsh environment variables
-└── dot_zshrc             # Zsh configuration
+├── dot_zshrc             # Zsh configuration
+├── run_after_*.sh        # Post-apply scripts (Unix)
+└── run_after_*.ps1       # Post-apply scripts (Windows)
 ```
 
 ## Key Configurations
@@ -87,6 +103,17 @@ chezmoi add ~/.config/xxx
 - Zed as default editor
 - `push.autoSetupRemote = true` for automatic remote setup
 
+### Claude Code Hooks
+
+Custom hooks for Claude Code that provide safety checks:
+
+- **block-rm**: Prevents `rm` commands, suggests `trash` instead
+- **confirm-destructive-find**: Confirms destructive `find` commands
+- **deny-rust-allow**: Prevents `#[allow(...)]` attributes in Rust files
+
+See [claude_hooks/README.md](claude_hooks/README.md) for details.
+
 ## License
 
-Personal configuration files.
+- **claude_hooks/**: Apache License 2.0 (see [claude_hooks/LICENSE](claude_hooks/LICENSE))
+- **Other files**: Personal configuration files (no license)

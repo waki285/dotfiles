@@ -2,6 +2,9 @@
 name = "claude_hooks"
 version = "0.2.0"
 edition = "2024"
+description = "A hook system for Claude Code that provides safety checks and restrictions"
+license = "Apache-2.0"
+repository = "https://github.com/waki285/dotfiles"
 
 [dependencies]
 regex = "1"
