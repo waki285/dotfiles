@@ -1,0 +1,100 @@
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
+    "ANTHROPIC_MODEL": "ag/claude-opus-4-5-thinking",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "ag/claude-opus-4-5-thinking",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "ag/claude-sonnet-4-5-thinking",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ag/gemini-3-flash",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "ag/claude-sonnet-4-5-thinking"
+  },
+  "permissions": {
+    "allow": [
+      "Read(~/.claude/**)",
+      "Read(//tmp/**)",
+      "Edit(//tmp/**)",
+      "Write(//tmp/**)",
+      "Bash(cargo add:*)",
+      "Bash(cargo build:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo clean:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(cargo info:*)",
+      "Bash(cargo fmt:*)",
+      "Bash(cargo metadata:*)",
+      "Bash(cargo remove:*)",
+      "Bash(cargo search:*)",
+      "Bash(cargo test:*)",
+      "Bash(cat:*)",
+      "Bash(cd:*)",
+      "Bash(cut:*)",
+      "Bash(echo:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(sort:*)",
+      "Bash(tree:*)",
+      "Bash(uniq:*)",
+      "Bash(wc:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "mcp__mcp-server-github__get_file_contents",
+      "mcp__mcp-server-github__search_code",
+      "WebFetch",
+      "WebSearch"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(//Users/**/.ssh/**)"
+    ],
+    "additionalDirectories": [
+      "//tmp"
+    ]
+  },
+  "defaultMode": "default",
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/block-rm.py"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/confirm-destructive-find.py"
+          }
+        ]
+      }
+    ]
+  }
+}

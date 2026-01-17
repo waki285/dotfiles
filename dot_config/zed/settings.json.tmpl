@@ -1,0 +1,96 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "agent_servers": {
+    "claude": {
+      "default_model": "ag/claude-opus-4-5-thinking",
+      "default_mode": "acceptEdits",
+    },
+  },
+  "languages": {
+    "JSON": {
+      "tab_size": 2,
+    },
+  },
+  "context_servers": {
+    "mcp-server-context7": {
+      "enabled": true,
+      "settings": {
+        "context7_api_key": "{{ (bitwarden "item" "context7-api-key").login.password }}",
+      },
+    },
+    "mcp-server-github": {
+      "enabled": true,
+      "settings": {
+        "github_personal_access_token": "{{ (bitwarden "item" "github-mcp-api-token").login.password }}",
+      },
+    },
+  },
+  "features": {
+    "edit_prediction_provider": "copilot",
+  },
+  "terminal": {
+    "font_size": 13.0,
+  },
+  "project_panel": {
+    "hide_root": true,
+  },
+  "tabs": {
+    "show_close_button": "hidden",
+    "file_icons": true,
+    "git_status": true,
+  },
+  "title_bar": {
+    "show_menus": false,
+    "show_branch_icon": true,
+  },
+  "prettier": {
+    "allowed": true,
+  },
+  "show_whitespaces": "trailing",
+  "indent_guides": {
+    "background_coloring": "indent_aware",
+    "coloring": "indent_aware",
+  },
+  "soft_wrap": "editor_width",
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000,
+    },
+  },
+  "max_tabs": 10,
+  "buffer_line_height": "comfortable",
+  "icon_theme": "Material Icon Theme",
+  "ui_font_size": 15,
+  "buffer_font_size": 14.0,
+  "buffer_font_family": "PlemolJP35 Console NF",
+  "theme": "Github Dark",
+  "inlay_hints": {
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+    "show_other_hints": true,
+    "edit_debounce_ms": 700,
+    "scroll_debounce_ms": 50,
+  },
+  "lsp": {
+    "rust-analyzer": {
+      "initialization_options": {
+        "cargo": {
+          "cfgs": ["rust_analyzer"],
+          "features": "all",
+        },
+        "check": {
+          "features": "all",
+        },
+      },
+    },
+  },
+  "resize_all_panels_in_dock": ["left", "right", "bottom"],
+}

@@ -1,0 +1,29 @@
+[core]
+	ignorecase = false
+	editor = zed --wait
+{{- if eq .chezmoi.os "windows" }}
+	autocrlf = input
+{{- end }}
+[user]
+	name = waki285
+	email = suzuneu@suzuneu.com
+	signingkey = 858AD3EF07B0B1E4!
+[commit]
+	gpgsign = true
+[gpg]
+{{- if eq .chezmoi.os "windows" }}
+	program = "C:\\Program Files\\GnuPG\\gpg.exe"
+{{- else }}
+	program = /opt/homebrew/bin/gpg
+{{- end }}
+[push]
+	autoSetupRemote = true
+[color]
+	ui = auto
+[pager]
+	branch = false
+[tag]
+	gpgsign = true
+[fetch]
+	prune = true
+	pruneTags = true

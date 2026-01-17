@@ -1,0 +1,49 @@
+# ~/.codex/rules/default.rules
+
+# cargo <subcommand> ... を常に allow（":*" 相当）
+prefix_rule(
+  pattern = ["cargo", [
+    "add",
+    "build",
+    "check",
+    "clean",
+    "clippy",
+    "info",
+    "fmt",
+    "metadata",
+    "remove",
+    "search",
+    "test",
+  ]],
+  decision = "allow",
+  match = [
+    "cargo add serde",
+    "cargo build --release",
+    "cargo test -q",
+  ],
+)
+
+# git diff ... / git status ... を allow
+prefix_rule(
+  pattern = ["git", ["diff", "status"]],
+  decision = "allow",
+  match = [
+    "git diff",
+    "git status -sb",
+  ],
+)
+
+# tree ... を allow
+prefix_rule(
+  pattern = ["tree"],
+  decision = "allow",
+  match = ["tree -L 2"],
+)
+
+# wc ... を allow
+prefix_rule(
+  pattern = ["wc"],
+  decision = "allow",
+  match = ["wc -l Cargo.toml"],
+)
+
