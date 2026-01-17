@@ -103,7 +103,11 @@
         "hooks": [
           {
             "type": "command",
+{{- if eq .chezmoi.os "windows" }}
+            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe permission-request"
+{{- else }}
             "command": "$HOME/.claude/hooks/claude_hooks permission-request"
+{{- end }}
           }
         ]
       }

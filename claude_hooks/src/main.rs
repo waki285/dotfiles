@@ -86,8 +86,17 @@ pub struct Decision {
 // Hook implementations
 // ============================================================================
 
+#[cfg(not(windows))]
 static RM_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*/)?rm(\s|$)").unwrap()
+});
+
+#[cfg(windows)]
+static RM_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?i)(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*[\\/])?(rm|del|rd|rmdir|remove-item)(\s|$)",
+    )
+    .unwrap()
 });
 
 /// Block rm command and suggest using trash instead
@@ -110,6 +119,7 @@ fn block_rm(cmd: &str) -> Option<HookOutput> {
 }
 
 // Destructive patterns with descriptions
+#[cfg(not(windows))]
 const DESTRUCTIVE_PATTERNS: &[(&str, &str); 6] = &[
     // find ... -delete
     (r"find\s+.*-delete", "find with -delete option"),
@@ -137,7 +147,17 @@ const DESTRUCTIVE_PATTERNS: &[(&str, &str); 6] = &[
     ),
 ];
 
+#[cfg(windows)]
+const DESTRUCTIVE_PATTERNS: &[(&str, &str); 1] = &[(
+    r"\|\s*(move|move-item)\b",
+    "piped to move/move-item",
+)];
+
+#[cfg(not(windows))]
 static FIND_CHECK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(^|[;&|()]\s*)find\s").unwrap());
+
+#[cfg(windows)]
+static FIND_CHECK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\|").unwrap());
 
 /// Confirm destructive find commands
 fn confirm_destructive_find(cmd: &str) -> Option<HookOutput> {

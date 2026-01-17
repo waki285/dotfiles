@@ -3,14 +3,24 @@ claude_hooks
 target
 .github
 
-{{- if eq .chezmoi.os "windows" -}}
+{{- if eq .chezmoi.os "windows" }}
 completions/
-dot_oh-my-zsh/
-dot_config/private_karabiner
+.oh-my-zsh/
+.config/karabiner
 Library/
-dot_zprofile
-dot_zshenv
-dot_zshrc
-private_dot_zshrc.secrets.tmpl
-run_after_*.sh
-{{- end -}}
+.zprofile
+.zshenv
+.zshrc
+.zshrc.secrets
+*.sh
+{{- end }}
+
+{{- if ne .chezmoi.os "windows" }}
+*.ps1
+{{- end }}
+
+{{- if eq .chezmoi.os "windows" }}
+.vimrc
+{{- else }}
+_vimrc
+{{- end }}
