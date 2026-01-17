@@ -41,6 +41,9 @@ ARCH="$(uname -m)"
 case "$OS" in
   Darwin)
     case "$ARCH" in
+      x86_64)
+        ASSET_NAME="claude_hooks-macos-x86_64"
+        ;;
       arm64)
         ASSET_NAME="claude_hooks-macos-arm64"
         ;;

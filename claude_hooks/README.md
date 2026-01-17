@@ -85,6 +85,7 @@ Add to `~/.claude/settings.json`:
 
 | Platform | Architecture | Binary Name |
 |----------|--------------|-------------|
+| macOS | x86_64 | `claude_hooks-macos-x86_64` |
 | macOS | arm64 | `claude_hooks-macos-arm64` |
 | Linux | x86_64 | `claude_hooks-linux-x86_64` |
 | Linux | arm64 | `claude_hooks-linux-arm64` |

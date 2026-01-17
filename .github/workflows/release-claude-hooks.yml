@@ -19,6 +19,9 @@ jobs:
     strategy:
       matrix:
         include:
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: claude_hooks-macos-x86_64
           - target: aarch64-apple-darwin
             os: macos-latest
             name: claude_hooks-macos-arm64
@@ -152,6 +155,7 @@ jobs:
             ## claude_hooks Release
 
             ### Binaries
+            - `claude_hooks-macos-x86_64` - macOS on Intel (x86_64)
             - `claude_hooks-macos-arm64` - macOS on Apple Silicon (arm64)
             - `claude_hooks-linux-x86_64` - Linux on x86_64 (musl, static)
             - `claude_hooks-linux-arm64` - Linux on ARM64 (musl, static)
