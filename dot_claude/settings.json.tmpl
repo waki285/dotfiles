@@ -32,6 +32,8 @@
       "Bash(echo:*)",
       "Bash(grep:*)",
       "Bash(head:*)",
+      "Bash(gh release list:*)",
+      "Bash(gh release view:*)",
       "Bash(git diff:*)",
       "Bash(git status:*)",
       "Bash(ls:*)",
@@ -89,11 +91,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/block-rm.py"
+            "command": "$HOME/.claude/hooks/claude_hooks block-rm"
           },
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/confirm-destructive-find.py"
+            "command": "$HOME/.claude/hooks/claude_hooks confirm-destructive-find"
           }
         ]
       }
