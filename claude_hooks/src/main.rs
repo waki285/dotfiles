@@ -34,6 +34,22 @@ pub enum PermissionDecision {
     Deny,
 }
 
+/// Tool names that Claude Code can invoke
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub enum ToolName {
+    Task,
+    Bash,
+    Glob,
+    Grep,
+    Read,
+    Edit,
+    Write,
+    WebFetch,
+    WebSearch,
+    #[serde(untagged)]
+    Unknown(String),
+}
+
 // ============================================================================
 // Input structures
 // ============================================================================
@@ -41,7 +57,7 @@ pub enum PermissionDecision {
 /// Input received from Claude Code hooks via stdin
 #[derive(Debug, Deserialize)]
 pub struct HookInput {
-    pub tool_name: Option<String>,
+    pub tool_name: Option<ToolName>,
     pub tool_input: Option<ToolInput>,
 }
 
@@ -321,12 +337,12 @@ pub struct DenyRustAllowOptions {
 /// Deny adding #[allow(...)] or #![allow(...)] attributes to Rust files
 /// Returns `PreToolUse` format output
 fn deny_rust_allow(
-    tool_name: &str,
+    tool_name: &ToolName,
     tool_input: &ToolInput,
     options: &DenyRustAllowOptions,
 ) -> Option<HookOutput> {
     // Only check Edit and Write tools
-    if tool_name != "Edit" && tool_name != "Write" {
+    if !matches!(tool_name, ToolName::Edit | ToolName::Write) {
         return None;
     }
 
@@ -414,10 +430,9 @@ fn permission_request_action(_c: &Context) {
         return;
     };
 
-    let tool_name = data.tool_name.as_deref().unwrap_or_default();
-    if tool_name != "Bash" {
+    let Some(ToolName::Bash) = data.tool_name else {
         return;
-    }
+    };
 
     let cmd = data
         .tool_input
@@ -439,8 +454,11 @@ fn deny_rust_allow_action(c: &Context) {
         return;
     };
 
-    let tool_name = data.tool_name.as_deref().unwrap_or_default();
-    if tool_name != "Edit" && tool_name != "Write" {
+    let Some(ref tool_name) = data.tool_name else {
+        return;
+    };
+
+    if !matches!(tool_name, ToolName::Edit | ToolName::Write) {
         return;
     }
 
@@ -648,7 +666,7 @@ mod tests {
     #[test]
     fn test_deny_rust_allow_detects_allow() {
         let input = make_tool_input("src/main.rs", "#[allow(dead_code)]\nfn foo() {}");
-        let result = deny_rust_allow("Edit", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
         assert!(result.is_some());
         let output = result.unwrap();
         assert!(matches!(
@@ -660,14 +678,14 @@ mod tests {
     #[test]
     fn test_deny_rust_allow_detects_inner_allow() {
         let input = make_tool_input("src/lib.rs", "#![allow(unused)]");
-        let result = deny_rust_allow("Write", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Write, &input, &default_options());
         assert!(result.is_some());
     }
 
     #[test]
     fn test_deny_rust_allow_detects_expect_without_flag() {
         let input = make_tool_input("src/main.rs", "#[expect(dead_code)]");
-        let result = deny_rust_allow("Edit", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
         assert!(result.is_some()); // Should deny #[expect] too
     }
 
@@ -678,7 +696,7 @@ mod tests {
             expect: true,
             additional_context: None,
         };
-        let result = deny_rust_allow("Edit", &input, &options);
+        let result = deny_rust_allow(&ToolName::Edit, &input, &options);
         assert!(result.is_none()); // Should allow #[expect]
     }
 
@@ -689,21 +707,21 @@ mod tests {
             expect: true,
             additional_context: None,
         };
-        let result = deny_rust_allow("Edit", &input, &options);
+        let result = deny_rust_allow(&ToolName::Edit, &input, &options);
         assert!(result.is_some()); // Should still deny #[allow]
     }
 
     #[test]
     fn test_deny_rust_allow_ignores_non_rust_files() {
         let input = make_tool_input("README.md", "#[allow(dead_code)]");
-        let result = deny_rust_allow("Edit", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
         assert!(result.is_none());
     }
 
     #[test]
     fn test_deny_rust_allow_ignores_comments() {
         let input = make_tool_input("src/main.rs", "// #[allow(dead_code)]\nfn foo() {}");
-        let result = deny_rust_allow("Edit", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
         assert!(result.is_none());
     }
 
@@ -711,14 +729,14 @@ mod tests {
     fn test_deny_rust_allow_ignores_string_literals() {
         // Content: let s = "#[allow(dead_code)]";
         let input = make_tool_input("src/main.rs", "let s = \"#[allow(dead_code)]\";");
-        let result = deny_rust_allow("Edit", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
         assert!(result.is_none());
     }
 
     #[test]
     fn test_deny_rust_allow_ignores_wrong_tool() {
         let input = make_tool_input("src/main.rs", "#[allow(dead_code)]");
-        let result = deny_rust_allow("Bash", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Bash, &input, &default_options());
         assert!(result.is_none());
     }
 
@@ -729,7 +747,7 @@ mod tests {
             expect: false,
             additional_context: Some("See guidelines".to_string()),
         };
-        let result = deny_rust_allow("Edit", &input, &options);
+        let result = deny_rust_allow(&ToolName::Edit, &input, &options);
         assert!(result.is_some());
         let reason = result
             .unwrap()
@@ -742,14 +760,14 @@ mod tests {
     #[test]
     fn test_deny_rust_allow_case_insensitive_extension() {
         let input = make_tool_input("src/main.RS", "#[allow(dead_code)]");
-        let result = deny_rust_allow("Edit", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
         assert!(result.is_some()); // Should match .RS as well
     }
 
     #[test]
     fn test_deny_rust_allow_allows_normal_code() {
         let input = make_tool_input("src/main.rs", "fn foo() { println!(\"hello\"); }");
-        let result = deny_rust_allow("Edit", &input, &default_options());
+        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
         assert!(result.is_none());
     }
 }

@@ -166,11 +166,12 @@ jobs:
 
             ### Usage
             ```bash
-            # Block rm commands
-            claude_hooks block-rm
+            # PermissionRequest hook for Bash commands (blocks rm, confirms destructive find)
+            claude_hooks permission-request
 
-            # Confirm destructive find commands
-            claude_hooks confirm-destructive-find
+            # PreToolUse hook for Edit/Write (denies #[allow] in Rust files)
+            claude_hooks deny-rust-allow
+            claude_hooks deny-rust-allow --expect  # allow #[expect], deny #[allow]
             ```
 
             ### Verification
