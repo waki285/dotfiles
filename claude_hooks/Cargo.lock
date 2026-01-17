@@ -13,9 +13,10 @@ dependencies = [
 
 [[package]]
 name = "claude_hooks"
-version = "0.1.3"
+version = "0.2.0"
 dependencies = [
  "regex",
+ "seahorse",
  "serde",
  "serde_json",
 ]
@@ -78,6 +79,12 @@ name = "regex-syntax"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a2d987857b319362043e95f5353c0535c1f58eec5336fdfcf626430af7def58"
+
+[[package]]
+name = "seahorse"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d25679a62f678e7485f21abdea76f91a15322a0fe51efea791fd9d124f1c473c"
 
 [[package]]
 name = "serde"

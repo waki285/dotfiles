@@ -97,6 +97,21 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+{{- if eq .chezmoi.os "windows" }}
+            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe deny-rust-allow --expect=true"
+{{- else }}
+            "command": "$HOME/.claude/hooks/claude_hooks deny-rust-allow --expect=true"
+{{- end }}
+          }
+        ]
+      }
+    ],
     "PermissionRequest": [
       {
         "matcher": "Bash",
