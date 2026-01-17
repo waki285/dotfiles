@@ -4,7 +4,7 @@ set -eu
 # Download claude_hooks binary from GitHub releases
 
 REPO="waki285/dotfiles"
-VERSION="v0.1.1"
+VERSION="v0.1.2"
 HOOKS_DIR="$HOME/.claude/hooks"
 BINARY_NAME="claude_hooks"
 VERSION_FILE="$HOOKS_DIR/.claude_hooks_version"

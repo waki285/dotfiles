@@ -147,7 +147,7 @@ fn confirm_destructive_find(cmd: &str) -> Option<HookOutput> {
     }
 
     for (pattern, description) in DESTRUCTIVE_PATTERNS {
-        let re = Regex::new(&format!("(?i){}", pattern)).unwrap();
+        let re = Regex::new(&format!("(?i){pattern}")).unwrap();
         if re.is_match(cmd) {
             return Some(HookOutput {
                 hook_specific_output: HookSpecificOutput {
@@ -155,9 +155,8 @@ fn confirm_destructive_find(cmd: &str) -> Option<HookOutput> {
                     decision: None,
                     permission_decision: Some(PermissionDecision::Ask),
                     permission_decision_reason: Some(format!(
-                        "Destructive find command detected: {}. \
-                         This operation may delete or modify files. Please confirm.",
-                        description
+                        "Destructive find command detected: {description}. \
+                         This operation may delete or modify files. Please confirm."
                     )),
                 },
             });
@@ -194,10 +193,9 @@ fn run_hook(hook_name: &str) -> io::Result<()> {
 
     // Run the appropriate hook
     let output = match hook_name {
-        "block-rm" => block_rm(&cmd),
-        "confirm-destructive-find" => confirm_destructive_find(&cmd),
+        "permission-request" => block_rm(&cmd).or_else(|| confirm_destructive_find(&cmd)),
         _ => {
-            eprintln!("Unknown hook: {}", hook_name);
+            eprintln!("Unknown hook: {hook_name}");
             return Ok(());
         }
     };
@@ -216,15 +214,16 @@ fn main() {
     if args.len() < 2 {
         eprintln!("Usage: {} <hook-name>", args[0]);
         eprintln!("Available hooks:");
-        eprintln!("  block-rm                    - Block rm command, suggest trash");
-        eprintln!("  confirm-destructive-find    - Confirm destructive find commands");
+        eprintln!("  permission-request    - Check and handle permission requests");
         std::process::exit(1);
     }
 
     let hook_name = &args[1];
 
     if let Err(e) = run_hook(hook_name) {
-        eprintln!("Error: {}", e);
+        eprintln!("Error: {e}");
         std::process::exit(1);
     }
+
+    std::process::exit(0);
 }
