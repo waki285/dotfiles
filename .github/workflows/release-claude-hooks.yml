@@ -78,6 +78,8 @@ jobs:
       - name: Build release binary (Windows)
         if: runner.os == 'Windows'
         working-directory: claude_hooks
+        env:
+          RUSTFLAGS: "-C target-feature=+crt-static"
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Prepare artifact (Unix)
@@ -159,8 +161,8 @@ jobs:
             - `claude_hooks-macos-arm64` - macOS on Apple Silicon (arm64)
             - `claude_hooks-linux-x86_64` - Linux on x86_64 (musl, static)
             - `claude_hooks-linux-arm64` - Linux on ARM64 (musl, static)
-            - `claude_hooks-windows-x86_64.exe` - Windows on x86_64
-            - `claude_hooks-windows-arm64.exe` - Windows on ARM64
+            - `claude_hooks-windows-x86_64.exe` - Windows on x86_64 (static)
+            - `claude_hooks-windows-arm64.exe` - Windows on ARM64 (static)
 
             ### Usage
             ```bash

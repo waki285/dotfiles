@@ -92,7 +92,7 @@ Add to `~/.claude/settings.json`:
 | Windows | x86_64 | `claude_hooks-windows-x86_64.exe` |
 | Windows | arm64 | `claude_hooks-windows-arm64.exe` |
 
-Linux binaries are statically linked with musl for maximum compatibility.
+Linux binaries are statically linked with musl, and Windows binaries are statically linked with CRT for maximum compatibility.
 
 ## Building from Source
 
