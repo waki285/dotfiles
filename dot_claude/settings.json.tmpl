@@ -70,7 +70,13 @@
         "hooks": [
           {
             "type": "command",
+{{- if eq .chezmoi.os "darwin" }}
             "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
+{{- else if eq .chezmoi.os "windows" }}
+            "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\""
+{{- else }}
+            "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga"
+{{- end }}
           }
         ]
       }
@@ -80,7 +86,13 @@
         "hooks": [
           {
             "type": "command",
+{{- if eq .chezmoi.os "darwin" }}
             "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
+{{- else if eq .chezmoi.os "windows" }}
+            "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\""
+{{- else }}
+            "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga"
+{{- end }}
           }
         ]
       }

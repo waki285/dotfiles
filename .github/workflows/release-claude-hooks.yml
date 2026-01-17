@@ -22,12 +22,18 @@ jobs:
           - target: aarch64-apple-darwin
             os: macos-latest
             name: claude_hooks-macos-arm64
-          - target: x86_64-unknown-linux-gnu
+          - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
             name: claude_hooks-linux-x86_64
-          - target: aarch64-unknown-linux-gnu
+          - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
             name: claude_hooks-linux-arm64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: claude_hooks-windows-x86_64.exe
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+            name: claude_hooks-windows-arm64.exe
 
     runs-on: ${{ matrix.os }}
 
@@ -46,25 +52,48 @@ jobs:
           workspaces: claude_hooks -> target
           key: ${{ matrix.target }}
 
-      - name: Install cross-compilation tools (Linux ARM64)
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
+      - name: Install musl tools (Linux x86_64)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+          sudo apt-get install -y musl-tools
 
-      - name: Build release binary
+      - name: Install cross-compilation tools (Linux ARM64 musl)
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu musl-tools
+          # Install musl cross-compiler
+          curl -sSL https://musl.cc/aarch64-linux-musl-cross.tgz | sudo tar xz -C /opt
+          echo "/opt/aarch64-linux-musl-cross/bin" >> $GITHUB_PATH
+
+      - name: Build release binary (Unix)
+        if: runner.os != 'Windows'
         working-directory: claude_hooks
         run: |
-          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
-            export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-musl" ]; then
+            export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-musl-gcc
+            export CC_aarch64_unknown_linux_musl=aarch64-linux-musl-gcc
           fi
           cargo build --release --target ${{ matrix.target }}
 
-      - name: Prepare artifact
+      - name: Build release binary (Windows)
+        if: runner.os == 'Windows'
+        working-directory: claude_hooks
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare artifact (Unix)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p dist
           cp claude_hooks/target/${{ matrix.target }}/release/claude_hooks dist/${{ matrix.name }}
           chmod +x dist/${{ matrix.name }}
+
+      - name: Prepare artifact (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          Copy-Item "claude_hooks/target/${{ matrix.target }}/release/claude_hooks.exe" "dist/${{ matrix.name }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -129,8 +158,10 @@ jobs:
 
             ### Binaries
             - `claude_hooks-macos-arm64` - macOS on Apple Silicon (arm64)
-            - `claude_hooks-linux-x86_64` - Linux on x86_64
-            - `claude_hooks-linux-arm64` - Linux on ARM64
+            - `claude_hooks-linux-x86_64` - Linux on x86_64 (musl, static)
+            - `claude_hooks-linux-arm64` - Linux on ARM64 (musl, static)
+            - `claude_hooks-windows-x86_64.exe` - Windows on x86_64
+            - `claude_hooks-windows-arm64.exe` - Windows on ARM64
 
             ### Usage
             ```bash

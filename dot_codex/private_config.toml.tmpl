@@ -3,7 +3,13 @@ model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 network_access = true
 
+{{ if eq .chezmoi.os "darwin" -}}
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Ping.aiff"]
+{{- else if eq .chezmoi.os "windows" -}}
+notify = ["pwsh", "-c", "[System.Media.SystemSounds]::Asterisk.Play()"]
+{{- else -}}
+notify = ["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"]
+{{- end }}
 
 [sandbox_workspace_write]
 network_access = true

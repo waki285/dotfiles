@@ -2,12 +2,37 @@
 set -eu
 
 # Download claude_hooks binary from GitHub releases
+# Version is fetched from the latest release (source of truth: Cargo.toml)
 
 REPO="waki285/dotfiles"
-VERSION="v0.1.2"
 HOOKS_DIR="$HOME/.claude/hooks"
 BINARY_NAME="claude_hooks"
 VERSION_FILE="$HOOKS_DIR/.claude_hooks_version"
+
+# Get latest version from GitHub API
+get_latest_version() {
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "https://api.github.com/repos/${REPO}/releases" | \
+      grep -o '"tag_name": *"claude_hooks-v[^"]*"' | \
+      head -1 | \
+      sed 's/.*"claude_hooks-\(v[^"]*\)".*/\1/'
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO- "https://api.github.com/repos/${REPO}/releases" | \
+      grep -o '"tag_name": *"claude_hooks-v[^"]*"' | \
+      head -1 | \
+      sed 's/.*"claude_hooks-\(v[^"]*\)".*/\1/'
+  else
+    echo "Error: Neither curl nor wget is available" >&2
+    exit 1
+  fi
+}
+
+VERSION="$(get_latest_version)"
+
+if [ -z "$VERSION" ]; then
+  echo "Error: Could not determine latest version" >&2
+  exit 1
+fi
 
 # Detect OS and architecture
 OS="$(uname -s)"
@@ -45,7 +70,7 @@ case "$OS" in
     ;;
 esac
 
-DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${VERSION}/${ASSET_NAME}"
+DOWNLOAD_URL="https://github.com/${REPO}/releases/download/claude_hooks-${VERSION}/${ASSET_NAME}"
 TARGET_PATH="$HOOKS_DIR/$BINARY_NAME"
 
 # Check if already installed with correct version
@@ -61,14 +86,11 @@ fi
 mkdir -p "$HOOKS_DIR"
 
 # Download the binary
-echo "Downloading $ASSET_NAME from $DOWNLOAD_URL..."
+echo "Downloading $ASSET_NAME $VERSION from $DOWNLOAD_URL..."
 if command -v curl >/dev/null 2>&1; then
   curl -fsSL -o "$TARGET_PATH" "$DOWNLOAD_URL"
 elif command -v wget >/dev/null 2>&1; then
   wget -qO "$TARGET_PATH" "$DOWNLOAD_URL"
-else
-  echo "Error: Neither curl nor wget is available" >&2
-  exit 1
 fi
 
 # Make it executable
