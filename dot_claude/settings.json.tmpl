@@ -104,9 +104,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe deny-rust-allow --expect"
+            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe pre-tool-use --deny-rust-allow --expect"
 {{- else }}
-            "command": "$HOME/.claude/hooks/claude_hooks deny-rust-allow --expect"
+            "command": "$HOME/.claude/hooks/claude_hooks pre-tool-use --deny-rust-allow --expect"
 {{- end }}
           }
         ]
@@ -119,9 +119,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe permission-request"
+            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe permission-request --block-rm --confirm-destructive-find"
 {{- else }}
-            "command": "$HOME/.claude/hooks/claude_hooks permission-request"
+            "command": "$HOME/.claude/hooks/claude_hooks permission-request --block-rm --confirm-destructive-find"
 {{- end }}
           }
         ]

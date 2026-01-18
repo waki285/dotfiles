@@ -12,6 +12,7 @@ use std::{
 
 /// Hook event names that can be returned in the output
 #[derive(Debug, Clone, Copy, Serialize)]
+#[non_exhaustive]
 pub enum HookEventName {
     PermissionRequest,
     PreToolUse,
@@ -19,6 +20,7 @@ pub enum HookEventName {
 
 /// Behavior for permission decisions
 #[derive(Debug, Clone, Copy, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum DecisionBehavior {
     Deny,
@@ -27,6 +29,7 @@ pub enum DecisionBehavior {
 
 /// Permission decision types for ask behavior
 #[derive(Debug, Clone, Copy, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum PermissionDecision {
     Ask,
@@ -36,6 +39,7 @@ pub enum PermissionDecision {
 
 /// Tool names that Claude Code can invoke
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[non_exhaustive]
 pub enum ToolName {
     Task,
     Bash,
@@ -56,12 +60,14 @@ pub enum ToolName {
 
 /// Input received from Claude Code hooks via stdin
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct HookInput {
     pub tool_name: Option<ToolName>,
     pub tool_input: Option<ToolInput>,
 }
 
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct ToolInput {
     pub command: Option<String>,
     /// For Edit tool: the new content to replace
@@ -78,12 +84,14 @@ pub struct ToolInput {
 
 /// Output to be printed as JSON to stdout
 #[derive(Debug, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "camelCase")]
 pub struct HookOutput {
     pub hook_specific_output: HookSpecificOutput,
 }
 
 #[derive(Debug, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "camelCase")]
 pub struct HookSpecificOutput {
     pub hook_event_name: HookEventName,
@@ -101,6 +109,7 @@ pub struct HookSpecificOutput {
 }
 
 #[derive(Debug, Serialize)]
+#[non_exhaustive]
 pub struct Decision {
     pub behavior: DecisionBehavior,
     pub message: String,
@@ -110,12 +119,14 @@ pub struct Decision {
 // Helper functions
 // ============================================================================
 
+#[inline]
 fn read_hook_input() -> io::Result<HookInput> {
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
     serde_json::from_str(&input).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
 }
 
+#[inline]
 fn output_hook_result(output: &HookOutput) {
     if let Ok(json) = serde_json::to_string(output) {
         println!("{json}");
@@ -316,6 +327,7 @@ fn is_in_comment_or_string(content: &str, match_start: usize) -> bool {
 }
 
 /// Find all matches of a pattern that are not in comments or strings
+#[inline]
 fn find_real_matches(content: &str, pattern: &Regex) -> bool {
     for m in pattern.find_iter(content) {
         if !is_in_comment_or_string(content, m.start()) {
@@ -425,7 +437,16 @@ fn deny_rust_allow(
 // Command handlers
 // ============================================================================
 
-fn permission_request_action(_c: &Context) {
+fn permission_request_action(c: &Context) {
+    // Check if any module is enabled
+    let block_rm_enabled = c.bool_flag("block-rm");
+    let confirm_destructive_find_enabled = c.bool_flag("confirm-destructive-find");
+
+    // If no module is enabled, do nothing
+    if !block_rm_enabled && !confirm_destructive_find_enabled {
+        return;
+    }
+
     let Ok(data) = read_hook_input() else {
         return;
     };
@@ -444,12 +465,34 @@ fn permission_request_action(_c: &Context) {
         return;
     }
 
-    if let Some(output) = block_rm(cmd).or_else(|| confirm_destructive_find(cmd)) {
+    // Run enabled modules
+    let output = if block_rm_enabled {
+        block_rm(cmd)
+    } else {
+        None
+    }
+    .or_else(|| {
+        if confirm_destructive_find_enabled {
+            confirm_destructive_find(cmd)
+        } else {
+            None
+        }
+    });
+
+    if let Some(output) = output {
         output_hook_result(&output);
     }
 }
 
-fn deny_rust_allow_action(c: &Context) {
+fn pre_tool_use_action(c: &Context) {
+    // Check if any module is enabled
+    let deny_rust_allow_enabled = c.bool_flag("deny-rust-allow");
+
+    // If no module is enabled, do nothing
+    if !deny_rust_allow_enabled {
+        return;
+    }
+
     let Ok(data) = read_hook_input() else {
         return;
     };
@@ -458,25 +501,28 @@ fn deny_rust_allow_action(c: &Context) {
         return;
     };
 
-    if !matches!(tool_name, ToolName::Edit | ToolName::Write) {
-        return;
-    }
-
     let Some(tool_input) = data.tool_input.as_ref() else {
         return;
     };
 
-    // Parse flags
-    let expect = c.bool_flag("expect");
-    let additional_context = c.string_flag("additional-context").ok();
+    // Run enabled modules
+    if deny_rust_allow_enabled {
+        if !matches!(tool_name, ToolName::Edit | ToolName::Write) {
+            return;
+        }
 
-    let options = DenyRustAllowOptions {
-        expect,
-        additional_context,
-    };
+        // Parse flags for deny-rust-allow
+        let expect = c.bool_flag("expect");
+        let additional_context = c.string_flag("additional-context").ok();
 
-    if let Some(output) = deny_rust_allow(tool_name, tool_input, &options) {
-        output_hook_result(&output);
+        let options = DenyRustAllowOptions {
+            expect,
+            additional_context,
+        };
+
+        if let Some(output) = deny_rust_allow(tool_name, tool_input, &options) {
+            output_hook_result(&output);
+        }
     }
 }
 
@@ -492,282 +538,37 @@ fn main() {
         .version(env!("CARGO_PKG_VERSION"))
         .command(
             Command::new("permission-request")
-                .description("Check and handle permission requests for Bash commands")
+                .description("Handle permission requests for Bash commands")
+                .flag(
+                    Flag::new("block-rm", FlagType::Bool)
+                        .description("Block rm command and suggest using trash instead"),
+                )
+                .flag(
+                    Flag::new("confirm-destructive-find", FlagType::Bool)
+                        .description("Ask for confirmation on destructive find commands"),
+                )
                 .action(permission_request_action),
         )
         .command(
-            Command::new("deny-rust-allow")
-                .description("Deny #[allow(...)] attributes in Rust files (Edit/Write)")
+            Command::new("pre-tool-use")
+                .description("Handle pre-tool-use checks for Edit/Write tools")
+                .flag(
+                    Flag::new("deny-rust-allow", FlagType::Bool)
+                        .description("Deny #[allow(...)] attributes in Rust files"),
+                )
                 .flag(
                     Flag::new("expect", FlagType::Bool)
-                        .description("If true, suggest #[expect(...)] instead of denying. If false (default), deny both #[allow] and #[expect]"),
+                        .description("With --deny-rust-allow: suggest #[expect(...)] instead of denying both"),
                 )
                 .flag(
                     Flag::new("additional-context", FlagType::String)
-                        .description("Additional context message to append to the denial reason"),
+                        .description("With --deny-rust-allow: additional context message to append to the denial reason"),
                 )
-                .action(deny_rust_allow_action),
+                .action(pre_tool_use_action),
         );
 
     app.run(args);
 }
 
-// ============================================================================
-// Tests
-// ============================================================================
-
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    // -------------------------------------------------------------------------
-    // Helper functions tests
-    // -------------------------------------------------------------------------
-
-    #[test]
-    fn test_is_in_comment_or_string_line_comment() {
-        let content = "// #[allow(dead_code)]";
-        assert!(is_in_comment_or_string(content, 3));
-    }
-
-    #[test]
-    fn test_is_in_comment_or_string_not_in_comment() {
-        let content = "#[allow(dead_code)]";
-        assert!(!is_in_comment_or_string(content, 0));
-    }
-
-    #[test]
-    fn test_is_in_comment_or_string_block_comment() {
-        let content = "/* #[allow(dead_code)] */";
-        assert!(is_in_comment_or_string(content, 3));
-    }
-
-    #[test]
-    fn test_is_in_comment_or_string_string_literal() {
-        // Content: let s = "#[allow(dead_code)]";
-        let content = "let s = \"#[allow(dead_code)]\";";
-        assert!(is_in_comment_or_string(content, 9));
-    }
-
-    #[test]
-    fn test_is_in_comment_or_string_after_comment() {
-        let content = "// comment\n#[allow(dead_code)]";
-        assert!(!is_in_comment_or_string(content, 11));
-    }
-
-    #[test]
-    fn test_find_real_matches_ignores_comments() {
-        let content = "// #[allow(dead_code)]\nfn foo() {}";
-        assert!(!find_real_matches(content, &RUST_ALLOW_PATTERN));
-    }
-
-    #[test]
-    fn test_find_real_matches_detects_real_allow() {
-        let content = "#[allow(dead_code)]\nfn foo() {}";
-        assert!(find_real_matches(content, &RUST_ALLOW_PATTERN));
-    }
-
-    #[test]
-    fn test_find_real_matches_after_comment() {
-        let content = "// comment\n#[allow(dead_code)]";
-        assert!(find_real_matches(content, &RUST_ALLOW_PATTERN));
-    }
-
-    // -------------------------------------------------------------------------
-    // block_rm tests
-    // -------------------------------------------------------------------------
-
-    #[test]
-    fn test_block_rm_simple() {
-        assert!(block_rm("rm file.txt").is_some());
-    }
-
-    #[test]
-    fn test_block_rm_with_flags() {
-        assert!(block_rm("rm -rf /tmp/test").is_some());
-    }
-
-    #[test]
-    fn test_block_rm_with_sudo() {
-        assert!(block_rm("sudo rm -rf /").is_some());
-    }
-
-    #[test]
-    fn test_block_rm_in_pipeline() {
-        assert!(block_rm("echo test && rm file.txt").is_some());
-    }
-
-    #[test]
-    fn test_block_rm_allows_other_commands() {
-        assert!(block_rm("ls -la").is_none());
-        assert!(block_rm("trash file.txt").is_none());
-    }
-
-    #[test]
-    fn test_block_rm_allows_grep_rm() {
-        // "rm" as part of another word should not match
-        assert!(block_rm("grep -r 'pattern' .").is_none());
-        assert!(block_rm("rma -rm").is_none());
-    }
-
-    // -------------------------------------------------------------------------
-    // confirm_destructive_find tests
-    // -------------------------------------------------------------------------
-
-    #[test]
-    fn test_confirm_destructive_find_delete() {
-        let result = confirm_destructive_find("find . -name '*.tmp' -delete");
-        assert!(result.is_some());
-        let output = result.unwrap();
-        assert!(matches!(
-            output.hook_specific_output.permission_decision,
-            Some(PermissionDecision::Ask)
-        ));
-    }
-
-    #[test]
-    fn test_confirm_destructive_find_exec_rm() {
-        let result = confirm_destructive_find("find . -exec rm {} \\;");
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_confirm_destructive_find_xargs_rm() {
-        let result = confirm_destructive_find("find . -name '*.tmp' | xargs rm");
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_confirm_destructive_find_safe() {
-        assert!(confirm_destructive_find("find . -name '*.rs'").is_none());
-        assert!(confirm_destructive_find("find . -type f -print").is_none());
-    }
-
-    // -------------------------------------------------------------------------
-    // deny_rust_allow tests
-    // -------------------------------------------------------------------------
-
-    fn make_tool_input(file_path: &str, new_string: &str) -> ToolInput {
-        ToolInput {
-            command: None,
-            new_string: Some(new_string.to_string()),
-            content: None,
-            file_path: Some(file_path.to_string()),
-        }
-    }
-
-    fn default_options() -> DenyRustAllowOptions {
-        DenyRustAllowOptions {
-            expect: false,
-            additional_context: None,
-        }
-    }
-
-    #[test]
-    fn test_deny_rust_allow_detects_allow() {
-        let input = make_tool_input("src/main.rs", "#[allow(dead_code)]\nfn foo() {}");
-        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
-        assert!(result.is_some());
-        let output = result.unwrap();
-        assert!(matches!(
-            output.hook_specific_output.permission_decision,
-            Some(PermissionDecision::Deny)
-        ));
-    }
-
-    #[test]
-    fn test_deny_rust_allow_detects_inner_allow() {
-        let input = make_tool_input("src/lib.rs", "#![allow(unused)]");
-        let result = deny_rust_allow(&ToolName::Write, &input, &default_options());
-        assert!(result.is_some());
-    }
-
-    #[test]
-    fn test_deny_rust_allow_detects_expect_without_flag() {
-        let input = make_tool_input("src/main.rs", "#[expect(dead_code)]");
-        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
-        assert!(result.is_some()); // Should deny #[expect] too
-    }
-
-    #[test]
-    fn test_deny_rust_allow_allows_expect_with_flag() {
-        let input = make_tool_input("src/main.rs", "#[expect(dead_code)]");
-        let options = DenyRustAllowOptions {
-            expect: true,
-            additional_context: None,
-        };
-        let result = deny_rust_allow(&ToolName::Edit, &input, &options);
-        assert!(result.is_none()); // Should allow #[expect]
-    }
-
-    #[test]
-    fn test_deny_rust_allow_denies_allow_with_expect_flag() {
-        let input = make_tool_input("src/main.rs", "#[allow(dead_code)]");
-        let options = DenyRustAllowOptions {
-            expect: true,
-            additional_context: None,
-        };
-        let result = deny_rust_allow(&ToolName::Edit, &input, &options);
-        assert!(result.is_some()); // Should still deny #[allow]
-    }
-
-    #[test]
-    fn test_deny_rust_allow_ignores_non_rust_files() {
-        let input = make_tool_input("README.md", "#[allow(dead_code)]");
-        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
-        assert!(result.is_none());
-    }
-
-    #[test]
-    fn test_deny_rust_allow_ignores_comments() {
-        let input = make_tool_input("src/main.rs", "// #[allow(dead_code)]\nfn foo() {}");
-        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
-        assert!(result.is_none());
-    }
-
-    #[test]
-    fn test_deny_rust_allow_ignores_string_literals() {
-        // Content: let s = "#[allow(dead_code)]";
-        let input = make_tool_input("src/main.rs", "let s = \"#[allow(dead_code)]\";");
-        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
-        assert!(result.is_none());
-    }
-
-    #[test]
-    fn test_deny_rust_allow_ignores_wrong_tool() {
-        let input = make_tool_input("src/main.rs", "#[allow(dead_code)]");
-        let result = deny_rust_allow(&ToolName::Bash, &input, &default_options());
-        assert!(result.is_none());
-    }
-
-    #[test]
-    fn test_deny_rust_allow_additional_context() {
-        let input = make_tool_input("src/main.rs", "#[allow(dead_code)]");
-        let options = DenyRustAllowOptions {
-            expect: false,
-            additional_context: Some("See guidelines".to_string()),
-        };
-        let result = deny_rust_allow(&ToolName::Edit, &input, &options);
-        assert!(result.is_some());
-        let reason = result
-            .unwrap()
-            .hook_specific_output
-            .permission_decision_reason
-            .unwrap();
-        assert!(reason.contains("See guidelines"));
-    }
-
-    #[test]
-    fn test_deny_rust_allow_case_insensitive_extension() {
-        let input = make_tool_input("src/main.RS", "#[allow(dead_code)]");
-        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
-        assert!(result.is_some()); // Should match .RS as well
-    }
-
-    #[test]
-    fn test_deny_rust_allow_allows_normal_code() {
-        let input = make_tool_input("src/main.rs", "fn foo() { println!(\"hello\"); }");
-        let result = deny_rust_allow(&ToolName::Edit, &input, &default_options());
-        assert!(result.is_none());
-    }
-}
+mod tests;
