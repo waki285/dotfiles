@@ -50,12 +50,14 @@ $json.mcpServers | Add-Member -NotePropertyName "context7" -NotePropertyValue $c
 $json | ConvertTo-Json -Depth 10 | Set-Content -Path $File -Encoding UTF8 -NoNewline
 
 # Set file permissions (readable only by current user)
-$acl = Get-Acl $File
-$acl.SetAccessRuleProtection($true, $false)
-$rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-    [System.Security.Principal.WindowsIdentity]::GetCurrent().Name,
-    "FullControl",
-    "Allow"
-)
-$acl.SetAccessRule($rule)
-Set-Acl -Path $File -AclObject $acl
+# Use icacls to avoid requiring SeSecurityPrivilege in some environments
+
+# Disable inheritance and remove inherited ACEs
+& icacls $File /inheritance:r | Out-Null
+
+# Remove common principals if present (best-effort; ignore errors)
+& icacls $File /remove "Users" "Authenticated Users" "Everyone" "BUILTIN\Users" "NT AUTHORITY\Authenticated Users" "NT AUTHORITY\Everyone" 2>$null | Out-Null
+
+# Grant only the current user full control (replace existing explicit grants)
+$me = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+& icacls $File /grant:r "${me}:(F)" | Out-Null

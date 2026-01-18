@@ -7,6 +7,11 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "ui_font_family": ".ZedSans",
+  "telemetry": {
+    "diagnostics": true,
+    "metrics": false
+  },
   "agent_servers": {
     "claude": {
       "default_model": "ag/claude-opus-4-5-thinking",
