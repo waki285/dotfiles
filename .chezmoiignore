@@ -10,7 +10,6 @@ completions/
 .config/karabiner
 Library/
 .zprofile
-.zshenv
 .zshrc
 .zshrc.secrets
 *.sh
