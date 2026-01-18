@@ -1,4 +1,4 @@
-//! Unit tests for claude_hooks
+//! Unit tests for `claude_hooks`
 
 use super::*;
 
