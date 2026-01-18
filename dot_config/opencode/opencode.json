@@ -1,4 +1,7 @@
 {
+  "agentHooks": {
+    "allowExpect": true
+  },
   "mcp": {
     "context7": {
       "type": "remote",

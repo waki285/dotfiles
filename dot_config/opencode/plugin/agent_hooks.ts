@@ -4,7 +4,7 @@ import { fileURLToPath } from "url"
 import fs from "fs"
 import path from "path"
 
-// New simplified API types
+// Simplified API types
 type RustAllowCheck = "Ok" | "HasAllow" | "HasExpect" | "HasBoth"
 
 type AgentHooksAddon = {
@@ -12,6 +12,12 @@ type AgentHooksAddon = {
   checkDestructiveFind: (cmd: string) => string | null
   isRustFile: (filePath: string) => boolean
   checkRustAllowAttributes: (content: string) => RustAllowCheck
+}
+
+// Configuration from opencode.json
+type AgentHooksConfig = {
+  allowExpect?: boolean
+  additionalContext?: string
 }
 
 const require = createRequire(import.meta.url)
@@ -27,12 +33,21 @@ const resolveAddonPath = (): string | null => {
   return candidates.find((candidate) => candidate && fs.existsSync(candidate)) ?? null
 }
 
-const parseBool = (value: string | undefined): boolean => {
-  if (!value) return false
-  return ["1", "true", "yes", "on"].includes(value.toLowerCase())
+const loadConfig = (configDir: string): AgentHooksConfig => {
+  const configPath = path.join(configDir, "opencode.json")
+  if (!fs.existsSync(configPath)) return {}
+
+  try {
+    const content = fs.readFileSync(configPath, "utf-8")
+    const config = JSON.parse(content) as Record<string, unknown>
+    const agentHooks = config.agentHooks as AgentHooksConfig | undefined
+    return agentHooks ?? {}
+  } catch {
+    return {}
+  }
 }
 
-const AgentHooksPlugin: Plugin = async ({ client }) => {
+const AgentHooksPlugin: Plugin = async ({ client, directory }) => {
   const addonPath = resolveAddonPath()
   if (!addonPath) {
     await client.app.log({
@@ -62,8 +77,10 @@ const AgentHooksPlugin: Plugin = async ({ client }) => {
     return {}
   }
 
-  const allowExpect = parseBool(process.env.OPENCODE_AGENT_HOOKS_EXPECT)
-  const additionalContext = process.env.OPENCODE_AGENT_HOOKS_CONTEXT || null
+  // Load config from opencode.json (agentHooks key)
+  const config = loadConfig(directory)
+  const allowExpect = config.allowExpect ?? false
+  const additionalContext = config.additionalContext ?? null
 
   return {
     "tool.execute.before": async (input, output) => {
@@ -80,7 +97,6 @@ const AgentHooksPlugin: Plugin = async ({ client }) => {
 
         const destructiveDescription = addon.checkDestructiveFind(command)
         if (destructiveDescription) {
-          // For destructive find, we could ask for confirmation, but for now just warn
           await client.app.log({
             service: "agent-hooks",
             level: "warn",
