@@ -1,6 +1,7 @@
 README.md
 claude_hooks
 target
+templates
 .github
 
 {{- if eq .chezmoi.os "windows" }}

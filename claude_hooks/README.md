@@ -34,18 +34,36 @@ chmod +x ~/.claude/hooks/claude_hooks
 
 ### Command Line
 
+Each hook type has a single command with module flags to enable specific features.
+
+```bash
+# permission-request: Handle Bash command permission checks
+claude_hooks permission-request --block-rm --confirm-destructive-find
+
+# pre-tool-use: Handle Edit/Write tool checks
+claude_hooks pre-tool-use --deny-rust-allow [--expect] [--additional-context "..."]
+```
+
+#### Examples
+
 ```bash
 # Block rm commands (PermissionRequest hook)
-echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /tmp/test"}}' | claude_hooks permission-request
+echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /tmp/test"}}' | \
+  claude_hooks permission-request --block-rm
+
+# Enable both rm blocking and destructive find confirmation
+echo '{"tool_name":"Bash","tool_input":{"command":"find . -delete"}}' | \
+  claude_hooks permission-request --block-rm --confirm-destructive-find
 
 # Deny #[allow] in Rust files (PreToolUse hook)
-echo '{"tool_name":"Edit","tool_input":{"file_path":"src/main.rs","new_string":"#[allow(dead_code)]"}}' | claude_hooks deny-rust-allow
+echo '{"tool_name":"Edit","tool_input":{"file_path":"src/main.rs","new_string":"#[allow(dead_code)]"}}' | \
+  claude_hooks pre-tool-use --deny-rust-allow
 
 # With --expect flag (allow #[expect], deny #[allow])
-echo '...' | claude_hooks deny-rust-allow --expect
+echo '...' | claude_hooks pre-tool-use --deny-rust-allow --expect
 
 # With additional context
-echo '...' | claude_hooks deny-rust-allow --additional-context "See project guidelines"
+echo '...' | claude_hooks pre-tool-use --deny-rust-allow --additional-context "See project guidelines"
 ```
 
 ### Claude Code Configuration
@@ -61,7 +79,7 @@ Add to `~/.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/claude_hooks deny-rust-allow --expect"
+            "command": "$HOME/.claude/hooks/claude_hooks pre-tool-use --deny-rust-allow --expect"
           }
         ]
       }
@@ -72,7 +90,7 @@ Add to `~/.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/claude_hooks permission-request"
+            "command": "$HOME/.claude/hooks/claude_hooks permission-request --block-rm --confirm-destructive-find"
           }
         ]
       }
@@ -80,6 +98,23 @@ Add to `~/.claude/settings.json`:
   }
 }
 ```
+
+### Available Flags
+
+#### `permission-request` command
+
+| Flag | Description |
+|------|-------------|
+| `--block-rm` | Block `rm` commands and suggest using `trash` instead |
+| `--confirm-destructive-find` | Ask for confirmation on destructive `find` commands |
+
+#### `pre-tool-use` command
+
+| Flag | Description |
+|------|-------------|
+| `--deny-rust-allow` | Deny `#[allow(...)]` attributes in Rust files |
+| `--expect` | With `--deny-rust-allow`: allow `#[expect(...)]` while denying `#[allow(...)]` |
+| `--additional-context <string>` | With `--deny-rust-allow`: append custom message to the denial reason |
 
 ## Supported Platforms
 

@@ -105,11 +105,24 @@ chezmoi add ~/.config/xxx
 
 ### Claude Code Hooks
 
-Custom hooks for Claude Code that provide safety checks:
+Custom hooks for Claude Code that provide safety checks. Each hook type has a single command with module flags:
 
-- **block-rm**: Prevents `rm` commands, suggests `trash` instead
-- **confirm-destructive-find**: Confirms destructive `find` commands
-- **deny-rust-allow**: Prevents `#[allow(...)]` attributes in Rust files
+```bash
+# permission-request: Bash command checks
+claude_hooks permission-request --block-rm --confirm-destructive-find
+
+# pre-tool-use: Edit/Write tool checks
+claude_hooks pre-tool-use --deny-rust-allow --expect
+```
+
+Available modules:
+
+| Hook Type | Flag | Description |
+|-----------|------|-------------|
+| `permission-request` | `--block-rm` | Prevents `rm` commands, suggests `trash` instead |
+| `permission-request` | `--confirm-destructive-find` | Confirms destructive `find` commands |
+| `pre-tool-use` | `--deny-rust-allow` | Prevents `#[allow(...)]` attributes in Rust files |
+| `pre-tool-use` | `--expect` | With `--deny-rust-allow`: allow `#[expect]`, deny `#[allow]` |
 
 See [claude_hooks/README.md](claude_hooks/README.md) for details.
 
