@@ -17,6 +17,7 @@ Library/
 
 {{- if ne .chezmoi.os "windows" }}
 *.ps1
+_gvimrc
 AppData/
 {{- end }}
 
