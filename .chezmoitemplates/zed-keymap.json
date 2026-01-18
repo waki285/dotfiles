@@ -7,5 +7,11 @@
         "\u001b\r"
       ]
     }
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-t": null
+    }
   }
 ]
