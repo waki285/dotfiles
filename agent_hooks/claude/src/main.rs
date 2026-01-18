@@ -1,4 +1,7 @@
-use agent_hooks::{check_destructive_find, check_rust_allow_attributes, is_rm_command, is_rust_file, RustAllowCheckResult};
+use agent_hooks::{
+    RustAllowCheckResult, check_destructive_find, check_rust_allow_attributes, is_rm_command,
+    is_rust_file,
+};
 use seahorse::{App, Command, Context, Flag, FlagType};
 use serde::{Deserialize, Serialize};
 use std::io::{self, Read};
@@ -165,20 +168,18 @@ fn permission_request_action(c: &Context) {
     }
 
     // Check for destructive find command
-    if confirm_destructive_find {
-        if let Some(description) = check_destructive_find(cmd) {
-            output_hook_result(&HookOutput {
-                hook_specific_output: HookSpecificOutput {
-                    hook_event_name: HookEventName::PermissionRequest,
-                    decision: None,
-                    permission_decision: Some(PermissionDecision::Ask),
-                    permission_decision_reason: Some(format!(
-                        "Destructive find command detected: {description}. \
+    if confirm_destructive_find && let Some(description) = check_destructive_find(cmd) {
+        output_hook_result(&HookOutput {
+            hook_specific_output: HookSpecificOutput {
+                hook_event_name: HookEventName::PermissionRequest,
+                decision: None,
+                permission_decision: Some(PermissionDecision::Ask),
+                permission_decision_reason: Some(format!(
+                    "Destructive find command detected: {description}. \
                          This operation may delete or modify files. Please confirm."
-                    )),
-                },
-            });
-        }
+                )),
+            },
+        });
     }
 }
 
@@ -247,9 +248,10 @@ fn pre_tool_use_action(c: &Context) {
         match check_result {
             RustAllowCheckResult::Ok => None,
             RustAllowCheckResult::HasBoth => {
-                let mut msg = "Adding #[allow(...)] or #[expect(...)] attributes is not permitted. \
+                let mut msg =
+                    "Adding #[allow(...)] or #[expect(...)] attributes is not permitted. \
                                Fix the underlying issue instead of suppressing the warning."
-                    .to_string();
+                        .to_string();
                 if let Some(ref ctx) = additional_context {
                     msg.push(' ');
                     msg.push_str(ctx);
@@ -257,9 +259,10 @@ fn pre_tool_use_action(c: &Context) {
                 Some(msg)
             }
             RustAllowCheckResult::HasAllow => {
-                let mut msg = "Adding #[allow(...)] or #![allow(...)] attributes is not permitted. \
+                let mut msg =
+                    "Adding #[allow(...)] or #![allow(...)] attributes is not permitted. \
                                Fix the underlying issue instead of suppressing the warning."
-                    .to_string();
+                        .to_string();
                 if let Some(ref ctx) = additional_context {
                     msg.push(' ');
                     msg.push_str(ctx);
@@ -267,9 +270,10 @@ fn pre_tool_use_action(c: &Context) {
                 Some(msg)
             }
             RustAllowCheckResult::HasExpect => {
-                let mut msg = "Adding #[expect(...)] or #![expect(...)] attributes is not permitted. \
+                let mut msg =
+                    "Adding #[expect(...)] or #![expect(...)] attributes is not permitted. \
                                Fix the underlying issue instead of suppressing the warning."
-                    .to_string();
+                        .to_string();
                 if let Some(ref ctx) = additional_context {
                     msg.push(' ');
                     msg.push_str(ctx);

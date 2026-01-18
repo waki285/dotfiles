@@ -1,4 +1,4 @@
-//! Unit tests for agent_hooks core
+//! Unit tests for `agent_hooks` core
 
 use super::*;
 

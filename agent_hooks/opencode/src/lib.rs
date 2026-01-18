@@ -1,15 +1,20 @@
-//! NAPI bindings for agent_hooks, used by OpenCode.
+//! NAPI bindings for `agent_hooks`, used by `OpenCode`.
 //!
 //! These bindings expose simple check functions that can be called directly
 //! from TypeScript/JavaScript without JSON serialization overhead.
+#![expect(clippy::needless_pass_by_value)]
 
-use agent_hooks::{check_destructive_find, check_rust_allow_attributes, is_rm_command, is_rust_file, RustAllowCheckResult};
+use agent_hooks::{
+    RustAllowCheckResult, check_destructive_find, check_rust_allow_attributes, is_rm_command,
+    is_rust_file,
+};
 use napi_derive::napi;
 
 /// Check if a command contains an rm (or equivalent) command.
 ///
 /// Returns `true` if the command should be blocked.
 #[napi(js_name = "isRmCommand")]
+#[must_use]
 pub fn is_rm_command_js(cmd: String) -> bool {
     is_rm_command(&cmd)
 }
@@ -24,6 +29,7 @@ pub fn check_destructive_find_js(cmd: String) -> Option<String> {
 
 /// Check if a file path is a Rust file.
 #[napi(js_name = "isRustFile")]
+#[must_use]
 pub fn is_rust_file_js(file_path: String) -> bool {
     is_rust_file(&file_path)
 }
@@ -45,6 +51,7 @@ pub enum RustAllowCheck {
 ///
 /// This function ignores attributes in comments and string literals.
 #[napi(js_name = "checkRustAllowAttributes")]
+#[must_use]
 pub fn check_rust_allow_attributes_js(content: String) -> RustAllowCheck {
     match check_rust_allow_attributes(&content) {
         RustAllowCheckResult::Ok => RustAllowCheck::Ok,

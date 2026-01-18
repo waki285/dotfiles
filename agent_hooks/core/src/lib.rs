@@ -1,7 +1,7 @@
-//! Core check functions for agent_hooks.
+//! Core check functions for `agent_hooks`.
 //!
 //! This library provides simple, reusable check functions that can be used by
-//! any AI coding agent (Claude Code, OpenCode, etc.) to implement safety hooks.
+//! any AI coding agent (Claude Code, `OpenCode`, etc.) to implement safety hooks.
 
 use regex::Regex;
 use std::sync::LazyLock;
@@ -72,6 +72,7 @@ static FIND_CHECK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\|").unwrap()
 /// Returns `Some(description)` if the command is destructive and should be confirmed,
 /// or `None` if the command is safe.
 #[must_use]
+#[expect(clippy::missing_panics_doc)]
 pub fn check_destructive_find(cmd: &str) -> Option<&'static str> {
     if !FIND_CHECK.is_match(cmd) {
         return None;
