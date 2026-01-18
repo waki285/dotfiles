@@ -1,0 +1,276 @@
+name: Release agent_hooks
+
+on:
+  push:
+    tags:
+      - 'agent_hooks-v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., agent_hooks-v0.4.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-claude:
+    name: Build Claude CLI
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: agent_hooks_claude-macos-x86_64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: agent_hooks_claude-macos-arm64
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            name: agent_hooks_claude-linux-x86_64
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            name: agent_hooks_claude-linux-arm64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: agent_hooks_claude-windows-x86_64.exe
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+            name: agent_hooks_claude-windows-arm64.exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo registry and build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: agent_hooks -> target
+          key: ${{ matrix.target }}-claude
+
+      - name: Install musl tools (Linux x86_64)
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Install cross (Linux ARM64 musl)
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build release binary (Unix)
+        if: runner.os != 'Windows' && matrix.target != 'aarch64-unknown-linux-musl'
+        working-directory: agent_hooks
+        run: cargo build --release --target ${{ matrix.target }} -p agent_hooks_claude
+
+      - name: Build release binary (Linux ARM64 musl with cross)
+        if: matrix.target == 'aarch64-unknown-linux-musl'
+        working-directory: agent_hooks
+        run: cross build --release --target ${{ matrix.target }} -p agent_hooks_claude
+
+      - name: Build release binary (Windows)
+        if: runner.os == 'Windows'
+        working-directory: agent_hooks
+        env:
+          RUSTFLAGS: "-C target-feature=+crt-static"
+        run: cargo build --release --target ${{ matrix.target }} -p agent_hooks_claude
+
+      - name: Prepare artifact (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p dist
+          cp agent_hooks/target/${{ matrix.target }}/release/agent_hooks_claude dist/${{ matrix.name }}
+          chmod +x dist/${{ matrix.name }}
+
+      - name: Prepare artifact (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          Copy-Item "agent_hooks/target/${{ matrix.target }}/release/agent_hooks_claude.exe" "dist/${{ matrix.name }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: dist/${{ matrix.name }}
+
+  build-opencode:
+    name: Build OpenCode NAPI
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: agent_hooks_opencode-macos-x86_64.node
+            lib_name: libagent_hooks_opencode.dylib
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: agent_hooks_opencode-macos-arm64.node
+            lib_name: libagent_hooks_opencode.dylib
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: agent_hooks_opencode-linux-x86_64.node
+            lib_name: libagent_hooks_opencode.so
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: agent_hooks_opencode-linux-arm64.node
+            lib_name: libagent_hooks_opencode.so
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: agent_hooks_opencode-windows-x86_64.node
+            lib_name: agent_hooks_opencode.dll
+          - target: aarch64-pc-windows-msvc
+            os: windows-latest
+            name: agent_hooks_opencode-windows-arm64.node
+            lib_name: agent_hooks_opencode.dll
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo registry and build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: agent_hooks -> target
+          key: ${{ matrix.target }}-opencode
+
+      - name: Install cross (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build release binary (Unix)
+        if: runner.os != 'Windows' && matrix.target != 'aarch64-unknown-linux-gnu'
+        working-directory: agent_hooks
+        run: cargo build --release --target ${{ matrix.target }} -p agent_hooks_opencode
+
+      - name: Build release binary (Linux ARM64 with cross)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        working-directory: agent_hooks
+        run: cross build --release --target ${{ matrix.target }} -p agent_hooks_opencode
+
+      - name: Build release binary (Windows)
+        if: runner.os == 'Windows'
+        working-directory: agent_hooks
+        run: cargo build --release --target ${{ matrix.target }} -p agent_hooks_opencode
+
+      - name: Prepare artifact (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p dist
+          cp agent_hooks/target/${{ matrix.target }}/release/${{ matrix.lib_name }} dist/${{ matrix.name }}
+
+      - name: Prepare artifact (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          Copy-Item "agent_hooks/target/${{ matrix.target }}/release/${{ matrix.lib_name }}" "dist/${{ matrix.name }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: dist/${{ matrix.name }}
+
+  release:
+    needs: [build-claude, build-opencode]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Determine tag name
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create tag if not exists (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git fetch --tags
+          if ! git rev-parse "${{ steps.tag.outputs.tag }}" >/dev/null 2>&1; then
+            git tag "${{ steps.tag.outputs.tag }}"
+            git push origin "${{ steps.tag.outputs.tag }}"
+          fi
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          for dir in artifacts/*/; do
+            name=$(basename "$dir")
+            cp "$dir/$name" "release/$name"
+            chmod +x "release/$name" 2>/dev/null || true
+          done
+          ls -la release/
+
+      - name: Create checksums
+        working-directory: release
+        run: |
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          body: |
+            ## agent_hooks Release
+
+            ### Claude CLI Binaries
+            - `agent_hooks_claude-macos-x86_64` - macOS on Intel (x86_64)
+            - `agent_hooks_claude-macos-arm64` - macOS on Apple Silicon (arm64)
+            - `agent_hooks_claude-linux-x86_64` - Linux on x86_64 (musl, static)
+            - `agent_hooks_claude-linux-arm64` - Linux on ARM64 (musl, static)
+            - `agent_hooks_claude-windows-x86_64.exe` - Windows on x86_64 (static)
+            - `agent_hooks_claude-windows-arm64.exe` - Windows on ARM64 (static)
+
+            ### OpenCode NAPI Binaries (.node)
+            - `agent_hooks_opencode-macos-x86_64.node` - macOS on Intel (x86_64)
+            - `agent_hooks_opencode-macos-arm64.node` - macOS on Apple Silicon (arm64)
+            - `agent_hooks_opencode-linux-x86_64.node` - Linux on x86_64
+            - `agent_hooks_opencode-linux-arm64.node` - Linux on ARM64
+            - `agent_hooks_opencode-windows-x86_64.node` - Windows on x86_64
+            - `agent_hooks_opencode-windows-arm64.node` - Windows on ARM64
+
+            ### Usage (Claude CLI)
+            ```bash
+            # permission-request: Handle Bash command permission checks
+            agent_hooks_claude permission-request --block-rm --confirm-destructive-find
+
+            # pre-tool-use: Handle Edit/Write tool checks
+            agent_hooks_claude pre-tool-use --deny-rust-allow --expect
+            ```
+
+            ### Verification
+            ```bash
+            sha256sum -c SHA256SUMS.txt
+            ```
+          files: |
+            release/*
+          draft: false
+          prerelease: false

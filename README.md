@@ -11,7 +11,7 @@ This repository contains the following configuration files:
 - **Editors**: Vim, Zed configurations
 - **Oh My Zsh**: Custom theme (`zenith`) and plugin settings
 - **AI Tools**: Claude Code, Codex, Gemini configurations
-- **claude_hooks**: Custom hook system for Claude Code (see [claude_hooks/README.md](claude_hooks/README.md))
+- **agent_hooks**: Custom hook system for Claude Code (see [agent_hooks/README.md](agent_hooks/README.md))
 - **Others**: Karabiner-Elements, Deno completions, etc.
 
 ## Requirements
@@ -63,7 +63,7 @@ chezmoi add ~/.config/xxx
 
 ```
 .
-├── claude_hooks/         # Claude Code hook system (Apache 2.0 licensed)
+├── agent_hooks/         # Claude Code hook system (Apache 2.0 licensed)
 ├── completions/          # Shell completion files
 ├── dot_claude/           # Claude Code configuration
 ├── dot_codex/            # Codex configuration
@@ -109,10 +109,10 @@ Custom hooks for Claude Code that provide safety checks. Each hook type has a si
 
 ```bash
 # permission-request: Bash command checks
-claude_hooks permission-request --block-rm --confirm-destructive-find
+agent_hooks permission-request --block-rm --confirm-destructive-find
 
 # pre-tool-use: Edit/Write tool checks
-claude_hooks pre-tool-use --deny-rust-allow --expect
+agent_hooks pre-tool-use --deny-rust-allow --expect
 ```
 
 Available modules:
@@ -124,9 +124,9 @@ Available modules:
 | `pre-tool-use` | `--deny-rust-allow` | Prevents `#[allow(...)]` attributes in Rust files |
 | `pre-tool-use` | `--expect` | With `--deny-rust-allow`: allow `#[expect]`, deny `#[allow]` |
 
-See [claude_hooks/README.md](claude_hooks/README.md) for details.
+See [agent_hooks/README.md](agent_hooks/README.md) for details.
 
 ## License
 
-- **claude_hooks/**: Apache License 2.0 (see [claude_hooks/LICENSE](claude_hooks/LICENSE))
+- **agent_hooks/**: Apache License 2.0 (see [agent_hooks/LICENSE](agent_hooks/LICENSE))
 - **Other files**: Personal configuration files (no license)

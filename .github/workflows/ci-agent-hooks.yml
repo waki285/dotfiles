@@ -1,16 +1,16 @@
-name: CI claude_hooks
+name: CI agent_hooks
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'claude_hooks/**'
-      - '.github/workflows/ci-claude-hooks.yml'
+      - 'agent_hooks/**'
+      - '.github/workflows/ci-agent-hooks.yml'
   pull_request:
     paths:
-      - 'claude_hooks/**'
-      - '.github/workflows/ci-claude-hooks.yml'
+      - 'agent_hooks/**'
+      - '.github/workflows/ci-agent-hooks.yml'
 
 env:
   CARGO_TERM_COLOR: always
@@ -29,10 +29,10 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: claude_hooks -> target
+          workspaces: agent_hooks -> target
 
       - name: Run cargo check
-        working-directory: claude_hooks
+        working-directory: agent_hooks
         run: cargo check --all-targets
 
   fmt:
@@ -48,7 +48,7 @@ jobs:
           components: rustfmt
 
       - name: Run cargo fmt
-        working-directory: claude_hooks
+        working-directory: agent_hooks
         run: cargo fmt --all -- --check
 
   clippy:
@@ -66,10 +66,10 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: claude_hooks -> target
+          workspaces: agent_hooks -> target
 
       - name: Run cargo clippy
-        working-directory: claude_hooks
+        working-directory: agent_hooks
         run: cargo clippy --all-targets -- -D warnings
 
   test:
@@ -88,11 +88,11 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: claude_hooks -> target
+          workspaces: agent_hooks -> target
           key: ${{ matrix.os }}
 
       - name: Run cargo test
-        working-directory: claude_hooks
+        working-directory: agent_hooks
         run: cargo test --all-targets
 
   build:
@@ -111,9 +111,9 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: claude_hooks -> target
+          workspaces: agent_hooks -> target
           key: ${{ matrix.os }}
 
       - name: Run cargo build
-        working-directory: claude_hooks
+        working-directory: agent_hooks
         run: cargo build --release

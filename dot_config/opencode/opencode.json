@@ -9,5 +9,20 @@
       }
     }
   },
+  "permission": {
+    "bash": {
+      "*": "allow",
+      "find * -delete": "ask",
+      "find * -exec * rm *": "ask",
+      "find * -exec * rmdir *": "ask",
+      "find * -execdir * rm *": "ask",
+      "find * -execdir * rmdir *": "ask",
+      "find * -ok * rm *": "ask",
+      "find * -ok * rmdir *": "ask",
+      "find * -exec * mv *": "ask",
+      "xargs rm *": "ask",
+      "xargs rmdir *": "ask"
+    }
+  },
   "$schema": "https://opencode.ai/config.json"
 }

@@ -26,6 +26,7 @@
       "Bash(cargo remove:*)",
       "Bash(cargo search:*)",
       "Bash(cargo test:*)",
+      "Bash(cargo tree:*)",
       "Bash(cat:*)",
       "Bash(cd:*)",
       "Bash(cut:*)",
@@ -105,9 +106,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe pre-tool-use --deny-rust-allow --expect"
+            "command": "$HOME\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --deny-rust-allow --expect"
 {{- else }}
-            "command": "$HOME/.claude/hooks/claude_hooks pre-tool-use --deny-rust-allow --expect"
+            "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --deny-rust-allow --expect"
 {{- end }}
           }
         ]
@@ -120,9 +121,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\claude_hooks.exe permission-request --block-rm --confirm-destructive-find"
+            "command": "$HOME\\.claude\\hooks\\agent_hooks_claude.exe permission-request --block-rm --confirm-destructive-find"
 {{- else }}
-            "command": "$HOME/.claude/hooks/claude_hooks permission-request --block-rm --confirm-destructive-find"
+            "command": "$HOME/.claude/hooks/agent_hooks_claude permission-request --block-rm --confirm-destructive-find"
 {{- end }}
           }
         ]
