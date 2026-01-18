@@ -93,9 +93,10 @@ fn test_block_rm_allows_grep_rm() {
 }
 
 // -------------------------------------------------------------------------
-// confirm_destructive_find tests
+// confirm_destructive_find tests (Unix only)
 // -------------------------------------------------------------------------
 
+#[cfg(not(windows))]
 #[test]
 fn test_confirm_destructive_find_delete() {
     let result = confirm_destructive_find("find . -name '*.tmp' -delete");
@@ -107,22 +108,48 @@ fn test_confirm_destructive_find_delete() {
     ));
 }
 
+#[cfg(not(windows))]
 #[test]
 fn test_confirm_destructive_find_exec_rm() {
     let result = confirm_destructive_find("find . -exec rm {} \\;");
     assert!(result.is_some());
 }
 
+#[cfg(not(windows))]
 #[test]
 fn test_confirm_destructive_find_xargs_rm() {
     let result = confirm_destructive_find("find . -name '*.tmp' | xargs rm");
     assert!(result.is_some());
 }
 
+#[cfg(not(windows))]
 #[test]
 fn test_confirm_destructive_find_safe() {
     assert!(confirm_destructive_find("find . -name '*.rs'").is_none());
     assert!(confirm_destructive_find("find . -type f -print").is_none());
+}
+
+// -------------------------------------------------------------------------
+// confirm_destructive_find tests (Windows only)
+// -------------------------------------------------------------------------
+
+#[cfg(windows)]
+#[test]
+fn test_confirm_destructive_find_piped_move() {
+    let result = confirm_destructive_find("dir | move-item");
+    assert!(result.is_some());
+    let output = result.unwrap();
+    assert!(matches!(
+        output.hook_specific_output.permission_decision,
+        Some(PermissionDecision::Ask)
+    ));
+}
+
+#[cfg(windows)]
+#[test]
+fn test_confirm_destructive_find_safe() {
+    assert!(confirm_destructive_find("dir /s").is_none());
+    assert!(confirm_destructive_find("Get-ChildItem").is_none());
 }
 
 // -------------------------------------------------------------------------
