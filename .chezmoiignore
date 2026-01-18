@@ -8,6 +8,7 @@ templates
 completions/
 .oh-my-zsh/
 .config/karabiner
+.config/zed
 Library/
 .zprofile
 .zshrc
@@ -17,6 +18,7 @@ Library/
 
 {{- if ne .chezmoi.os "windows" }}
 *.ps1
+AppData/
 {{- end }}
 
 {{- if eq .chezmoi.os "windows" }}
