@@ -222,10 +222,10 @@ pub struct DangerousPathCheck {
 
 /// Expand ~ to home directory in a path.
 fn expand_home(path: &str) -> String {
-    if path.starts_with("~/") {
-        if let Some(home) = std::env::var_os("HOME") {
-            return format!("{}{}", home.to_string_lossy(), &path[1..]);
-        }
+    if path.starts_with("~/")
+        && let Some(home) = std::env::var_os("HOME")
+    {
+        return format!("{}{}", home.to_string_lossy(), &path[1..]);
     }
     path.to_string()
 }
@@ -268,12 +268,15 @@ fn is_dangerous_path(path: &str, dangerous_paths: &[&str]) -> Option<String> {
 
                 // Check if wildcard is directly under the dangerous directory
                 // e.g., "~/*" matches, but "~/Documents/*" does not
-                if let Some(rest) = expanded_path.strip_prefix(expanded_dangerous.trim_end_matches('/')) {
+                if let Some(rest) =
+                    expanded_path.strip_prefix(expanded_dangerous.trim_end_matches('/'))
+                {
                     // rest should be like "/*" or "/.*" (wildcard directly under)
-                    if rest.starts_with('/') {
-                        let after_slash = &rest[1..];
+                    if let Some(after_slash) = rest.strip_prefix('/') {
                         // Only match if it's a direct wildcard (no subdirectory)
-                        if !after_slash.contains('/') && (after_slash.contains('*') || after_slash.contains('?')) {
+                        if !after_slash.contains('/')
+                            && (after_slash.contains('*') || after_slash.contains('?'))
+                        {
                             return Some(dangerous.to_string());
                         }
                     }
@@ -299,16 +302,17 @@ fn is_dangerous_path(path: &str, dangerous_paths: &[&str]) -> Option<String> {
 ///
 /// Returns `Some(DangerousPathCheck)` if a dangerous operation is detected.
 #[must_use]
-pub fn check_dangerous_path_command(cmd: &str, dangerous_paths: &[&str]) -> Option<DangerousPathCheck> {
+pub fn check_dangerous_path_command(
+    cmd: &str,
+    dangerous_paths: &[&str],
+) -> Option<DangerousPathCheck> {
     // Patterns to match rm, trash, mv commands and extract their arguments
     // We look for these commands and then check their path arguments
 
     let cmd_trimmed = cmd.trim();
 
     // Split by common command separators to handle chained commands
-    let segments: Vec<&str> = cmd_trimmed
-        .split(|c| c == ';' || c == '&' || c == '|')
-        .collect();
+    let segments: Vec<&str> = cmd_trimmed.split([';', '&', '|']).collect();
 
     for segment in segments {
         let segment = segment.trim();
@@ -317,10 +321,7 @@ pub fn check_dangerous_path_command(cmd: &str, dangerous_paths: &[&str]) -> Opti
         }
 
         // Remove leading sudo if present
-        let segment = segment
-            .strip_prefix("sudo ")
-            .unwrap_or(segment)
-            .trim();
+        let segment = segment.strip_prefix("sudo ").unwrap_or(segment).trim();
 
         // Check for rm, trash, or mv commands
         let (cmd_type, args) = if let Some(rest) = segment.strip_prefix("rm ") {
