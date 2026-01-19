@@ -207,5 +207,150 @@ pub fn is_rust_file(file_path: &str) -> bool {
         .is_some_and(|ext| ext.eq_ignore_ascii_case("rs"))
 }
 
+// ============================================================================
+// Dangerous path detection for rm/trash/mv commands
+// ============================================================================
+
+/// Result of checking for dangerous path operations.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DangerousPathCheck {
+    /// The dangerous path that was matched.
+    pub matched_path: String,
+    /// The command type (rm, trash, mv).
+    pub command_type: String,
+}
+
+/// Expand ~ to home directory in a path.
+fn expand_home(path: &str) -> String {
+    if path.starts_with("~/") {
+        if let Some(home) = std::env::var_os("HOME") {
+            return format!("{}{}", home.to_string_lossy(), &path[1..]);
+        }
+    }
+    path.to_string()
+}
+
+/// Normalize a path for comparison (expand ~, resolve . and .., but don't require existence).
+fn normalize_path(path: &str) -> String {
+    let expanded = expand_home(path);
+    // Use canonicalize if the path exists, otherwise just use the expanded path
+    std::fs::canonicalize(&expanded)
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or(expanded)
+}
+
+/// Check if a path matches a dangerous path pattern.
+///
+/// - If dangerous path ends with `/` (e.g., `~/`), only match exact directory or wildcards
+/// - Otherwise, match the path exactly or as a prefix
+fn is_dangerous_path(path: &str, dangerous_paths: &[&str]) -> Option<String> {
+    // Check for wildcard patterns first (these are always dangerous)
+    let has_wildcard = path.contains('*') || path.contains('?');
+
+    for &dangerous in dangerous_paths {
+        if dangerous.ends_with('/') {
+            // Directory pattern (e.g., "~/")
+            // Only match:
+            // 1. Exact directory (e.g., "~/" or "~/.")
+            // 2. Wildcard patterns (e.g., "~/*", "~/.*")
+            let dangerous_base = dangerous.trim_end_matches('/');
+            let path_trimmed = path.trim_end_matches('/');
+
+            // Exact match (e.g., "~" or "~/")
+            if path_trimmed == dangerous_base || path == dangerous {
+                return Some(dangerous.to_string());
+            }
+
+            // Wildcard in the dangerous directory (e.g., "~/*", "~/.*")
+            if has_wildcard {
+                let expanded_dangerous = expand_home(dangerous);
+                let expanded_path = expand_home(path);
+
+                // Check if wildcard is directly under the dangerous directory
+                // e.g., "~/*" matches, but "~/Documents/*" does not
+                if let Some(rest) = expanded_path.strip_prefix(expanded_dangerous.trim_end_matches('/')) {
+                    // rest should be like "/*" or "/.*" (wildcard directly under)
+                    if rest.starts_with('/') {
+                        let after_slash = &rest[1..];
+                        // Only match if it's a direct wildcard (no subdirectory)
+                        if !after_slash.contains('/') && (after_slash.contains('*') || after_slash.contains('?')) {
+                            return Some(dangerous.to_string());
+                        }
+                    }
+                }
+            }
+        } else {
+            // Exact path pattern (e.g., "/etc/passwd")
+            let normalized = normalize_path(path);
+            let dangerous_normalized = normalize_path(dangerous);
+
+            if normalized == dangerous_normalized
+                || normalized.starts_with(&format!("{dangerous_normalized}/"))
+            {
+                return Some(dangerous.to_string());
+            }
+        }
+    }
+
+    None
+}
+
+/// Check if a bash command targets dangerous paths with rm/trash/mv.
+///
+/// Returns `Some(DangerousPathCheck)` if a dangerous operation is detected.
+#[must_use]
+pub fn check_dangerous_path_command(cmd: &str, dangerous_paths: &[&str]) -> Option<DangerousPathCheck> {
+    // Patterns to match rm, trash, mv commands and extract their arguments
+    // We look for these commands and then check their path arguments
+
+    let cmd_trimmed = cmd.trim();
+
+    // Split by common command separators to handle chained commands
+    let segments: Vec<&str> = cmd_trimmed
+        .split(|c| c == ';' || c == '&' || c == '|')
+        .collect();
+
+    for segment in segments {
+        let segment = segment.trim();
+        if segment.is_empty() {
+            continue;
+        }
+
+        // Remove leading sudo if present
+        let segment = segment
+            .strip_prefix("sudo ")
+            .unwrap_or(segment)
+            .trim();
+
+        // Check for rm, trash, or mv commands
+        let (cmd_type, args) = if let Some(rest) = segment.strip_prefix("rm ") {
+            ("rm", rest)
+        } else if let Some(rest) = segment.strip_prefix("trash ") {
+            ("trash", rest)
+        } else if let Some(rest) = segment.strip_prefix("mv ") {
+            ("mv", rest)
+        } else {
+            continue;
+        };
+
+        // Parse arguments, skipping flags (starting with -)
+        for arg in args.split_whitespace() {
+            if arg.starts_with('-') {
+                continue;
+            }
+
+            // Check if this path is dangerous
+            if let Some(matched) = is_dangerous_path(arg, dangerous_paths) {
+                return Some(DangerousPathCheck {
+                    matched_path: matched,
+                    command_type: cmd_type.to_string(),
+                });
+            }
+        }
+    }
+
+    None
+}
+
 #[cfg(test)]
 mod tests;

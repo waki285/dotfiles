@@ -1,5 +1,6 @@
 {
   "env": {
+    "API_TIMEOUT_MS": "600000",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
     "ANTHROPIC_MODEL": "ag/claude-opus-4-5-thinking",
@@ -27,6 +28,7 @@
       "Bash(cargo search:*)",
       "Bash(cargo test:*)",
       "Bash(cargo tree:*)",
+      "Bash(cargo update:*)",
       "Bash(cat:*)",
       "Bash(cd:*)",
       "Bash(cut:*)",
@@ -39,6 +41,10 @@
       "Bash(git status:*)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
+      "Bash(npm info:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm install:*)",
       "Bash(pwd:*)",
       "Bash(sort:*)",
       "Bash(tree:*)",
@@ -53,9 +59,10 @@
     ],
     "deny": [
       "Read(./.env)",
-      "Read(./.env.*)",
+      "Read(./.env.local)",
       "Read(./secrets/**)",
-      "Read(//Users/**/.ssh/**)"
+      "Read(//Users/**/.ssh/**)",
+      "Bash(sudo:*)",
     ],
     "additionalDirectories": [
       "//tmp"

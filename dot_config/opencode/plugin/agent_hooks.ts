@@ -8,17 +8,24 @@ import os from "os"
 // Simplified API types
 type RustAllowCheck = "Ok" | "HasAllow" | "HasExpect" | "HasBoth"
 
+type DangerousPathResult = {
+  matchedPath: string
+  commandType: string
+} | null
+
 type AgentHooksAddon = {
   isRmCommand: (cmd: string) => boolean
   checkDestructiveFind: (cmd: string) => string | null
   isRustFile: (filePath: string) => boolean
   checkRustAllowAttributes: (content: string) => RustAllowCheck
+  checkDangerousPathCommand: (cmd: string, dangerousPaths: string[]) => DangerousPathResult
 }
 
 // Configuration from agent_hooks.json
 type AgentHooksConfig = {
   allowExpect?: boolean
   additionalContext?: string
+  dangerousPaths?: string[]
 }
 
 const require = createRequire(import.meta.url)
@@ -83,18 +90,35 @@ const AgentHooksPlugin: Plugin = async ({ client }) => {
   const config = loadConfig()
   const allowExpect = config.allowExpect ?? false
   const additionalContext = config.additionalContext ?? null
+  const dangerousPaths = config.dangerousPaths ?? []
 
   return {
     "tool.execute.before": async (input, output) => {
       if (!addon) return
 
-      // Check bash commands for rm
+      // Check bash commands for rm and dangerous paths
       if (input.tool === "bash") {
         const command = typeof output.args.command === "string" ? output.args.command : ""
         if (!command) return
 
         if (addon.isRmCommand(command)) {
           throw new Error("rm is forbidden. Use trash command to delete files. Example: trash <path...>")
+        }
+
+        // Check for dangerous path operations
+        if (dangerousPaths.length > 0) {
+          const dangerousCheck = addon.checkDangerousPathCommand(command, dangerousPaths)
+          if (dangerousCheck) {
+            await client.app.log({
+              service: "agent-hooks",
+              level: "warn",
+              message: `Dangerous path operation detected: ${dangerousCheck.commandType} command targeting dangerous path '${dangerousCheck.matchedPath}'`,
+            })
+            throw new Error(
+              `Dangerous path operation: ${dangerousCheck.commandType} command targets '${dangerousCheck.matchedPath}'. ` +
+                "This operation is not permitted on protected paths."
+            )
+          }
         }
 
         const destructiveDescription = addon.checkDestructiveFind(command)

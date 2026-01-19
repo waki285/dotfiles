@@ -1,6 +1,6 @@
 use agent_hooks::{
-    RustAllowCheckResult, check_destructive_find, check_rust_allow_attributes, is_rm_command,
-    is_rust_file,
+    RustAllowCheckResult, check_dangerous_path_command, check_destructive_find,
+    check_rust_allow_attributes, is_rm_command, is_rust_file,
 };
 use seahorse::{App, Command, Context, Flag, FlagType};
 use serde::{Deserialize, Serialize};
@@ -127,8 +127,9 @@ fn output_hook_result(output: &HookOutput) {
 fn permission_request_action(c: &Context) {
     let block_rm = c.bool_flag("block-rm");
     let confirm_destructive_find = c.bool_flag("confirm-destructive-find");
+    let dangerous_paths = c.string_flag("dangerous-paths").ok();
 
-    if !block_rm && !confirm_destructive_find {
+    if !block_rm && !confirm_destructive_find && dangerous_paths.is_none() {
         return;
     }
 
@@ -165,6 +166,26 @@ fn permission_request_action(c: &Context) {
             },
         });
         return;
+    }
+
+    // Check for dangerous path operations (rm/trash/mv on dangerous paths)
+    if let Some(ref paths_str) = dangerous_paths {
+        let paths: Vec<&str> = paths_str.split(',').map(str::trim).collect();
+        if let Some(check) = check_dangerous_path_command(cmd, &paths) {
+            output_hook_result(&HookOutput {
+                hook_specific_output: HookSpecificOutput {
+                    hook_event_name: HookEventName::PermissionRequest,
+                    decision: None,
+                    permission_decision: Some(PermissionDecision::Ask),
+                    permission_decision_reason: Some(format!(
+                        "Dangerous path operation detected: {} command targeting protected path '{}'. \
+                         Please confirm this operation.",
+                        check.command_type, check.matched_path
+                    )),
+                },
+            });
+            return;
+        }
     }
 
     // Check for destructive find command
@@ -315,6 +336,10 @@ fn main() {
                 .flag(
                     Flag::new("confirm-destructive-find", FlagType::Bool)
                         .description("Ask for confirmation on destructive find commands"),
+                )
+                .flag(
+                    Flag::new("dangerous-paths", FlagType::String)
+                        .description("Comma-separated list of dangerous paths to protect from rm/trash/mv"),
                 )
                 .action(permission_request_action),
         )

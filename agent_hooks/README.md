@@ -17,6 +17,26 @@ agent_hooks/
 
 - **block-rm**: Blocks `rm` commands and suggests using `trash` instead
 - **confirm-destructive-find**: Detects destructive `find` commands (e.g., `find -delete`, `find -exec rm`)
+- **dangerous-paths**: Detects rm/trash/mv commands targeting specified dangerous paths
+
+#### Dangerous Paths Pattern Matching
+
+The `dangerous-paths` option supports two pattern types:
+
+| Pattern | Behavior | Example |
+|---------|----------|---------|
+| Trailing slash (e.g., `~/`) | Only blocks exact directory or direct wildcards | `rm ~/`, `rm ~/*`, `rm ~/.*` |
+| No trailing slash (e.g., `/etc/nginx`) | Blocks the path and all children | `rm /etc/nginx`, `rm /etc/nginx/conf.d/default.conf` |
+
+**Examples with `~/` pattern:**
+
+| Command | Blocked | Reason |
+|---------|---------|--------|
+| `rm ~/` | Yes | Exact home directory |
+| `rm ~/*` | Yes | Wildcard directly under home |
+| `rm ~/.*` | Yes | Hidden files wildcard directly under home |
+| `rm ~/Documents/file.txt` | No | Specific file in subdirectory |
+| `rm ~/Downloads/*` | No | Wildcard in subdirectory |
 
 ### Rust Code Checks (Edit/Write)
 
@@ -94,6 +114,7 @@ Add to `~/.claude/settings.json`:
 |------|-------------|
 | `--block-rm` | Block `rm` commands and suggest using `trash` instead |
 | `--confirm-destructive-find` | Ask for confirmation on destructive `find` commands |
+| `--dangerous-paths <paths>` | Comma-separated list of dangerous paths to protect. Use trailing slash (e.g., `~/`) to only block exact directory or wildcards. |
 
 ##### `pre-tool-use` command
 
@@ -124,7 +145,8 @@ Create `~/.config/opencode/plugin/agent_hooks.json`:
 ```json
 {
   "allowExpect": true,
-  "additionalContext": "See project guidelines"
+  "additionalContext": "See project guidelines",
+  "dangerousPaths": ["~/"]
 }
 ```
 
@@ -134,6 +156,7 @@ Create `~/.config/opencode/plugin/agent_hooks.json`:
 |--------|------|---------|-------------|
 | `allowExpect` | boolean | `false` | Allow `#[expect(...)]` while denying `#[allow(...)]` |
 | `additionalContext` | string | - | Custom message to append to denial errors |
+| `dangerousPaths` | string[] | `[]` | List of dangerous paths to protect from rm/trash/mv. Use trailing slash (e.g., `~/`) to only block exact directory or wildcards; without trailing slash blocks all children. |
 
 #### Plugin Setup
 
@@ -143,6 +166,7 @@ Create `~/.config/opencode/plugin/agent_hooks.json`:
 
 The plugin automatically:
 - Blocks `rm` commands
+- Blocks rm/trash/mv commands targeting dangerous paths (if configured)
 - Warns on destructive `find` commands
 - Denies `#[allow(...)]` / `#[expect(...)]` in Rust files based on configuration
 
@@ -188,6 +212,12 @@ pub fn is_rust_file(file_path: &str) -> bool
 
 // Check for #[allow(...)] / #[expect(...)] attributes
 pub fn check_rust_allow_attributes(content: &str) -> RustAllowCheckResult
+
+// Check if a bash command targets dangerous paths with rm/trash/mv
+// Pattern behavior:
+// - Trailing slash (e.g., "~/"): only matches exact directory or direct wildcards
+// - No trailing slash (e.g., "/etc/nginx"): matches the path and all children
+pub fn check_dangerous_path_command(cmd: &str, dangerous_paths: &[&str]) -> Option<DangerousPathCheck>
 ```
 
 ## Building from Source

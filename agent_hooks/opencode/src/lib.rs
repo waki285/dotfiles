@@ -5,8 +5,8 @@
 #![expect(clippy::needless_pass_by_value)]
 
 use agent_hooks::{
-    RustAllowCheckResult, check_destructive_find, check_rust_allow_attributes, is_rm_command,
-    is_rust_file,
+    RustAllowCheckResult, check_dangerous_path_command, check_destructive_find,
+    check_rust_allow_attributes, is_rm_command, is_rust_file,
 };
 use napi_derive::napi;
 
@@ -59,4 +59,28 @@ pub fn check_rust_allow_attributes_js(content: String) -> RustAllowCheck {
         RustAllowCheckResult::HasExpect => RustAllowCheck::HasExpect,
         RustAllowCheckResult::HasBoth => RustAllowCheck::HasBoth,
     }
+}
+
+/// Result of checking for dangerous path operations.
+#[napi(object)]
+pub struct DangerousPathResult {
+    /// The dangerous path that was matched.
+    pub matched_path: String,
+    /// The command type (rm, trash, mv).
+    pub command_type: String,
+}
+
+/// Check if a bash command targets dangerous paths with rm/trash/mv.
+///
+/// Returns the matched dangerous path and command type if detected, or `null` if safe.
+#[napi(js_name = "checkDangerousPathCommand")]
+pub fn check_dangerous_path_command_js(
+    cmd: String,
+    dangerous_paths: Vec<String>,
+) -> Option<DangerousPathResult> {
+    let paths: Vec<&str> = dangerous_paths.iter().map(String::as_str).collect();
+    check_dangerous_path_command(&cmd, &paths).map(|check| DangerousPathResult {
+        matched_path: check.matched_path,
+        command_type: check.command_type,
+    })
 }

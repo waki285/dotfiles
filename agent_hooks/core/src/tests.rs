@@ -192,3 +192,113 @@ fn test_is_rust_file_not_rs() {
     assert!(!is_rust_file("Cargo.toml"));
     assert!(!is_rust_file("script.py"));
 }
+
+// -------------------------------------------------------------------------
+// check_dangerous_path_command tests
+// -------------------------------------------------------------------------
+
+#[test]
+fn test_dangerous_path_rm_home_exact() {
+    // "~/" pattern should match exact home directory
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("rm -rf ~/", dangerous);
+    assert!(result.is_some());
+    let check = result.unwrap();
+    assert_eq!(check.command_type, "rm");
+    assert_eq!(check.matched_path, "~/");
+}
+
+#[test]
+fn test_dangerous_path_rm_home_wildcard() {
+    // "~/" pattern should match wildcards directly under home
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("rm -rf ~/*", dangerous);
+    assert!(result.is_some());
+    assert_eq!(result.unwrap().matched_path, "~/");
+}
+
+#[test]
+fn test_dangerous_path_rm_home_hidden_wildcard() {
+    // "~/" pattern should match hidden file wildcards
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("rm -rf ~/.*", dangerous);
+    assert!(result.is_some());
+}
+
+#[test]
+fn test_dangerous_path_rm_home_subdir_allowed() {
+    // "~/" pattern should NOT match specific files/directories under home
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("rm -rf ~/Documents", dangerous);
+    assert!(result.is_none());
+}
+
+#[test]
+fn test_dangerous_path_rm_home_file_allowed() {
+    // "~/" pattern should NOT match specific files under home
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("rm ~/file.txt", dangerous);
+    assert!(result.is_none());
+}
+
+#[test]
+fn test_dangerous_path_rm_subdir_wildcard_allowed() {
+    // "~/" pattern should NOT match wildcards in subdirectories
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("rm -rf ~/Downloads/*", dangerous);
+    assert!(result.is_none());
+}
+
+#[test]
+fn test_dangerous_path_trash_home_wildcard() {
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("trash ~/*", dangerous);
+    assert!(result.is_some());
+    let check = result.unwrap();
+    assert_eq!(check.command_type, "trash");
+}
+
+#[test]
+fn test_dangerous_path_mv_home() {
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("mv ~/ /tmp/backup", dangerous);
+    assert!(result.is_some());
+    let check = result.unwrap();
+    assert_eq!(check.command_type, "mv");
+}
+
+#[test]
+fn test_dangerous_path_exact_path_match() {
+    // Exact path (without trailing /) should match that path and children
+    let dangerous = &["/etc/nginx"];
+    let result = check_dangerous_path_command("rm -rf /etc/nginx", dangerous);
+    assert!(result.is_some());
+}
+
+#[test]
+fn test_dangerous_path_exact_path_child_match() {
+    let dangerous = &["/etc/nginx"];
+    let result = check_dangerous_path_command("rm /etc/nginx/nginx.conf", dangerous);
+    assert!(result.is_some());
+}
+
+#[test]
+fn test_dangerous_path_safe_location() {
+    let dangerous = &["~/", "/etc"];
+    let result = check_dangerous_path_command("rm -rf /tmp/test", dangerous);
+    assert!(result.is_none());
+}
+
+#[test]
+fn test_dangerous_path_with_sudo() {
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("sudo rm -rf ~/*", dangerous);
+    assert!(result.is_some());
+}
+
+#[test]
+fn test_dangerous_path_chained_commands() {
+    let dangerous = &["~/"];
+    let result = check_dangerous_path_command("echo test; rm ~/*", dangerous);
+    assert!(result.is_some());
+}

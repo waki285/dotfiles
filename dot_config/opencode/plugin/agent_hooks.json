@@ -1,3 +1,4 @@
 {
-  "allowExpect": true
+  "allowExpect": true,
+  "dangerousPaths": ["~/"]
 }
