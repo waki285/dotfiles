@@ -119,14 +119,12 @@ echo '{"tool_name":"Edit","tool_input":{"file_path":"src/main.rs","new_string":"
 
 #### Configuration
 
-Add to your `opencode.json`:
+Create `~/.config/opencode/plugin/agent_hooks.json`:
 
 ```json
 {
-  "agentHooks": {
-    "allowExpect": true,
-    "additionalContext": "See project guidelines"
-  }
+  "allowExpect": true,
+  "additionalContext": "See project guidelines"
 }
 ```
 
@@ -141,7 +139,7 @@ Add to your `opencode.json`:
 
 1. Place `agent_hooks.node` in `~/.config/opencode/plugin/`
 2. Place `agent_hooks.ts` in `~/.config/opencode/plugin/`
-3. Configure options in `opencode.json` (see above)
+3. Create `agent_hooks.json` in `~/.config/opencode/plugin/` (see above)
 
 The plugin automatically:
 - Blocks `rm` commands

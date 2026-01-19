@@ -3,6 +3,7 @@ import { createRequire } from "module"
 import { fileURLToPath } from "url"
 import fs from "fs"
 import path from "path"
+import os from "os"
 
 // Simplified API types
 type RustAllowCheck = "Ok" | "HasAllow" | "HasExpect" | "HasBoth"
@@ -14,7 +15,7 @@ type AgentHooksAddon = {
   checkRustAllowAttributes: (content: string) => RustAllowCheck
 }
 
-// Configuration from opencode.json
+// Configuration from agent_hooks.json
 type AgentHooksConfig = {
   allowExpect?: boolean
   additionalContext?: string
@@ -33,21 +34,22 @@ const resolveAddonPath = (): string | null => {
   return candidates.find((candidate) => candidate && fs.existsSync(candidate)) ?? null
 }
 
-const loadConfig = (configDir: string): AgentHooksConfig => {
-  const configPath = path.join(configDir, "opencode.json")
+const loadConfig = (): AgentHooksConfig => {
+  // Look for agent_hooks.json in the plugin directory
+  const pluginDir = path.dirname(fileURLToPath(import.meta.url))
+  const configPath = path.join(pluginDir, "agent_hooks.json")
+
   if (!fs.existsSync(configPath)) return {}
 
   try {
     const content = fs.readFileSync(configPath, "utf-8")
-    const config = JSON.parse(content) as Record<string, unknown>
-    const agentHooks = config.agentHooks as AgentHooksConfig | undefined
-    return agentHooks ?? {}
+    return JSON.parse(content) as AgentHooksConfig
   } catch {
     return {}
   }
 }
 
-const AgentHooksPlugin: Plugin = async ({ client, directory }) => {
+const AgentHooksPlugin: Plugin = async ({ client }) => {
   const addonPath = resolveAddonPath()
   if (!addonPath) {
     await client.app.log({
@@ -77,8 +79,8 @@ const AgentHooksPlugin: Plugin = async ({ client, directory }) => {
     return {}
   }
 
-  // Load config from opencode.json (agentHooks key)
-  const config = loadConfig(directory)
+  // Load config from agent_hooks.json in plugin directory
+  const config = loadConfig()
   const allowExpect = config.allowExpect ?? false
   const additionalContext = config.additionalContext ?? null
 
