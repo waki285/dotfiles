@@ -25,12 +25,6 @@
   - ただし、先回りして抽象化しないこと。
 - (rustdoc を除く) コメントは「なぜ」に集中。「何を」はコードで示す。
 
-## Agent-specified
-
-あなたが **Claude Code** である場合:
-
-- Read, Edit, Write, Update ツールを使う際は、冗長な承認プロンプトを回避するため、「.. (1つ上の階層)」を使わずに相対パスで表せる場合、なるべく相対パスを用いること。
-
 ## Language-specified
 
 - actions/checkout は v6 を使用しなさい。
