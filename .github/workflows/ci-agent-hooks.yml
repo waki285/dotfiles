@@ -1,5 +1,8 @@
 name: CI agent_hooks
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
