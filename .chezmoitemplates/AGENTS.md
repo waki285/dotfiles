@@ -28,3 +28,4 @@
 ## Language-specified
 
 - actions/checkout は v6 を使用しなさい。
+- Rust において新規に once_cell クレートを採用しないでください。std::sync::LazyLock などを使ってください。
