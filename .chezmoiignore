@@ -9,6 +9,8 @@ justfile
 LICENSE
 renovate.json
 .DS_Store
+AGENTS.md
+CLAUDE.md
 
 {{- if eq .chezmoi.os "windows" }}
 completions/
