@@ -59,6 +59,15 @@ chezmoi cd
 chezmoi add ~/.config/xxx
 ```
 
+## Permissions Management
+
+Tool permissions are centralized in `.chezmoidata/permissions.yaml` and
+generated into tool-specific configs.
+
+- Generator: `tools/permissions-gen`
+- Run: `just perms`
+- Details: `docs/permissions.md`
+
 ## Directory Structure
 
 ```
@@ -128,5 +137,6 @@ See [agent_hooks/README.md](agent_hooks/README.md) for details.
 
 ## License
 
+- **Repository (excluding agent_hooks/ and third-party files)**: All rights reserved (see [LICENSE](LICENSE))
 - **agent_hooks/**: Apache License 2.0 (see [agent_hooks/LICENSE](agent_hooks/LICENSE))
-- **Other files**: Personal configuration files (no license)
+- **tools/**: Apache License 2.0 (see [tools/LICENSE](tools/LICENSE))

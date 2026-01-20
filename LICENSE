@@ -1,0 +1,12 @@
+Copyright (c) 2026 suzuneu
+
+All rights reserved.
+
+This repository contains personal configuration files. No license is granted
+to use, copy, modify, or distribute the repository contents, except where
+otherwise noted.
+
+Exceptions:
+- agent_hooks/ is licensed under the Apache License 2.0; see agent_hooks/LICENSE.
+- tools/ is licensed under the Apache License 2.0; see tools/LICENSE.
+- Third-party files remain under their respective licenses.

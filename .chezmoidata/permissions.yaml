@@ -60,3 +60,20 @@ claude:
   deny: []
   additionalDirectories:
     - "//tmp"
+
+opencode:
+  bash:
+    default: ask
+    allow: []
+    ask:
+      - "find * -delete"
+      - "find * -exec * rm *"
+      - "find * -exec * rmdir *"
+      - "find * -execdir * rm *"
+      - "find * -execdir * rmdir *"
+      - "find * -ok * rm *"
+      - "find * -ok * rmdir *"
+      - "find * -exec * mv *"
+      - "xargs rm *"
+      - "xargs rmdir *"
+    deny: []
