@@ -73,7 +73,7 @@ generated into tool-specific configs.
 ```
 .
 ├── .chezmoiscripts/      # Post-apply scripts (run_after_*.sh, run_after_*.ps1)
-├── agent_hooks/          # Claude Code hook system (Apache 2.0 licensed)
+├── agent_hooks/          # Coding Agent hook system (Apache 2.0 licensed)
 ├── completions/          # Shell completion files
 ├── dot_claude/           # Claude Code configuration
 ├── dot_codex/            # Codex configuration
