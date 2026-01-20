@@ -152,13 +152,139 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["chmod"],
+  decision = "prompt",
+  match = ["chmod"],
+)
+
+prefix_rule(
+  pattern = ["chown"],
+  decision = "prompt",
+  match = ["chown"],
+)
+
+prefix_rule(
+  pattern = ["kill"],
+  decision = "prompt",
+  match = ["kill"],
+)
+
+prefix_rule(
+  pattern = ["killall"],
+  decision = "prompt",
+  match = ["killall"],
+)
+
+prefix_rule(
+  pattern = ["pkill"],
+  decision = "prompt",
+  match = ["pkill"],
+)
+
+prefix_rule(
   pattern = ["trash"],
   decision = "prompt",
   match = ["trash"],
 )
 
 prefix_rule(
+  pattern = ["unlink"],
+  decision = "prompt",
+  match = ["unlink"],
+)
+
+prefix_rule(
+  pattern = ["dd"],
+  decision = "forbidden",
+  match = ["dd"],
+)
+
+prefix_rule(
+  pattern = ["fdisk"],
+  decision = "forbidden",
+  match = ["fdisk"],
+)
+
+prefix_rule(
+  pattern = ["git", [
+    "checkout",
+    "clean",
+    "filter-branch",
+    "push",
+    "reset",
+  ]],
+  decision = "forbidden",
+  match = ["git checkout"],
+)
+
+prefix_rule(
+  pattern = ["mount"],
+  decision = "forbidden",
+  match = ["mount"],
+)
+
+prefix_rule(
+  pattern = ["parted"],
+  decision = "forbidden",
+  match = ["parted"],
+)
+
+prefix_rule(
+  pattern = ["passwd"],
+  decision = "forbidden",
+  match = ["passwd"],
+)
+
+prefix_rule(
+  pattern = ["reboot"],
+  decision = "forbidden",
+  match = ["reboot"],
+)
+
+prefix_rule(
+  pattern = ["shred"],
+  decision = "forbidden",
+  match = ["shred"],
+)
+
+prefix_rule(
+  pattern = ["shutdown"],
+  decision = "forbidden",
+  match = ["shutdown"],
+)
+
+prefix_rule(
+  pattern = ["srm"],
+  decision = "forbidden",
+  match = ["srm"],
+)
+
+prefix_rule(
   pattern = ["sudo"],
   decision = "forbidden",
   match = ["sudo"],
+)
+
+prefix_rule(
+  pattern = ["truncate"],
+  decision = "forbidden",
+  match = ["truncate"],
+)
+
+prefix_rule(
+  pattern = ["umount"],
+  decision = "forbidden",
+  match = ["umount"],
+)
+
+prefix_rule(
+  pattern = ["wipe"],
+  decision = "forbidden",
+  match = ["wipe"],
+)
+
+prefix_rule(
+  pattern = ["wipefs"],
+  decision = "forbidden",
+  match = ["wipefs"],
 )
