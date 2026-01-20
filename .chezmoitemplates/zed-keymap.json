@@ -5,7 +5,12 @@
       "shift-enter": [
         "terminal::SendText",
         "\u001b\r"
+{{- if eq .chezmoi.os "windows" }}
+      ],
+      "ctrl-w": ["pane::CloseActiveItem", { "close_pinned": false }]
+{{- else }}
       ]
+{{- end }}
     }
   },
   {
