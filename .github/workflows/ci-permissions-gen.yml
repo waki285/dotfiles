@@ -1,5 +1,8 @@
 name: CI permissions-gen
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
