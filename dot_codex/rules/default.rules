@@ -211,6 +211,7 @@ prefix_rule(
     "checkout",
     "clean",
     "filter-branch",
+    "filter-repo",
     "push",
     "reset",
   ]],

@@ -120,6 +120,8 @@
       "git clean *": "deny",
       "git filter-branch": "deny",
       "git filter-branch *": "deny",
+      "git filter-repo": "deny",
+      "git filter-repo *": "deny",
       "git push": "deny",
       "git push *": "deny",
       "git reset": "deny",

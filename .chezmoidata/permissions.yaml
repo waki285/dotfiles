@@ -52,6 +52,7 @@ bash:
     - git checkout
     - git clean
     - git filter-branch
+    - git filter-repo
     - git push
     - git reset
     - mount
