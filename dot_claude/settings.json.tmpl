@@ -10,6 +10,7 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "ag/claude-sonnet-4-5-thinking"
   },
   "permissions": {
+    {{/* PERMISSIONS:START */}}
     "allow": [
       "Read(~/.claude/**)",
       "Read(//tmp/**)",
@@ -39,6 +40,7 @@
       "Bash(gh release view:*)",
       "Bash(git diff:*)",
       "Bash(git status:*)",
+      "Bash(gofmt:*)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(npm info:*)",
@@ -55,19 +57,20 @@
       "mcp__context7__query-docs",
       "mcp__mcp-server-github__get_file_contents",
       "mcp__mcp-server-github__search_code",
+      "Skill",
       "WebFetch",
       "WebSearch"
     ],
+    "ask": [
+      "Bash(trash:*)"
+    ],
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.local)",
-      "Read(./secrets/**)",
-      "Read(//Users/**/.ssh/**)",
       "Bash(sudo:*)"
     ],
     "additionalDirectories": [
       "//tmp"
     ]
+    {{/* PERMISSIONS:END */}}
   },
   "defaultMode": "default",
   "enabledPlugins": {

@@ -46,4 +46,3 @@ prefix_rule(
   decision = "allow",
   match = ["wc -l Cargo.toml"],
 )
-

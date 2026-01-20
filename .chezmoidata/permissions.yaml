@@ -1,0 +1,62 @@
+bash:
+  allow:
+    - basename
+    - cargo add
+    - cargo build
+    - cargo check
+    - cargo clean
+    - cargo clippy
+    - cargo info
+    - cargo fmt
+    - cargo metadata
+    - cargo remove
+    - cargo search
+    - cargo test
+    - cargo tree
+    - cargo update
+    - cat
+    - cd
+    - cut
+    - echo
+    - grep
+    - head
+    - gh release list
+    - gh release view
+    - git diff
+    - git status
+    - gofmt
+    - ls
+    - mkdir
+    - npm info
+    - pnpm add
+    - pnpm build
+    - pnpm install
+    - pnpm run build
+    - pwd
+    - sort
+    - tree
+    - uniq
+    - wc
+  ask:
+    - trash
+  deny:
+    - sudo
+
+claude:
+  allow:
+    - "Read(~/.claude/**)"
+    - "Read(//tmp/**)"
+    - "Edit(//tmp/**)"
+    - "Write(//tmp/**)"
+    - __BASH__
+    - mcp__context7__resolve-library-id
+    - mcp__context7__query-docs
+    - mcp__mcp-server-github__get_file_contents
+    - mcp__mcp-server-github__search_code
+    - Skill
+    - WebFetch
+    - WebSearch
+  ask: []
+  deny: []
+  additionalDirectories:
+    - "//tmp"

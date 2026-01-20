@@ -1,7 +1,9 @@
 README.md
 agent_hooks
+tools
 target
 .github
+justfile
 
 {{- if eq .chezmoi.os "windows" }}
 completions/
