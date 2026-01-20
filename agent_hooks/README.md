@@ -18,6 +18,26 @@ agent_hooks/
 - **block-rm**: Blocks `rm` commands and suggests using `trash` instead
 - **confirm-destructive-find**: Detects destructive `find` commands (e.g., `find -delete`, `find -exec rm`)
 - **dangerous-paths**: Detects rm/trash/mv commands targeting specified dangerous paths
+- **check-package-manager**: Detects package manager mismatches (e.g., using `npm` when `pnpm-lock.yaml` exists)
+
+#### Package Manager Mismatch Detection
+
+The `check-package-manager` option detects when a command uses a different package manager than the project's lock file indicates:
+
+| Lock File | Expected Package Manager |
+|-----------|--------------------------|
+| `package-lock.json` | npm |
+| `pnpm-lock.yaml` | pnpm |
+| `yarn.lock` | yarn |
+| `bun.lockb` / `bun.lock` | bun |
+
+**Behavior:**
+
+- **Single lock file**: Denies commands using a different package manager
+- **Multiple lock files**: Does not intervene (to avoid false positives in migration scenarios)
+- **No lock file**: Allows any package manager
+
+**Detected commands:** `install`, `add`, `remove`, `uninstall`, `ci`, `update`, `upgrade`, `link`, `rebuild`, `dedupe` (and short aliases like `i`, `rm`, `un`, `up`)
 
 #### Dangerous Paths Pattern Matching
 
@@ -123,6 +143,7 @@ Add to `~/.claude/settings.json`:
 | `--deny-rust-allow` | Deny `#[allow(...)]` attributes in Rust files |
 | `--expect` | With `--deny-rust-allow`: allow `#[expect(...)]` while denying `#[allow(...)]` |
 | `--additional-context <string>` | With `--deny-rust-allow`: append custom message to the denial reason |
+| `--check-package-manager` | Deny package manager commands that don't match the project's lock file |
 
 #### CLI Examples
 
@@ -157,6 +178,7 @@ Create `~/.config/opencode/plugin/agent_hooks.json`:
 | `allowExpect` | boolean | `false` | Allow `#[expect(...)]` while denying `#[allow(...)]` |
 | `additionalContext` | string | - | Custom message to append to denial errors |
 | `dangerousPaths` | string[] | `[]` | List of dangerous paths to protect from rm/trash/mv. Use trailing slash (e.g., `~/`) to only block exact directory or wildcards; without trailing slash blocks all children. |
+| `checkPackageManager` | boolean | `false` | Check for package manager mismatches (e.g., using npm when pnpm-lock.yaml exists) |
 
 #### Plugin Setup
 
@@ -218,6 +240,10 @@ pub fn check_rust_allow_attributes(content: &str) -> RustAllowCheckResult
 // - Trailing slash (e.g., "~/"): only matches exact directory or direct wildcards
 // - No trailing slash (e.g., "/etc/nginx"): matches the path and all children
 pub fn check_dangerous_path_command(cmd: &str, dangerous_paths: &[&str]) -> Option<DangerousPathCheck>
+
+// Check if a bash command uses a mismatched package manager
+// Searches for lock files starting from start_dir and going up to parent directories
+pub fn check_package_manager(cmd: &str, start_dir: &Path) -> PackageManagerCheckResult
 ```
 
 ## Building from Source

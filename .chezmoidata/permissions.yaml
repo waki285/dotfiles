@@ -38,9 +38,33 @@ bash:
     - uniq
     - wc
   ask:
+    - chmod
+    - chown
+    - kill
+    - killall
+    - pkill
     - trash
+    - unlink
   deny:
+    - dd
+    - fdisk
+    - git checkout
+    - git clean
+    - git filter-branch
+    - git push
+    - git reset
+    - mount
+    - parted
+    - passwd
+    - reboot
+    - shred
+    - shutdown
+    - srm
     - sudo
+    - truncate
+    - umount
+    - wipe
+    - wipefs
 
 claude:
   allow:
@@ -74,6 +98,4 @@ opencode:
       - "find * -ok * rm *"
       - "find * -ok * rmdir *"
       - "find * -exec * mv *"
-      - "xargs rm *"
-      - "xargs rmdir *"
     deny: []

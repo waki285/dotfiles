@@ -1,0 +1,48 @@
+name: CI permissions-gen
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.chezmoidata/permissions.yaml'
+      - 'tools/permissions-gen/**'
+      - 'dot_claude/settings.json.tmpl'
+      - 'dot_codex/rules/default.rules'
+      - 'dot_config/opencode/opencode.json'
+      - '.github/workflows/ci-permissions-gen.yml'
+  pull_request:
+    paths:
+      - '.chezmoidata/permissions.yaml'
+      - 'tools/permissions-gen/**'
+      - 'dot_claude/settings.json.tmpl'
+      - 'dot_codex/rules/default.rules'
+      - 'dot_config/opencode/opencode.json'
+      - '.github/workflows/ci-permissions-gen.yml'
+
+jobs:
+  check-generated:
+    name: Check generated files are up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/permissions-gen/go.mod
+          cache-dependency-path: tools/permissions-gen/go.sum
+
+      - name: Run permissions generator
+        working-directory: tools/permissions-gen
+        run: go run .
+
+      - name: Check for uncommitted changes
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::Generated files are out of date. Run 'just perms' and commit the changes."
+            git diff
+            exit 1
+          fi
+          echo "Generated files are up-to-date."

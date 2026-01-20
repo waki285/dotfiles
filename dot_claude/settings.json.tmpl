@@ -123,6 +123,19 @@
 {{- end }}
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+{{- if eq .chezmoi.os "windows" }}
+            "command": "$HOME\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --check-package-manager"
+{{- else }}
+            "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --check-package-manager"
+{{- end }}
+          }
+        ]
       }
     ],
     "PermissionRequest": [

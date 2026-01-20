@@ -13,12 +13,22 @@ type DangerousPathResult = {
   commandType: string
 } | null
 
+type PackageManagerCheck = "Ok" | "Matching" | "Mismatch" | "Ambiguous"
+
+type PackageManagerCheckResult = {
+  result: PackageManagerCheck
+  commandPm: string | null
+  expectedPm: string | null
+  detectedLockFiles: string[] | null
+}
+
 type AgentHooksAddon = {
   isRmCommand: (cmd: string) => boolean
   checkDestructiveFind: (cmd: string) => string | null
   isRustFile: (filePath: string) => boolean
   checkRustAllowAttributes: (content: string) => RustAllowCheck
   checkDangerousPathCommand: (cmd: string, dangerousPaths: string[]) => DangerousPathResult
+  checkPackageManager: (cmd: string, startDir: string) => PackageManagerCheckResult
 }
 
 // Configuration from agent_hooks.json
@@ -26,6 +36,7 @@ type AgentHooksConfig = {
   allowExpect?: boolean
   additionalContext?: string
   dangerousPaths?: string[]
+  checkPackageManager?: boolean
 }
 
 const require = createRequire(import.meta.url)
@@ -91,12 +102,13 @@ const AgentHooksPlugin: Plugin = async ({ client }) => {
   const allowExpect = config.allowExpect ?? false
   const additionalContext = config.additionalContext ?? null
   const dangerousPaths = config.dangerousPaths ?? []
+  const checkPackageManagerEnabled = config.checkPackageManager ?? false
 
   return {
     "tool.execute.before": async (input, output) => {
       if (!addon) return
 
-      // Check bash commands for rm and dangerous paths
+      // Check bash commands for rm, dangerous paths, and package manager
       if (input.tool === "bash") {
         const command = typeof output.args.command === "string" ? output.args.command : ""
         if (!command) return
@@ -119,6 +131,22 @@ const AgentHooksPlugin: Plugin = async ({ client }) => {
                 "This operation is not permitted on protected paths."
             )
           }
+        }
+
+        // Check for package manager mismatch
+        if (checkPackageManagerEnabled) {
+          const cwd = process.cwd()
+          const pmCheck = addon.checkPackageManager(command, cwd)
+
+          if (pmCheck.result === "Mismatch") {
+            throw new Error(
+              `Package manager mismatch: This project uses ${pmCheck.expectedPm} ` +
+                `(detected ${pmCheck.detectedLockFiles?.join(", ")}), ` +
+                `but you are trying to use ${pmCheck.commandPm}. ` +
+                `Please use ${pmCheck.expectedPm} instead.`
+            )
+          }
+          // Ambiguous (multiple lock files): don't intervene
         }
 
         const destructiveDescription = addon.checkDestructiveFind(command)

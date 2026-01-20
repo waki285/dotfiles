@@ -72,6 +72,25 @@ fn test_is_rm_command_allows_grep_rm() {
     assert!(!is_rm_command("rma -rm"));
 }
 
+#[test]
+fn test_is_rm_command_xargs_rm() {
+    assert!(is_rm_command("ls | xargs rm"));
+    assert!(is_rm_command("cat files.txt | xargs rm -f"));
+    assert!(is_rm_command("find . -name '*.tmp' | xargs rm"));
+}
+
+#[test]
+fn test_is_rm_command_xargs_rmdir() {
+    assert!(is_rm_command("ls | xargs rmdir"));
+    assert!(is_rm_command("cat dirs.txt | xargs rmdir"));
+}
+
+#[test]
+fn test_is_rm_command_xargs_with_sudo() {
+    assert!(is_rm_command("ls | xargs sudo rm"));
+    assert!(is_rm_command("find . | sudo xargs rm"));
+}
+
 // -------------------------------------------------------------------------
 // check_destructive_find tests (Unix only)
 // -------------------------------------------------------------------------
@@ -301,4 +320,243 @@ fn test_dangerous_path_chained_commands() {
     let dangerous = &["~/"];
     let result = check_dangerous_path_command("echo test; rm ~/*", dangerous);
     assert!(result.is_some());
+}
+
+// -------------------------------------------------------------------------
+// detect_package_manager_command tests
+// -------------------------------------------------------------------------
+
+#[test]
+fn test_detect_pm_npm_install() {
+    assert_eq!(
+        detect_package_manager_command("npm install"),
+        Some(PackageManager::Npm)
+    );
+    assert_eq!(
+        detect_package_manager_command("npm i"),
+        Some(PackageManager::Npm)
+    );
+    assert_eq!(
+        detect_package_manager_command("npm add lodash"),
+        Some(PackageManager::Npm)
+    );
+    assert_eq!(
+        detect_package_manager_command("npm ci"),
+        Some(PackageManager::Npm)
+    );
+}
+
+#[test]
+fn test_detect_pm_pnpm_install() {
+    assert_eq!(
+        detect_package_manager_command("pnpm install"),
+        Some(PackageManager::Pnpm)
+    );
+    assert_eq!(
+        detect_package_manager_command("pnpm add lodash"),
+        Some(PackageManager::Pnpm)
+    );
+    assert_eq!(
+        detect_package_manager_command("pnpm remove lodash"),
+        Some(PackageManager::Pnpm)
+    );
+}
+
+#[test]
+fn test_detect_pm_yarn_install() {
+    assert_eq!(
+        detect_package_manager_command("yarn install"),
+        Some(PackageManager::Yarn)
+    );
+    assert_eq!(
+        detect_package_manager_command("yarn add lodash"),
+        Some(PackageManager::Yarn)
+    );
+}
+
+#[test]
+fn test_detect_pm_bun_install() {
+    assert_eq!(
+        detect_package_manager_command("bun install"),
+        Some(PackageManager::Bun)
+    );
+    assert_eq!(
+        detect_package_manager_command("bun add lodash"),
+        Some(PackageManager::Bun)
+    );
+}
+
+#[test]
+fn test_detect_pm_no_match() {
+    assert_eq!(detect_package_manager_command("npm run build"), None);
+    assert_eq!(detect_package_manager_command("npm start"), None);
+    assert_eq!(detect_package_manager_command("pnpm run dev"), None);
+    assert_eq!(detect_package_manager_command("yarn build"), None);
+    assert_eq!(detect_package_manager_command("bun run script.ts"), None);
+    assert_eq!(detect_package_manager_command("ls -la"), None);
+}
+
+#[test]
+fn test_detect_pm_with_sudo() {
+    assert_eq!(
+        detect_package_manager_command("sudo npm install"),
+        Some(PackageManager::Npm)
+    );
+}
+
+#[test]
+fn test_detect_pm_chained_commands() {
+    assert_eq!(
+        detect_package_manager_command("cd /app && npm install"),
+        Some(PackageManager::Npm)
+    );
+    assert_eq!(
+        detect_package_manager_command("echo test; pnpm add lodash"),
+        Some(PackageManager::Pnpm)
+    );
+}
+
+// -------------------------------------------------------------------------
+// check_package_manager tests (using temp directories)
+// -------------------------------------------------------------------------
+
+#[test]
+fn test_check_pm_no_lock_file() {
+    let temp_dir = std::env::temp_dir().join("agent_hooks_test_no_lock");
+    let _ = std::fs::create_dir_all(&temp_dir);
+
+    // Clean up any existing lock files
+    for file in &[
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "bun.lockb",
+        "bun.lock",
+    ] {
+        let _ = std::fs::remove_file(temp_dir.join(file));
+    }
+
+    let result = check_package_manager("npm install", &temp_dir);
+    assert_eq!(result, PackageManagerCheckResult::Ok);
+
+    let _ = std::fs::remove_dir(&temp_dir);
+}
+
+#[test]
+fn test_check_pm_matching() {
+    let temp_dir = std::env::temp_dir().join("agent_hooks_test_matching");
+    let _ = std::fs::create_dir_all(&temp_dir);
+
+    // Clean up any existing lock files
+    for file in &[
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "bun.lockb",
+        "bun.lock",
+    ] {
+        let _ = std::fs::remove_file(temp_dir.join(file));
+    }
+
+    std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
+
+    let result = check_package_manager("pnpm install", &temp_dir);
+    assert_eq!(result, PackageManagerCheckResult::Matching);
+
+    let _ = std::fs::remove_file(temp_dir.join("pnpm-lock.yaml"));
+    let _ = std::fs::remove_dir(&temp_dir);
+}
+
+#[test]
+fn test_check_pm_mismatch() {
+    let temp_dir = std::env::temp_dir().join("agent_hooks_test_mismatch");
+    let _ = std::fs::create_dir_all(&temp_dir);
+
+    // Clean up any existing lock files
+    for file in &[
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "bun.lockb",
+        "bun.lock",
+    ] {
+        let _ = std::fs::remove_file(temp_dir.join(file));
+    }
+
+    std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
+
+    let result = check_package_manager("npm install", &temp_dir);
+    assert_eq!(
+        result,
+        PackageManagerCheckResult::Mismatch {
+            command_pm: PackageManager::Npm,
+            expected_pm: PackageManager::Pnpm,
+        }
+    );
+
+    let _ = std::fs::remove_file(temp_dir.join("pnpm-lock.yaml"));
+    let _ = std::fs::remove_dir(&temp_dir);
+}
+
+#[test]
+fn test_check_pm_ambiguous() {
+    let temp_dir = std::env::temp_dir().join("agent_hooks_test_ambiguous");
+    let _ = std::fs::create_dir_all(&temp_dir);
+
+    // Clean up any existing lock files
+    for file in &[
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "bun.lockb",
+        "bun.lock",
+    ] {
+        let _ = std::fs::remove_file(temp_dir.join(file));
+    }
+
+    std::fs::write(temp_dir.join("package-lock.json"), "").unwrap();
+    std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
+
+    let result = check_package_manager("npm install", &temp_dir);
+    match result {
+        PackageManagerCheckResult::Ambiguous {
+            command_pm,
+            detected_pms,
+        } => {
+            assert_eq!(command_pm, PackageManager::Npm);
+            assert!(detected_pms.contains(&PackageManager::Npm));
+            assert!(detected_pms.contains(&PackageManager::Pnpm));
+        }
+        _ => panic!("Expected Ambiguous result, got {result:?}"),
+    }
+
+    let _ = std::fs::remove_file(temp_dir.join("package-lock.json"));
+    let _ = std::fs::remove_file(temp_dir.join("pnpm-lock.yaml"));
+    let _ = std::fs::remove_dir(&temp_dir);
+}
+
+#[test]
+fn test_check_pm_non_install_command() {
+    let temp_dir = std::env::temp_dir().join("agent_hooks_test_non_install");
+    let _ = std::fs::create_dir_all(&temp_dir);
+
+    // Clean up any existing lock files
+    for file in &[
+        "package-lock.json",
+        "pnpm-lock.yaml",
+        "yarn.lock",
+        "bun.lockb",
+        "bun.lock",
+    ] {
+        let _ = std::fs::remove_file(temp_dir.join(file));
+    }
+
+    std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
+
+    // npm run build should not trigger mismatch check
+    let result = check_package_manager("npm run build", &temp_dir);
+    assert_eq!(result, PackageManagerCheckResult::Ok);
+
+    let _ = std::fs::remove_file(temp_dir.join("pnpm-lock.yaml"));
+    let _ = std::fs::remove_dir(&temp_dir);
 }

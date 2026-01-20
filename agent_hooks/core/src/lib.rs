@@ -12,13 +12,18 @@ use std::sync::LazyLock;
 
 #[cfg(not(windows))]
 static RM_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*/)?rm(\s|$)").unwrap()
+    // Match: rm command (direct) or xargs rm/rmdir (piped)
+    Regex::new(
+        r"(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*/)?(rm|xargs\s+(sudo\s+)?(rm|rmdir))(\s|$)",
+    )
+    .unwrap()
 });
 
 #[cfg(windows)]
 static RM_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
+    // Match: rm/del/rd/rmdir/remove-item command (direct) or xargs rm/rmdir (piped)
     Regex::new(
-        r"(?i)(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*[\\/])?(rm|del|rd|rmdir|remove-item)(\s|$)",
+        r"(?i)(^|[;&|()]\s*)(sudo\s+)?(command\s+)?(\\)?(\S*[\\/])?(rm|del|rd|rmdir|remove-item|xargs\s+(sudo\s+)?(rm|rmdir))(\s|$)",
     )
     .unwrap()
 });
@@ -351,6 +356,163 @@ pub fn check_dangerous_path_command(
     }
 
     None
+}
+
+// ============================================================================
+// Package manager mismatch detection
+// ============================================================================
+
+/// Represents a JavaScript/Node.js package manager.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PackageManager {
+    Npm,
+    Pnpm,
+    Yarn,
+    Bun,
+}
+
+impl PackageManager {
+    /// Returns the display name of the package manager.
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Npm => "npm",
+            Self::Pnpm => "pnpm",
+            Self::Yarn => "yarn",
+            Self::Bun => "bun",
+        }
+    }
+
+    /// Returns the lock file name(s) for this package manager.
+    #[must_use]
+    pub const fn lock_files(self) -> &'static [&'static str] {
+        match self {
+            Self::Npm => &["package-lock.json"],
+            Self::Pnpm => &["pnpm-lock.yaml"],
+            Self::Yarn => &["yarn.lock"],
+            Self::Bun => &["bun.lockb", "bun.lock"],
+        }
+    }
+}
+
+const ALL_PACKAGE_MANAGERS: &[PackageManager] = &[
+    PackageManager::Npm,
+    PackageManager::Pnpm,
+    PackageManager::Yarn,
+    PackageManager::Bun,
+];
+
+/// Result of checking for package manager mismatch.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PackageManagerCheckResult {
+    /// No package manager command detected or no lock file found.
+    Ok,
+    /// Command matches the lock file's package manager.
+    Matching,
+    /// Command uses a different package manager than the lock file indicates.
+    /// Should deny this operation.
+    Mismatch {
+        /// The package manager being used in the command.
+        command_pm: PackageManager,
+        /// The package manager indicated by the lock file.
+        expected_pm: PackageManager,
+    },
+    /// Multiple lock files exist, so we can't determine the correct package manager.
+    /// Should ask the user instead of denying.
+    Ambiguous {
+        /// The package manager being used in the command.
+        command_pm: PackageManager,
+        /// The package managers that have lock files present.
+        detected_pms: Vec<PackageManager>,
+    },
+}
+
+/// Regex patterns for detecting package manager commands.
+static PM_COMMAND_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
+    // Match npm/pnpm/yarn/bun followed by install/add/remove/ci/update/upgrade/uninstall/link/rebuild/dedupe
+    Regex::new(
+        r"(?:^|[;&|()]\s*)(?:sudo\s+)?(?:npx\s+)?(?P<pm>npm|pnpm|yarn|bun)\s+(?P<subcmd>install|add|remove|uninstall|ci|update|upgrade|link|rebuild|dedupe|i|rm|un|up)(?:\s|$)",
+    )
+    .unwrap()
+});
+
+/// Detect which package manager a command is trying to use.
+#[must_use]
+pub fn detect_package_manager_command(cmd: &str) -> Option<PackageManager> {
+    PM_COMMAND_PATTERN.captures(cmd).and_then(|caps| {
+        caps.name("pm").map(|m| match m.as_str() {
+            "npm" => PackageManager::Npm,
+            "pnpm" => PackageManager::Pnpm,
+            "yarn" => PackageManager::Yarn,
+            "bun" => PackageManager::Bun,
+            _ => unreachable!(),
+        })
+    })
+}
+
+/// Find lock files starting from `start_dir` and searching up to parent directories.
+///
+/// Returns a list of package managers whose lock files were found.
+#[must_use]
+pub fn find_lock_files(start_dir: &std::path::Path) -> Vec<PackageManager> {
+    let mut current = Some(start_dir);
+    while let Some(dir) = current {
+        let mut found = Vec::new();
+        for &pm in ALL_PACKAGE_MANAGERS {
+            for &lock_file in pm.lock_files() {
+                if dir.join(lock_file).exists() {
+                    found.push(pm);
+                    break;
+                }
+            }
+        }
+        if !found.is_empty() {
+            return found;
+        }
+        current = dir.parent();
+    }
+    Vec::new()
+}
+
+/// Check if a bash command uses a mismatched package manager.
+///
+/// # Arguments
+/// * `cmd` - The bash command to check.
+/// * `start_dir` - The directory to start searching for lock files.
+///
+/// # Returns
+/// * `PackageManagerCheckResult::Ok` - No package manager command detected or no lock file found.
+/// * `PackageManagerCheckResult::Matching` - Command matches the detected package manager.
+/// * `PackageManagerCheckResult::Mismatch` - Command uses wrong package manager (should deny).
+/// * `PackageManagerCheckResult::Ambiguous` - Multiple lock files exist (should ask).
+#[must_use]
+pub fn check_package_manager(cmd: &str, start_dir: &std::path::Path) -> PackageManagerCheckResult {
+    let Some(command_pm) = detect_package_manager_command(cmd) else {
+        return PackageManagerCheckResult::Ok;
+    };
+
+    let detected_pms = find_lock_files(start_dir);
+
+    if detected_pms.is_empty() {
+        return PackageManagerCheckResult::Ok;
+    }
+
+    if detected_pms.len() > 1 {
+        return PackageManagerCheckResult::Ambiguous {
+            command_pm,
+            detected_pms,
+        };
+    }
+
+    let expected_pm = detected_pms[0];
+    if command_pm == expected_pm {
+        PackageManagerCheckResult::Matching
+    } else {
+        PackageManagerCheckResult::Mismatch {
+            command_pm,
+            expected_pm,
+        }
+    }
 }
 
 #[cfg(test)]

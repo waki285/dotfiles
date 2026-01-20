@@ -5,8 +5,9 @@
 #![expect(clippy::needless_pass_by_value)]
 
 use agent_hooks::{
-    RustAllowCheckResult, check_dangerous_path_command, check_destructive_find,
-    check_rust_allow_attributes, is_rm_command, is_rust_file,
+    PackageManagerCheckResult, RustAllowCheckResult, check_dangerous_path_command,
+    check_destructive_find, check_package_manager, check_rust_allow_attributes, is_rm_command,
+    is_rust_file,
 };
 use napi_derive::napi;
 
@@ -83,4 +84,82 @@ pub fn check_dangerous_path_command_js(
         matched_path: check.matched_path,
         command_type: check.command_type,
     })
+}
+
+/// Result of checking for package manager mismatch.
+#[napi(string_enum)]
+pub enum PackageManagerCheck {
+    /// No package manager command detected or no lock file found.
+    Ok,
+    /// Command matches the lock file's package manager.
+    Matching,
+    /// Command uses a different package manager than the lock file indicates (should deny).
+    Mismatch,
+    /// Multiple lock files exist (should ask).
+    Ambiguous,
+}
+
+/// Detailed result of checking for package manager mismatch.
+#[napi(object)]
+pub struct PackageManagerCheckResultJs {
+    /// The check result type.
+    pub result: PackageManagerCheck,
+    /// The package manager being used in the command (if detected).
+    pub command_pm: Option<String>,
+    /// The expected package manager based on lock file (for Mismatch).
+    pub expected_pm: Option<String>,
+    /// Lock files detected (for Mismatch/Ambiguous).
+    pub detected_lock_files: Option<Vec<String>>,
+}
+
+/// Check if a bash command uses a mismatched package manager.
+///
+/// Searches for lock files starting from `start_dir` and going up to parent directories.
+#[napi(js_name = "checkPackageManager")]
+#[must_use]
+pub fn check_package_manager_js(cmd: String, start_dir: String) -> PackageManagerCheckResultJs {
+    let path = std::path::Path::new(&start_dir);
+    match check_package_manager(&cmd, path) {
+        PackageManagerCheckResult::Ok => PackageManagerCheckResultJs {
+            result: PackageManagerCheck::Ok,
+            command_pm: None,
+            expected_pm: None,
+            detected_lock_files: None,
+        },
+        PackageManagerCheckResult::Matching => PackageManagerCheckResultJs {
+            result: PackageManagerCheck::Matching,
+            command_pm: None,
+            expected_pm: None,
+            detected_lock_files: None,
+        },
+        PackageManagerCheckResult::Mismatch {
+            command_pm,
+            expected_pm,
+        } => PackageManagerCheckResultJs {
+            result: PackageManagerCheck::Mismatch,
+            command_pm: Some(command_pm.name().to_string()),
+            expected_pm: Some(expected_pm.name().to_string()),
+            detected_lock_files: Some(
+                expected_pm
+                    .lock_files()
+                    .iter()
+                    .map(|s| (*s).to_string())
+                    .collect(),
+            ),
+        },
+        PackageManagerCheckResult::Ambiguous {
+            command_pm,
+            detected_pms,
+        } => PackageManagerCheckResultJs {
+            result: PackageManagerCheck::Ambiguous,
+            command_pm: Some(command_pm.name().to_string()),
+            expected_pm: None,
+            detected_lock_files: Some(
+                detected_pms
+                    .iter()
+                    .flat_map(|pm| pm.lock_files().iter().map(|s| (*s).to_string()))
+                    .collect(),
+            ),
+        },
+    }
 }

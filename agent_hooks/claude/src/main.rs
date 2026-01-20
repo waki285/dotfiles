@@ -1,6 +1,7 @@
 use agent_hooks::{
-    RustAllowCheckResult, check_dangerous_path_command, check_destructive_find,
-    check_rust_allow_attributes, is_rm_command, is_rust_file,
+    PackageManagerCheckResult, RustAllowCheckResult, check_dangerous_path_command,
+    check_destructive_find, check_package_manager, check_rust_allow_attributes, is_rm_command,
+    is_rust_file,
 };
 use seahorse::{App, Command, Context, Flag, FlagType};
 use serde::{Deserialize, Serialize};
@@ -204,10 +205,84 @@ fn permission_request_action(c: &Context) {
     }
 }
 
+/// Handle package manager mismatch checks for Bash commands.
+/// Returns `true` if output was produced and the caller should return early.
+fn handle_package_manager_check(cmd: &str) -> bool {
+    let cwd = std::env::current_dir().unwrap_or_default();
+    match check_package_manager(cmd, &cwd) {
+        PackageManagerCheckResult::Mismatch {
+            command_pm,
+            expected_pm,
+        } => {
+            output_hook_result(&HookOutput {
+                hook_specific_output: HookSpecificOutput {
+                    hook_event_name: HookEventName::PreToolUse,
+                    decision: None,
+                    permission_decision: Some(PermissionDecision::Deny),
+                    permission_decision_reason: Some(format!(
+                        "Package manager mismatch: This project uses {} (detected {}), \
+                         but you are trying to use {}. Please use {} instead.",
+                        expected_pm.name(),
+                        expected_pm.lock_files()[0],
+                        command_pm.name(),
+                        expected_pm.name()
+                    )),
+                },
+            });
+            true
+        }
+        // Multiple lock files or no mismatch: don't intervene
+        _ => false,
+    }
+}
+
+/// Build denial reason for Rust allow/expect attributes.
+fn build_rust_allow_denial_reason(
+    check_result: RustAllowCheckResult,
+    expect_flag: bool,
+    additional_context: Option<&str>,
+) -> Option<String> {
+    let base_msg = if expect_flag {
+        match check_result {
+            RustAllowCheckResult::HasAllow | RustAllowCheckResult::HasBoth => Some(
+                "Adding #[allow(...)] or #![allow(...)] attributes is not permitted. \
+                 Use #[expect(...)] instead, which will warn when the lint is no longer triggered.",
+            ),
+            _ => None,
+        }
+    } else {
+        match check_result {
+            RustAllowCheckResult::Ok => None,
+            RustAllowCheckResult::HasBoth => Some(
+                "Adding #[allow(...)] or #[expect(...)] attributes is not permitted. \
+                 Fix the underlying issue instead of suppressing the warning.",
+            ),
+            RustAllowCheckResult::HasAllow => Some(
+                "Adding #[allow(...)] or #![allow(...)] attributes is not permitted. \
+                 Fix the underlying issue instead of suppressing the warning.",
+            ),
+            RustAllowCheckResult::HasExpect => Some(
+                "Adding #[expect(...)] or #![expect(...)] attributes is not permitted. \
+                 Fix the underlying issue instead of suppressing the warning.",
+            ),
+        }
+    };
+
+    base_msg.map(|msg| {
+        let mut result = msg.to_string();
+        if let Some(ctx) = additional_context {
+            result.push(' ');
+            result.push_str(ctx);
+        }
+        result
+    })
+}
+
 fn pre_tool_use_action(c: &Context) {
     let deny_rust_allow_enabled = c.bool_flag("deny-rust-allow");
+    let check_package_manager_enabled = c.bool_flag("check-package-manager");
 
-    if !deny_rust_allow_enabled {
+    if !deny_rust_allow_enabled && !check_package_manager_enabled {
         return;
     }
 
@@ -215,11 +290,29 @@ fn pre_tool_use_action(c: &Context) {
         return;
     };
 
-    // Only check Edit and Write tools
     let Some(ref tool_name) = data.tool_name else {
         return;
     };
+
+    // Package manager check for Bash commands
+    if check_package_manager_enabled && matches!(tool_name, ToolName::Bash) {
+        let cmd = data
+            .tool_input
+            .as_ref()
+            .and_then(|ti| ti.command.as_deref())
+            .unwrap_or_default();
+
+        if !cmd.is_empty() && handle_package_manager_check(cmd) {
+            return;
+        }
+    }
+
+    // Only check Edit and Write tools for Rust allow attributes
     if !matches!(tool_name, ToolName::Edit | ToolName::Write) {
+        return;
+    }
+
+    if !deny_rust_allow_enabled {
         return;
     }
 
@@ -249,62 +342,9 @@ fn pre_tool_use_action(c: &Context) {
 
     let check_result = check_rust_allow_attributes(content);
 
-    let denial_reason = if expect_flag {
-        // --expect: only deny #[allow], allow #[expect]
-        match check_result {
-            RustAllowCheckResult::HasAllow | RustAllowCheckResult::HasBoth => {
-                let mut msg = "Adding #[allow(...)] or #![allow(...)] attributes is not permitted. \
-                               Use #[expect(...)] instead, which will warn when the lint is no longer triggered."
-                    .to_string();
-                if let Some(ref ctx) = additional_context {
-                    msg.push(' ');
-                    msg.push_str(ctx);
-                }
-                Some(msg)
-            }
-            _ => None,
-        }
-    } else {
-        // no --expect: deny both #[allow] and #[expect]
-        match check_result {
-            RustAllowCheckResult::Ok => None,
-            RustAllowCheckResult::HasBoth => {
-                let mut msg =
-                    "Adding #[allow(...)] or #[expect(...)] attributes is not permitted. \
-                               Fix the underlying issue instead of suppressing the warning."
-                        .to_string();
-                if let Some(ref ctx) = additional_context {
-                    msg.push(' ');
-                    msg.push_str(ctx);
-                }
-                Some(msg)
-            }
-            RustAllowCheckResult::HasAllow => {
-                let mut msg =
-                    "Adding #[allow(...)] or #![allow(...)] attributes is not permitted. \
-                               Fix the underlying issue instead of suppressing the warning."
-                        .to_string();
-                if let Some(ref ctx) = additional_context {
-                    msg.push(' ');
-                    msg.push_str(ctx);
-                }
-                Some(msg)
-            }
-            RustAllowCheckResult::HasExpect => {
-                let mut msg =
-                    "Adding #[expect(...)] or #![expect(...)] attributes is not permitted. \
-                               Fix the underlying issue instead of suppressing the warning."
-                        .to_string();
-                if let Some(ref ctx) = additional_context {
-                    msg.push(' ');
-                    msg.push_str(ctx);
-                }
-                Some(msg)
-            }
-        }
-    };
-
-    if let Some(reason) = denial_reason {
+    if let Some(reason) =
+        build_rust_allow_denial_reason(check_result, expect_flag, additional_context.as_deref())
+    {
         output_hook_result(&HookOutput {
             hook_specific_output: HookSpecificOutput {
                 hook_event_name: HookEventName::PreToolUse,
@@ -345,7 +385,7 @@ fn main() {
         )
         .command(
             Command::new("pre-tool-use")
-                .description("Handle pre-tool-use checks for Edit/Write tools")
+                .description("Handle pre-tool-use checks for Edit/Write/Bash tools")
                 .flag(
                     Flag::new("deny-rust-allow", FlagType::Bool)
                         .description("Deny #[allow(...)] attributes in Rust files"),
@@ -359,6 +399,10 @@ fn main() {
                         .description(
                             "With --deny-rust-allow: additional context message to append to the denial reason",
                         ),
+                )
+                .flag(
+                    Flag::new("check-package-manager", FlagType::Bool)
+                        .description("Check for package manager mismatch (e.g., using npm when pnpm-lock.yaml exists)"),
                 )
                 .action(pre_tool_use_action),
         );
