@@ -49,3 +49,24 @@ jobs:
             exit 1
           fi
           echo "Generated files are up-to-date."
+
+  verify:
+    name: Go vet & test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: tools/permissions-gen/go.mod
+          cache-dependency-path: tools/permissions-gen/go.sum
+
+      - name: Run go vet
+        working-directory: tools/permissions-gen
+        run: go vet ./...
+
+      - name: Run go test
+        working-directory: tools/permissions-gen
+        run: go test ./...
