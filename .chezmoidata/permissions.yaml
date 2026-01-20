@@ -30,6 +30,7 @@ bash:
     - npm info
     - pnpm add
     - pnpm build
+    - pnpm i
     - pnpm install
     - pnpm run build
     - pwd

@@ -72,6 +72,8 @@
       "pnpm add *": "allow",
       "pnpm build": "allow",
       "pnpm build *": "allow",
+      "pnpm i": "allow",
+      "pnpm i *": "allow",
       "pnpm install": "allow",
       "pnpm install *": "allow",
       "pnpm run build": "allow",

@@ -109,6 +109,7 @@ prefix_rule(
   pattern = ["pnpm", [
     "add",
     "build",
+    "i",
     "install",
   ]],
   decision = "allow",
