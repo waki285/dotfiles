@@ -88,6 +88,15 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["go", [
+    "build",
+    "test",
+  ]],
+  decision = "allow",
+  match = ["go build"],
+)
+
+prefix_rule(
   pattern = ["ls"],
   decision = "allow",
   match = ["ls"],

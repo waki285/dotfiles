@@ -41,30 +41,39 @@ pub fn is_rm_command(cmd: &str) -> bool {
 // ============================================================================
 
 #[cfg(not(windows))]
-const DESTRUCTIVE_PATTERNS: &[(&str, &str); 6] = &[
-    (r"find\s+.*-delete", "find with -delete option"),
-    (
-        r"find\s+.*-exec\s+(sudo\s+)?(rm|rmdir)\s",
-        "find with -exec rm/rmdir",
-    ),
-    (
-        r"find\s+.*-execdir\s+(sudo\s+)?(rm|rmdir)\s",
-        "find with -execdir rm/rmdir",
-    ),
-    (
-        r"find\s+.*\|\s*(sudo\s+)?xargs\s+(sudo\s+)?(rm|rmdir)",
-        "find piped to xargs rm/rmdir",
-    ),
-    (r"find\s+.*-exec\s+(sudo\s+)?mv\s", "find with -exec mv"),
-    (
-        r"find\s+.*-ok\s+(sudo\s+)?(rm|rmdir)\s",
-        "find with -ok rm/rmdir",
-    ),
-];
+static DESTRUCTIVE_REGEXES: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
+    [
+        (r"find\s+.*-delete", "find with -delete option"),
+        (
+            r"find\s+.*-exec\s+(sudo\s+)?(rm|rmdir)\s",
+            "find with -exec rm/rmdir",
+        ),
+        (
+            r"find\s+.*-execdir\s+(sudo\s+)?(rm|rmdir)\s",
+            "find with -execdir rm/rmdir",
+        ),
+        (
+            r"find\s+.*\|\s*(sudo\s+)?xargs\s+(sudo\s+)?(rm|rmdir)",
+            "find piped to xargs rm/rmdir",
+        ),
+        (r"find\s+.*-exec\s+(sudo\s+)?mv\s", "find with -exec mv"),
+        (
+            r"find\s+.*-ok\s+(sudo\s+)?(rm|rmdir)\s",
+            "find with -ok rm/rmdir",
+        ),
+    ]
+    .into_iter()
+    .map(|(pattern, desc)| (Regex::new(&format!("(?i){pattern}")).unwrap(), desc))
+    .collect()
+});
 
 #[cfg(windows)]
-const DESTRUCTIVE_PATTERNS: &[(&str, &str); 1] =
-    &[(r"\|\s*(move|move-item)\b", "piped to move/move-item")];
+static DESTRUCTIVE_REGEXES: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
+    [(r"\|\s*(move|move-item)\b", "piped to move/move-item")]
+        .into_iter()
+        .map(|(pattern, desc)| (Regex::new(&format!("(?i){pattern}")).unwrap(), desc))
+        .collect()
+});
 
 #[cfg(not(windows))]
 static FIND_CHECK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(^|[;&|()]\s*)find\s").unwrap());
@@ -77,14 +86,12 @@ static FIND_CHECK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\|").unwrap()
 /// Returns `Some(description)` if the command is destructive and should be confirmed,
 /// or `None` if the command is safe.
 #[must_use]
-#[expect(clippy::missing_panics_doc)]
 pub fn check_destructive_find(cmd: &str) -> Option<&'static str> {
     if !FIND_CHECK.is_match(cmd) {
         return None;
     }
 
-    for (pattern, description) in DESTRUCTIVE_PATTERNS {
-        let re = Regex::new(&format!("(?i){pattern}")).unwrap();
+    for (re, description) in DESTRUCTIVE_REGEXES.iter() {
         if re.is_match(cmd) {
             return Some(description);
         }

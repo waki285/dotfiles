@@ -48,18 +48,24 @@ pub enum RustAllowCheck {
     HasBoth,
 }
 
+impl From<RustAllowCheckResult> for RustAllowCheck {
+    fn from(result: RustAllowCheckResult) -> Self {
+        match result {
+            RustAllowCheckResult::Ok => Self::Ok,
+            RustAllowCheckResult::HasAllow => Self::HasAllow,
+            RustAllowCheckResult::HasExpect => Self::HasExpect,
+            RustAllowCheckResult::HasBoth => Self::HasBoth,
+        }
+    }
+}
+
 /// Check if content contains #[allow(...)] or #[expect(...)] attributes.
 ///
 /// This function ignores attributes in comments and string literals.
 #[napi(js_name = "checkRustAllowAttributes")]
 #[must_use]
 pub fn check_rust_allow_attributes_js(content: String) -> RustAllowCheck {
-    match check_rust_allow_attributes(&content) {
-        RustAllowCheckResult::Ok => RustAllowCheck::Ok,
-        RustAllowCheckResult::HasAllow => RustAllowCheck::HasAllow,
-        RustAllowCheckResult::HasExpect => RustAllowCheck::HasExpect,
-        RustAllowCheckResult::HasBoth => RustAllowCheck::HasBoth,
-    }
+    check_rust_allow_attributes(&content).into()
 }
 
 /// Result of checking for dangerous path operations.

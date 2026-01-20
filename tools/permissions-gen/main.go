@@ -80,40 +80,24 @@ func run(dataPath, claudePath, codexPath, opencodePath string) error {
 		return err
 	}
 
-	if dataPath == "" {
-		dataPath = filepath.Join(root, defaultDataPath)
-	} else {
-		dataPath, err = resolvePath(dataPath)
-		if err != nil {
-			return err
-		}
+	dataPath, err = resolveOrDefault(dataPath, root, defaultDataPath)
+	if err != nil {
+		return err
 	}
 
-	if claudePath == "" {
-		claudePath = filepath.Join(root, defaultClaudePath)
-	} else {
-		claudePath, err = resolvePath(claudePath)
-		if err != nil {
-			return err
-		}
+	claudePath, err = resolveOrDefault(claudePath, root, defaultClaudePath)
+	if err != nil {
+		return err
 	}
 
-	if codexPath == "" {
-		codexPath = filepath.Join(root, defaultCodexPath)
-	} else {
-		codexPath, err = resolvePath(codexPath)
-		if err != nil {
-			return err
-		}
+	codexPath, err = resolveOrDefault(codexPath, root, defaultCodexPath)
+	if err != nil {
+		return err
 	}
 
-	if opencodePath == "" {
-		opencodePath = filepath.Join(root, defaultOpencodePath)
-	} else {
-		opencodePath, err = resolvePath(opencodePath)
-		if err != nil {
-			return err
-		}
+	opencodePath, err = resolveOrDefault(opencodePath, root, defaultOpencodePath)
+	if err != nil {
+		return err
 	}
 
 	cfg, err := loadConfig(dataPath)
@@ -157,13 +141,14 @@ func resolveRoot() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("get working directory: %w", err)
 	}
+	return findRepoRoot(cwd)
+}
 
-	root, err := findRepoRoot(cwd)
-	if err != nil {
-		return "", err
+func resolveOrDefault(path, root, defaultPath string) (string, error) {
+	if path == "" {
+		return filepath.Join(root, defaultPath), nil
 	}
-
-	return root, nil
+	return resolvePath(path)
 }
 
 func resolvePath(path string) (string, error) {

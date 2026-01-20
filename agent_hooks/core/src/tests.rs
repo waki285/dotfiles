@@ -2,6 +2,20 @@
 
 use super::*;
 
+const LOCK_FILES: &[&str] = &[
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "bun.lockb",
+    "bun.lock",
+];
+
+fn cleanup_lock_files(dir: &std::path::Path) {
+    for file in LOCK_FILES {
+        let _ = std::fs::remove_file(dir.join(file));
+    }
+}
+
 // -------------------------------------------------------------------------
 // is_in_comment_or_string tests
 // -------------------------------------------------------------------------
@@ -425,16 +439,7 @@ fn test_check_pm_no_lock_file() {
     let temp_dir = std::env::temp_dir().join("agent_hooks_test_no_lock");
     let _ = std::fs::create_dir_all(&temp_dir);
 
-    // Clean up any existing lock files
-    for file in &[
-        "package-lock.json",
-        "pnpm-lock.yaml",
-        "yarn.lock",
-        "bun.lockb",
-        "bun.lock",
-    ] {
-        let _ = std::fs::remove_file(temp_dir.join(file));
-    }
+    cleanup_lock_files(&temp_dir);
 
     let result = check_package_manager("npm install", &temp_dir);
     assert_eq!(result, PackageManagerCheckResult::Ok);
@@ -447,16 +452,7 @@ fn test_check_pm_matching() {
     let temp_dir = std::env::temp_dir().join("agent_hooks_test_matching");
     let _ = std::fs::create_dir_all(&temp_dir);
 
-    // Clean up any existing lock files
-    for file in &[
-        "package-lock.json",
-        "pnpm-lock.yaml",
-        "yarn.lock",
-        "bun.lockb",
-        "bun.lock",
-    ] {
-        let _ = std::fs::remove_file(temp_dir.join(file));
-    }
+    cleanup_lock_files(&temp_dir);
 
     std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
 
@@ -472,16 +468,7 @@ fn test_check_pm_mismatch() {
     let temp_dir = std::env::temp_dir().join("agent_hooks_test_mismatch");
     let _ = std::fs::create_dir_all(&temp_dir);
 
-    // Clean up any existing lock files
-    for file in &[
-        "package-lock.json",
-        "pnpm-lock.yaml",
-        "yarn.lock",
-        "bun.lockb",
-        "bun.lock",
-    ] {
-        let _ = std::fs::remove_file(temp_dir.join(file));
-    }
+    cleanup_lock_files(&temp_dir);
 
     std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
 
@@ -503,16 +490,7 @@ fn test_check_pm_ambiguous() {
     let temp_dir = std::env::temp_dir().join("agent_hooks_test_ambiguous");
     let _ = std::fs::create_dir_all(&temp_dir);
 
-    // Clean up any existing lock files
-    for file in &[
-        "package-lock.json",
-        "pnpm-lock.yaml",
-        "yarn.lock",
-        "bun.lockb",
-        "bun.lock",
-    ] {
-        let _ = std::fs::remove_file(temp_dir.join(file));
-    }
+    cleanup_lock_files(&temp_dir);
 
     std::fs::write(temp_dir.join("package-lock.json"), "").unwrap();
     std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
@@ -540,16 +518,7 @@ fn test_check_pm_non_install_command() {
     let temp_dir = std::env::temp_dir().join("agent_hooks_test_non_install");
     let _ = std::fs::create_dir_all(&temp_dir);
 
-    // Clean up any existing lock files
-    for file in &[
-        "package-lock.json",
-        "pnpm-lock.yaml",
-        "yarn.lock",
-        "bun.lockb",
-        "bun.lock",
-    ] {
-        let _ = std::fs::remove_file(temp_dir.join(file));
-    }
+    cleanup_lock_files(&temp_dir);
 
     std::fs::write(temp_dir.join("pnpm-lock.yaml"), "").unwrap();
 

@@ -8,6 +8,7 @@ target
 justfile
 LICENSE
 renovate.json
+.DS_Store
 
 {{- if eq .chezmoi.os "windows" }}
 completions/

@@ -121,6 +121,42 @@ fn output_hook_result(output: &HookOutput) {
     }
 }
 
+const fn deny_with_decision(event: HookEventName, message: String) -> HookOutput {
+    HookOutput {
+        hook_specific_output: HookSpecificOutput {
+            hook_event_name: event,
+            decision: Some(Decision {
+                behavior: DecisionBehavior::Deny,
+                message,
+            }),
+            permission_decision: None,
+            permission_decision_reason: None,
+        },
+    }
+}
+
+const fn ask_permission(event: HookEventName, reason: String) -> HookOutput {
+    HookOutput {
+        hook_specific_output: HookSpecificOutput {
+            hook_event_name: event,
+            decision: None,
+            permission_decision: Some(PermissionDecision::Ask),
+            permission_decision_reason: Some(reason),
+        },
+    }
+}
+
+const fn deny_permission(event: HookEventName, reason: String) -> HookOutput {
+    HookOutput {
+        hook_specific_output: HookSpecificOutput {
+            hook_event_name: event,
+            decision: None,
+            permission_decision: Some(PermissionDecision::Deny),
+            permission_decision_reason: Some(reason),
+        },
+    }
+}
+
 // ============================================================================
 // Command handlers
 // ============================================================================
@@ -155,17 +191,11 @@ fn permission_request_action(c: &Context) {
 
     // Check for rm command
     if block_rm && is_rm_command(cmd) {
-        output_hook_result(&HookOutput {
-            hook_specific_output: HookSpecificOutput {
-                hook_event_name: HookEventName::PermissionRequest,
-                decision: Some(Decision {
-                    behavior: DecisionBehavior::Deny,
-                    message: "rm is forbidden. Use trash command to delete files. Example: trash <path...>".to_string(),
-                }),
-                permission_decision: None,
-                permission_decision_reason: None,
-            },
-        });
+        output_hook_result(&deny_with_decision(
+            HookEventName::PermissionRequest,
+            "rm is forbidden. Use trash command to delete files. Example: trash <path...>"
+                .to_string(),
+        ));
         return;
     }
 
@@ -173,35 +203,27 @@ fn permission_request_action(c: &Context) {
     if let Some(ref paths_str) = dangerous_paths {
         let paths: Vec<&str> = paths_str.split(',').map(str::trim).collect();
         if let Some(check) = check_dangerous_path_command(cmd, &paths) {
-            output_hook_result(&HookOutput {
-                hook_specific_output: HookSpecificOutput {
-                    hook_event_name: HookEventName::PermissionRequest,
-                    decision: None,
-                    permission_decision: Some(PermissionDecision::Ask),
-                    permission_decision_reason: Some(format!(
-                        "Dangerous path operation detected: {} command targeting protected path '{}'. \
-                         Please confirm this operation.",
-                        check.command_type, check.matched_path
-                    )),
-                },
-            });
+            output_hook_result(&ask_permission(
+                HookEventName::PermissionRequest,
+                format!(
+                    "Dangerous path operation detected: {} command targeting protected path '{}'. \
+                     Please confirm this operation.",
+                    check.command_type, check.matched_path
+                ),
+            ));
             return;
         }
     }
 
     // Check for destructive find command
     if confirm_destructive_find && let Some(description) = check_destructive_find(cmd) {
-        output_hook_result(&HookOutput {
-            hook_specific_output: HookSpecificOutput {
-                hook_event_name: HookEventName::PermissionRequest,
-                decision: None,
-                permission_decision: Some(PermissionDecision::Ask),
-                permission_decision_reason: Some(format!(
-                    "Destructive find command detected: {description}. \
-                         This operation may delete or modify files. Please confirm."
-                )),
-            },
-        });
+        output_hook_result(&ask_permission(
+            HookEventName::PermissionRequest,
+            format!(
+                "Destructive find command detected: {description}. \
+                     This operation may delete or modify files. Please confirm."
+            ),
+        ));
     }
 }
 
@@ -214,21 +236,17 @@ fn handle_package_manager_check(cmd: &str) -> bool {
             command_pm,
             expected_pm,
         } => {
-            output_hook_result(&HookOutput {
-                hook_specific_output: HookSpecificOutput {
-                    hook_event_name: HookEventName::PreToolUse,
-                    decision: None,
-                    permission_decision: Some(PermissionDecision::Deny),
-                    permission_decision_reason: Some(format!(
-                        "Package manager mismatch: This project uses {} (detected {}), \
-                         but you are trying to use {}. Please use {} instead.",
-                        expected_pm.name(),
-                        expected_pm.lock_files()[0],
-                        command_pm.name(),
-                        expected_pm.name()
-                    )),
-                },
-            });
+            output_hook_result(&deny_permission(
+                HookEventName::PreToolUse,
+                format!(
+                    "Package manager mismatch: This project uses {} (detected {}), \
+                     but you are trying to use {}. Please use {} instead.",
+                    expected_pm.name(),
+                    expected_pm.lock_files()[0],
+                    command_pm.name(),
+                    expected_pm.name()
+                ),
+            ));
             true
         }
         // Multiple lock files or no mismatch: don't intervene
@@ -345,14 +363,7 @@ fn pre_tool_use_action(c: &Context) {
     if let Some(reason) =
         build_rust_allow_denial_reason(check_result, expect_flag, additional_context.as_deref())
     {
-        output_hook_result(&HookOutput {
-            hook_specific_output: HookSpecificOutput {
-                hook_event_name: HookEventName::PreToolUse,
-                decision: None,
-                permission_decision: Some(PermissionDecision::Deny),
-                permission_decision_reason: Some(reason),
-            },
-        });
+        output_hook_result(&deny_permission(HookEventName::PreToolUse, reason));
     }
 }
 

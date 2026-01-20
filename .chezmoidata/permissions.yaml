@@ -25,6 +25,8 @@ bash:
     - git diff
     - git status
     - gofmt
+    - go build
+    - go test
     - ls
     - mkdir
     - npm info
