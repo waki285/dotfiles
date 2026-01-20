@@ -11,7 +11,7 @@ This repository contains the following configuration files:
 - **Editors**: Vim, Zed configurations
 - **Oh My Zsh**: Custom theme (`zenith`) and plugin settings
 - **AI Tools**: Claude Code, Codex, Gemini configurations
-- **agent_hooks**: Custom hook system for Claude Code (see [agent_hooks/README.md](agent_hooks/README.md))
+- **agent_hooks**: Custom hook system for Claude Code and OpenCode (see [agent_hooks/README.md](agent_hooks/README.md))
 - **Others**: Karabiner-Elements, Deno completions, etc.
 
 ## Requirements
@@ -72,7 +72,8 @@ generated into tool-specific configs.
 
 ```
 .
-├── agent_hooks/         # Claude Code hook system (Apache 2.0 licensed)
+├── .chezmoiscripts/      # Post-apply scripts (run_after_*.sh, run_after_*.ps1)
+├── agent_hooks/          # Claude Code hook system (Apache 2.0 licensed)
 ├── completions/          # Shell completion files
 ├── dot_claude/           # Claude Code configuration
 ├── dot_codex/            # Codex configuration
@@ -80,14 +81,12 @@ generated into tool-specific configs.
 ├── dot_gemini/           # Gemini configuration
 ├── dot_oh-my-zsh/        # Oh My Zsh customizations
 ├── Library/              # macOS application settings
+├── tools/                # Development tools (permissions-gen, etc.)
 ├── dot_gitconfig.tmpl    # Git configuration (template)
 ├── dot_vimrc.tmpl        # Vim configuration (Unix)
 ├── _vimrc.tmpl           # Vim configuration (Windows)
 ├── dot_zprofile          # Zsh profile
-├── dot_zshenv            # Zsh environment variables
-├── dot_zshrc             # Zsh configuration
-├── run_after_*.sh        # Post-apply scripts (Unix)
-└── run_after_*.ps1       # Post-apply scripts (Windows)
+└── dot_zshrc             # Zsh configuration
 ```
 
 ## Key Configurations
@@ -118,10 +117,10 @@ Custom hooks for Claude Code that provide safety checks. Each hook type has a si
 
 ```bash
 # permission-request: Bash command checks
-agent_hooks permission-request --block-rm --confirm-destructive-find
+agent_hooks permission-request --block-rm --confirm-destructive-find --dangerous-paths "~/"
 
 # pre-tool-use: Edit/Write tool checks
-agent_hooks pre-tool-use --deny-rust-allow --expect
+agent_hooks pre-tool-use --deny-rust-allow --expect --check-package-manager
 ```
 
 Available modules:
@@ -130,8 +129,11 @@ Available modules:
 |-----------|------|-------------|
 | `permission-request` | `--block-rm` | Prevents `rm` commands, suggests `trash` instead |
 | `permission-request` | `--confirm-destructive-find` | Confirms destructive `find` commands |
+| `permission-request` | `--dangerous-paths <paths>` | Protects specified paths from rm/trash/mv |
 | `pre-tool-use` | `--deny-rust-allow` | Prevents `#[allow(...)]` attributes in Rust files |
 | `pre-tool-use` | `--expect` | With `--deny-rust-allow`: allow `#[expect]`, deny `#[allow]` |
+| `pre-tool-use` | `--additional-context <msg>` | Appends custom message to denial reason |
+| `pre-tool-use` | `--check-package-manager` | Denies mismatched package manager commands |
 
 See [agent_hooks/README.md](agent_hooks/README.md) for details.
 
