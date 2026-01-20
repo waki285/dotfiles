@@ -137,6 +137,7 @@ See [agent_hooks/README.md](agent_hooks/README.md) for details.
 
 ## License
 
-- **Repository (excluding agent_hooks/ and third-party files)**: All rights reserved (see [LICENSE](LICENSE))
+- **Repository (excluding third-party files listed in THIRD_PARTY.md)**: Apache License 2.0 (see [LICENSE](LICENSE))
+- **Third-party components**: see [THIRD_PARTY.md](THIRD_PARTY.md)
 - **agent_hooks/**: Apache License 2.0 (see [agent_hooks/LICENSE](agent_hooks/LICENSE))
 - **tools/**: Apache License 2.0 (see [tools/LICENSE](tools/LICENSE))
