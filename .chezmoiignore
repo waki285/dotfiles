@@ -18,11 +18,11 @@ Library/
 .zprofile
 .zshrc
 .zshrc.secrets
-*.sh
+.chezmoiscripts/*.sh
 {{- end }}
 
 {{- if ne .chezmoi.os "windows" }}
-*.ps1
+.chezmoiscripts/*.ps1
 _gvimrc
 AppData/
 {{- end }}
