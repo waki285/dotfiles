@@ -16,6 +16,9 @@ const (
 	startMarker = "{{/* PERMISSIONS:START */}}"
 	endMarker   = "{{/* PERMISSIONS:END */}}"
 
+	opencodeStartMarker = "{{/* BASH:START */}}"
+	opencodeEndMarker   = "{{/* BASH:END */}}"
+
 	defaultDataPath     = ".chezmoidata/permissions.yaml"
 	defaultClaudePath   = "dot_claude/settings.json.tmpl"
 	defaultCodexPath    = "dot_codex/rules/default.rules"
@@ -90,24 +93,20 @@ func run(dataPath, claudePath, codexPath, opencodePath string) error {
 		return err
 	}
 
-	dataPath, err = resolveOrDefault(dataPath, root, defaultDataPath)
-	if err != nil {
-		return err
+	paths := []struct {
+		value      *string
+		defaultVal string
+	}{
+		{&dataPath, defaultDataPath},
+		{&claudePath, defaultClaudePath},
+		{&codexPath, defaultCodexPath},
+		{&opencodePath, defaultOpencodePath},
 	}
-
-	claudePath, err = resolveOrDefault(claudePath, root, defaultClaudePath)
-	if err != nil {
-		return err
-	}
-
-	codexPath, err = resolveOrDefault(codexPath, root, defaultCodexPath)
-	if err != nil {
-		return err
-	}
-
-	opencodePath, err = resolveOrDefault(opencodePath, root, defaultOpencodePath)
-	if err != nil {
-		return err
+	for _, p := range paths {
+		*p.value, err = resolveOrDefault(*p.value, root, p.defaultVal)
+		if err != nil {
+			return err
+		}
 	}
 
 	cfg, err := loadConfig(dataPath)
@@ -133,17 +132,23 @@ func run(dataPath, claudePath, codexPath, opencodePath string) error {
 }
 
 func writeClaudePermissions(perm claudePermissions, path string) error {
+	return updateFileIfChanged(path, "skipping claude: %s not found", func(contents string) (string, error) {
+		return replacePermissionsBlock(contents, perm)
+	})
+}
+
+func updateFileIfChanged(path, skipMsg string, transform func(string) (string, error)) error {
 	if !fileExists(path) {
-		logSkip("skipping claude: %s not found", path)
+		logSkip(skipMsg, path)
 		return nil
 	}
 
 	contents, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("read target: %w", err)
+		return fmt.Errorf("read file: %w", err)
 	}
 
-	updated, err := replacePermissionsBlock(string(contents), perm)
+	updated, err := transform(string(contents))
 	if err != nil {
 		return err
 	}
@@ -153,7 +158,7 @@ func writeClaudePermissions(perm claudePermissions, path string) error {
 	}
 
 	if err := os.WriteFile(path, []byte(updated), 0o644); err != nil {
-		return fmt.Errorf("write target: %w", err)
+		return fmt.Errorf("write file: %w", err)
 	}
 
 	return nil
@@ -264,10 +269,15 @@ func buildClaudePermissions(cfg config) claudePermissions {
 func replacePermissionsBlock(contents string, perm claudePermissions) (string, error) {
 	start := strings.Index(contents, startMarker)
 	end := strings.Index(contents, endMarker)
-	if start == -1 || end == -1 || end < start {
-		return "", fmt.Errorf("permission markers not found")
+
+	if start != -1 && end != -1 && start < end {
+		return replaceWithMarkers(contents, perm, start, end)
 	}
 
+	return replacePermissionsJSON(contents, perm)
+}
+
+func replaceWithMarkers(contents string, perm claudePermissions, start, end int) (string, error) {
 	indent, err := lineIndent(contents, start)
 	if err != nil {
 		return "", err
@@ -285,6 +295,23 @@ func replacePermissionsBlock(contents string, perm claudePermissions) (string, e
 	block := startMarker + "\n" + strings.Join(lines, "\n") + "\n" + indent + endMarker
 
 	return contents[:start] + block + contents[end+len(endMarker):], nil
+}
+
+func replacePermissionsJSON(contents string, perm claudePermissions) (string, error) {
+	keyPos, objStart, objEnd, err := findObjectForKey(contents, "permissions")
+	if err != nil {
+		return "", fmt.Errorf("permissions object not found: %w", err)
+	}
+
+	data, err := json.MarshalIndent(perm, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("marshal permissions: %w", err)
+	}
+
+	indent := lineIndentForPos(contents, keyPos)
+	replacement := indentMultilineValue(string(data), indent)
+
+	return contents[:objStart] + replacement + contents[objEnd+1:], nil
 }
 
 func lineIndent(contents string, markerPos int) (string, error) {
@@ -320,13 +347,10 @@ func permissionsLines(perm claudePermissions) ([]string, error) {
 }
 
 func toBashPatterns(values []string) []string {
-	var out []string
-	for _, value := range values {
-		trimmed := strings.TrimSpace(value)
-		if trimmed == "" {
-			continue
-		}
-		out = append(out, fmt.Sprintf("Bash(%s:*)", trimmed))
+	normalized := normalizeList(values)
+	out := make([]string, 0, len(normalized))
+	for _, v := range normalized {
+		out = append(out, fmt.Sprintf("Bash(%s:*)", v))
 	}
 	return out
 }
@@ -568,33 +592,12 @@ type opencodeRule struct {
 }
 
 func writeOpencodePermissions(cfg config, path string) error {
-	if !fileExists(path) {
-		logSkip("skipping opencode: %s not found", path)
-		return nil
-	}
-
-	contents, err := os.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("read opencode config: %w", err)
-	}
-
 	rules := buildOpencodeRules(cfg)
 	bashJSON := renderOpencodeBashJSON(rules)
 
-	updated, err := replaceOpencodeBash(string(contents), bashJSON)
-	if err != nil {
-		return err
-	}
-
-	if updated == string(contents) {
-		return nil
-	}
-
-	if err := os.WriteFile(path, []byte(updated), 0o644); err != nil {
-		return fmt.Errorf("write opencode config: %w", err)
-	}
-
-	return nil
+	return updateFileIfChanged(path, "skipping opencode: %s not found", func(contents string) (string, error) {
+		return replaceOpencodeBash(contents, bashJSON)
+	})
 }
 
 func buildOpencodeRules(cfg config) []opencodeRule {
@@ -630,12 +633,10 @@ func expandOpencodePatterns(values []string) []string {
 		if trimmed == "" {
 			continue
 		}
-		if containsWildcard(trimmed) {
-			out, seen = appendUnique(out, seen, trimmed)
-			continue
-		}
 		out, seen = appendUnique(out, seen, trimmed)
-		out, seen = appendUnique(out, seen, trimmed+" *")
+		if !containsWildcard(trimmed) {
+			out, seen = appendUnique(out, seen, trimmed+" *")
+		}
 	}
 	return out
 }
@@ -662,6 +663,29 @@ func renderOpencodeBashJSON(rules []opencodeRule) string {
 }
 
 func replaceOpencodeBash(contents, bashJSON string) (string, error) {
+	start := strings.Index(contents, opencodeStartMarker)
+	end := strings.Index(contents, opencodeEndMarker)
+
+	if start != -1 && end != -1 && start < end {
+		return replaceOpencodeWithMarkers(contents, bashJSON, start, end)
+	}
+
+	return replaceOpencodeBashJSON(contents, bashJSON)
+}
+
+func replaceOpencodeWithMarkers(contents, bashJSON string, start, end int) (string, error) {
+	indent, err := lineIndent(contents, start)
+	if err != nil {
+		return "", err
+	}
+
+	indented := indentMultilineValue(bashJSON, indent)
+	block := opencodeStartMarker + "\n" + indent + indented + "\n" + indent + opencodeEndMarker
+
+	return contents[:start] + block + contents[end+len(opencodeEndMarker):], nil
+}
+
+func replaceOpencodeBashJSON(contents, bashJSON string) (string, error) {
 	_, permStart, permEnd, err := findObjectForKey(contents, "permission")
 	if err != nil {
 		return "", err
@@ -692,73 +716,61 @@ func lineIndentForPos(contents string, pos int) string {
 }
 
 func findObjectForKey(contents, key string) (int, int, int, error) {
-	depth := 0
-	for i := 0; i < len(contents); i++ {
-		switch contents[i] {
-		case '"':
-			token, end, err := scanString(contents, i)
-			if err != nil {
-				return 0, 0, 0, err
-			}
-			if depth == 1 && token == key {
-				keyPos := i
-				j := skipSpaces(contents, end+1)
-				if j >= len(contents) || contents[j] != ':' {
-					return 0, 0, 0, fmt.Errorf("%s key missing colon", key)
-				}
-				j = skipSpaces(contents, j+1)
-				if j >= len(contents) || contents[j] != '{' {
-					return 0, 0, 0, fmt.Errorf("%s value must be object", key)
-				}
-				objEnd, err := findMatchingBrace(contents, j)
-				if err != nil {
-					return 0, 0, 0, err
-				}
-				return keyPos, j, objEnd, nil
-			}
-			i = end
-		case '{':
-			depth++
-		case '}':
-			depth--
-		}
+	keyPos, valueStart, err := findKeyInRange(contents, 0, len(contents)-1, key)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("%s object not found: %w", key, err)
 	}
-	return 0, 0, 0, fmt.Errorf("%s object not found", key)
+	if contents[valueStart] != '{' {
+		return 0, 0, 0, fmt.Errorf("%s value must be object", key)
+	}
+	valueEnd, err := findMatchingBrace(contents, valueStart)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	return keyPos, valueStart, valueEnd, nil
 }
 
 func findKeyValueInObject(contents string, objStart, objEnd int, key string) (int, int, int, error) {
+	keyPos, valueStart, err := findKeyInRange(contents, objStart, objEnd, key)
+	if err != nil {
+		return 0, 0, 0, fmt.Errorf("%s key not found: %w", key, err)
+	}
+	valueEnd, err := findValueEnd(contents, valueStart)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	return keyPos, valueStart, valueEnd, nil
+}
+
+func findKeyInRange(contents string, start, end int, key string) (int, int, error) {
 	depth := 0
-	for i := objStart; i <= objEnd; i++ {
+	for i := start; i <= end; i++ {
 		switch contents[i] {
 		case '"':
-			token, end, err := scanString(contents, i)
+			token, strEnd, err := scanString(contents, i)
 			if err != nil {
-				return 0, 0, 0, err
+				return 0, 0, err
 			}
 			if depth == 1 && token == key {
 				keyPos := i
-				j := skipSpaces(contents, end+1)
+				j := skipSpaces(contents, strEnd+1)
 				if j >= len(contents) || contents[j] != ':' {
-					return 0, 0, 0, fmt.Errorf("%s key missing colon", key)
+					return 0, 0, fmt.Errorf("%s key missing colon", key)
 				}
 				j = skipSpaces(contents, j+1)
 				if j >= len(contents) {
-					return 0, 0, 0, fmt.Errorf("%s missing value", key)
+					return 0, 0, fmt.Errorf("%s missing value", key)
 				}
-				valueEnd, err := findValueEnd(contents, j)
-				if err != nil {
-					return 0, 0, 0, err
-				}
-				return keyPos, j, valueEnd, nil
+				return keyPos, j, nil
 			}
-			i = end
+			i = strEnd
 		case '{':
 			depth++
 		case '}':
 			depth--
 		}
 	}
-	return 0, 0, 0, fmt.Errorf("%s key not found", key)
+	return 0, 0, fmt.Errorf("key %q not found", key)
 }
 
 func findValueEnd(contents string, start int) (int, error) {
@@ -784,33 +796,16 @@ func findValueEnd(contents string, start int) (int, error) {
 }
 
 func findMatchingBrace(contents string, start int) (int, error) {
-	if contents[start] != '{' {
-		return 0, fmt.Errorf("expected object start at %d", start)
-	}
-	depth := 0
-	for i := start; i < len(contents); i++ {
-		switch contents[i] {
-		case '"':
-			_, end, err := scanString(contents, i)
-			if err != nil {
-				return 0, err
-			}
-			i = end
-		case '{':
-			depth++
-		case '}':
-			depth--
-			if depth == 0 {
-				return i, nil
-			}
-		}
-	}
-	return 0, fmt.Errorf("unterminated object starting at %d", start)
+	return findMatchingDelimiter(contents, start, '{', '}', "object")
 }
 
 func findMatchingBracket(contents string, start int) (int, error) {
-	if contents[start] != '[' {
-		return 0, fmt.Errorf("expected array start at %d", start)
+	return findMatchingDelimiter(contents, start, '[', ']', "array")
+}
+
+func findMatchingDelimiter(contents string, start int, open, close byte, name string) (int, error) {
+	if contents[start] != open {
+		return 0, fmt.Errorf("expected %s start at %d", name, start)
 	}
 	depth := 0
 	for i := start; i < len(contents); i++ {
@@ -821,16 +816,16 @@ func findMatchingBracket(contents string, start int) (int, error) {
 				return 0, err
 			}
 			i = end
-		case '[':
+		case open:
 			depth++
-		case ']':
+		case close:
 			depth--
 			if depth == 0 {
 				return i, nil
 			}
 		}
 	}
-	return 0, fmt.Errorf("unterminated array starting at %d", start)
+	return 0, fmt.Errorf("unterminated %s starting at %d", name, start)
 }
 
 func scanString(contents string, start int) (string, int, error) {
