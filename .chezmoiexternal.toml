@@ -1,0 +1,4 @@
+[".oh-my-zsh/themes/zenith.zsh-theme"]
+type = "file"
+url = "https://raw.githubusercontent.com/waki285/Zenith/main/zenith.zsh-theme"
+refreshPeriod = "168h"

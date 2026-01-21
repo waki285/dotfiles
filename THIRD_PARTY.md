@@ -12,8 +12,8 @@ components listed below.
 ## Zenith Oh My Zsh theme
 
 - Source: waki285/Zenith
-- Files: dot_oh-my-zsh/themes/zenith.zsh-theme
-- License: MIT (see dot_oh-my-zsh/themes/zenith.LICENSE)
+- Files: `.oh-my-zsh/themes/zenith.zsh-theme` (managed via `.chezmoiexternal.toml`)
+- License: MIT
 
 ## Anthropic skills (frontend-design)
 

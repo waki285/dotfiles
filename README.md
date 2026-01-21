@@ -6,13 +6,13 @@ Personal dotfiles managed with chezmoi.
 
 This repository contains the following configuration files:
 
-- **Shell**: zsh configuration files (`.zshrc`, `.zprofile`, `.zshenv`)
+- **Shell**: zsh configuration files (`.zshrc`, `.zprofile`)
 - **Git**: `.gitconfig` (GPG signing, editor settings, etc.)
 - **Editors**: Vim, Zed configurations
-- **Oh My Zsh**: Custom theme (`zenith`) and plugin settings
-- **AI Tools**: Claude Code, Codex, Gemini configurations
+- **Oh My Zsh**: Custom theme (`zenith`, managed via `.chezmoiexternal.toml`) and plugin settings
+- **AI Tools**: Claude Code, Codex, Gemini, OpenCode configurations
 - **agent_hooks**: Custom hook system for Claude Code and OpenCode (see [agent_hooks/README.md](agent_hooks/README.md))
-- **Others**: Karabiner-Elements, Deno completions, etc.
+- **Others**: Karabiner-Elements, Deno completions, VS Code prompt instructions, etc.
 
 ## Requirements
 
@@ -74,13 +74,14 @@ generated into tool-specific configs.
 .
 ├── .chezmoiscripts/      # Post-apply scripts (run_after_*.sh, run_after_*.ps1)
 ├── agent_hooks/          # Coding Agent hook system (Apache 2.0 licensed)
+├── AppData/              # Windows application settings (Zed)
 ├── completions/          # Shell completion files
+├── docs/                 # Documentation (permissions.md, etc.)
 ├── dot_claude/           # Claude Code configuration
 ├── dot_codex/            # Codex configuration
-├── dot_config/           # XDG config directory
+├── dot_config/           # XDG config directory (opencode, karabiner, etc.)
 ├── dot_gemini/           # Gemini configuration
-├── dot_oh-my-zsh/        # Oh My Zsh customizations
-├── Library/              # macOS application settings
+├── Library/              # macOS application settings (VS Code prompts)
 ├── tools/                # Development tools (permissions-gen, etc.)
 ├── dot_gitconfig.tmpl    # Git configuration (template)
 ├── dot_vimrc.tmpl        # Vim configuration (Unix)
