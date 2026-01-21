@@ -61,16 +61,26 @@ type opencodeBashConfig struct {
 
 const bashSentinel = "__BASH__"
 
+var quiet bool
+
 func main() {
 	dataPath := flag.String("data", "", "path to permissions YAML")
 	claudePath := flag.String("target", "", "path to settings.json.tmpl")
 	codexPath := flag.String("codex", "", "path to default.rules")
 	opencodePath := flag.String("opencode", "", "path to opencode.json")
+	flag.BoolVar(&quiet, "quiet", false, "suppress skip messages")
+	flag.BoolVar(&quiet, "q", false, "suppress skip messages (shorthand)")
 	flag.Parse()
 
 	if err := run(*dataPath, *claudePath, *codexPath, *opencodePath); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+	}
+}
+
+func logSkip(format string, args ...any) {
+	if !quiet {
+		fmt.Fprintf(os.Stderr, format+"\n", args...)
 	}
 }
 
@@ -107,7 +117,28 @@ func run(dataPath, claudePath, codexPath, opencodePath string) error {
 
 	perm := buildClaudePermissions(cfg)
 
-	contents, err := os.ReadFile(claudePath)
+	if err := writeClaudePermissions(perm, claudePath); err != nil {
+		return err
+	}
+
+	if err := writeCodexRules(cfg, codexPath); err != nil {
+		return err
+	}
+
+	if err := writeOpencodePermissions(cfg, opencodePath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeClaudePermissions(perm claudePermissions, path string) error {
+	if !fileExists(path) {
+		logSkip("skipping claude: %s not found", path)
+		return nil
+	}
+
+	contents, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("read target: %w", err)
 	}
@@ -118,19 +149,11 @@ func run(dataPath, claudePath, codexPath, opencodePath string) error {
 	}
 
 	if updated == string(contents) {
-		// no changes for claude target
-	} else {
-		if err := os.WriteFile(claudePath, []byte(updated), 0o644); err != nil {
-			return fmt.Errorf("write target: %w", err)
-		}
+		return nil
 	}
 
-	if err := writeCodexRules(cfg, codexPath); err != nil {
-		return err
-	}
-
-	if err := writeOpencodePermissions(cfg, opencodePath); err != nil {
-		return err
+	if err := os.WriteFile(path, []byte(updated), 0o644); err != nil {
+		return fmt.Errorf("write target: %w", err)
 	}
 
 	return nil
@@ -204,6 +227,11 @@ func expandHome(path string) (string, error) {
 func fileExists(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && !info.IsDir()
+}
+
+func dirExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.IsDir()
 }
 
 func loadConfig(path string) (config, error) {
@@ -378,6 +406,12 @@ type codexRule struct {
 }
 
 func writeCodexRules(cfg config, path string) error {
+	dir := filepath.Dir(path)
+	if !dirExists(dir) {
+		logSkip("skipping codex: %s not found", dir)
+		return nil
+	}
+
 	rules := buildCodexRules(cfg)
 	content := renderCodexRules(rules)
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
@@ -534,6 +568,11 @@ type opencodeRule struct {
 }
 
 func writeOpencodePermissions(cfg config, path string) error {
+	if !fileExists(path) {
+		logSkip("skipping opencode: %s not found", path)
+		return nil
+	}
+
 	contents, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("read opencode config: %w", err)

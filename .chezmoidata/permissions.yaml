@@ -27,6 +27,7 @@ bash:
     - gofmt
     - go build
     - go test
+    - go vet
     - ls
     - mkdir
     - npm info

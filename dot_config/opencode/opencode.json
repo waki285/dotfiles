@@ -66,6 +66,8 @@
       "go build *": "allow",
       "go test": "allow",
       "go test *": "allow",
+      "go vet": "allow",
+      "go vet *": "allow",
       "ls": "allow",
       "ls *": "allow",
       "mkdir": "allow",
