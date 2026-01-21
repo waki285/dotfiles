@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -15,9 +16,6 @@ import (
 const (
 	startMarker = "{{/* PERMISSIONS:START */}}"
 	endMarker   = "{{/* PERMISSIONS:END */}}"
-
-	opencodeStartMarker = "{{/* BASH:START */}}"
-	opencodeEndMarker   = "{{/* BASH:END */}}"
 
 	defaultDataPath     = ".chezmoidata/permissions.yaml"
 	defaultClaudePath   = "dot_claude/settings.json.tmpl"
@@ -52,14 +50,39 @@ type claudePermissions struct {
 }
 
 type opencodeConfig struct {
-	Bash opencodeBashConfig `yaml:"bash"`
+	Bash   opencodeSectionConfig            `yaml:"bash"`
+	Others map[string]opencodeSectionConfig `yaml:",inline"`
 }
 
-type opencodeBashConfig struct {
-	Default string   `yaml:"default"`
-	Allow   []string `yaml:"allow"`
-	Ask     []string `yaml:"ask"`
-	Deny    []string `yaml:"deny"`
+type opencodeSectionConfig struct {
+	Default  string   `yaml:"default"`
+	Allow    []string `yaml:"allow"`
+	Ask      []string `yaml:"ask"`
+	Deny     []string `yaml:"deny"`
+	Scalar   string   `yaml:"-"`
+	IsScalar bool     `yaml:"-"`
+}
+
+func (c *opencodeSectionConfig) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.ScalarNode {
+		var decision string
+		if err := value.Decode(&decision); err != nil {
+			return err
+		}
+		*c = opencodeSectionConfig{
+			Scalar:   strings.TrimSpace(decision),
+			IsScalar: true,
+		}
+		return nil
+	}
+
+	type raw opencodeSectionConfig
+	var decoded raw
+	if err := value.Decode(&decoded); err != nil {
+		return err
+	}
+	*c = opencodeSectionConfig(decoded)
+	return nil
 }
 
 const bashSentinel = "__BASH__"
@@ -262,7 +285,7 @@ func buildClaudePermissions(cfg config) claudePermissions {
 		Allow:                 allow,
 		Ask:                   ensureSlice(ask),
 		Deny:                  ensureSlice(deny),
-		AdditionalDirectories: ensureSlice(normalizeList(cfg.Claude.AdditionalDirectories)),
+		AdditionalDirectories: ensureSlice(normalizeList(cfg.Claude.AdditionalDirectories, false)),
 	}
 }
 
@@ -278,12 +301,16 @@ func replacePermissionsBlock(contents string, perm claudePermissions) (string, e
 }
 
 func replaceWithMarkers(contents string, perm claudePermissions, start, end int) (string, error) {
-	indent, err := lineIndent(contents, start)
+	lines, err := permissionsLines(perm)
 	if err != nil {
 		return "", err
 	}
 
-	lines, err := permissionsLines(perm)
+	return replaceBlockWithLines(contents, start, end, lines)
+}
+
+func replaceBlockWithLines(contents string, start, end int, lines []string) (string, error) {
+	indent, err := lineIndent(contents, start)
 	if err != nil {
 		return "", err
 	}
@@ -328,10 +355,13 @@ func permissionsLines(perm claudePermissions) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("marshal permissions: %w", err)
 	}
+	return innerJSONLines(string(data))
+}
 
-	lines := strings.Split(string(data), "\n")
+func innerJSONLines(data string) ([]string, error) {
+	lines := strings.Split(data, "\n")
 	if len(lines) < 2 {
-		return nil, fmt.Errorf("unexpected permissions json")
+		return nil, fmt.Errorf("unexpected json: too few lines")
 	}
 
 	inner := lines[1 : len(lines)-1]
@@ -347,7 +377,7 @@ func permissionsLines(perm claudePermissions) ([]string, error) {
 }
 
 func toBashPatterns(values []string) []string {
-	normalized := normalizeList(values)
+	normalized := normalizeList(values, false)
 	out := make([]string, 0, len(normalized))
 	for _, v := range normalized {
 		out = append(out, fmt.Sprintf("Bash(%s:*)", v))
@@ -355,7 +385,19 @@ func toBashPatterns(values []string) []string {
 	return out
 }
 
-func normalizeList(values []string) []string {
+func normalizeList(values []string, unique bool) []string {
+	if unique {
+		seen := make(map[string]struct{})
+		var out []string
+		for _, value := range values {
+			trimmed := strings.TrimSpace(value)
+			if trimmed == "" {
+				continue
+			}
+			out, seen = appendUnique(out, seen, trimmed)
+		}
+		return out
+	}
 	var out []string
 	for _, value := range values {
 		trimmed := strings.TrimSpace(value)
@@ -368,8 +410,8 @@ func normalizeList(values []string) []string {
 }
 
 func expandWithBash(values []string, bashValues []string) []string {
-	normalized := normalizeList(values)
-	bashPatterns := toBashPatterns(normalizeList(bashValues))
+	normalized := normalizeList(values, false)
+	bashPatterns := toBashPatterns(normalizeList(bashValues, false))
 
 	if len(bashPatterns) == 0 {
 		return ensureSlice(normalized)
@@ -452,15 +494,23 @@ func buildCodexRules(cfg config) []codexRule {
 	return rules
 }
 
-func buildCodexDecisionRules(decision string, commands []string) []codexRule {
-	var order []string
-	type group struct {
-		prefix []string
-		alts   []string
-		seen   map[string]struct{}
+type commandGroup struct {
+	prefix []string
+	alts   []string
+	seen   map[string]struct{}
+}
+
+type groupedCommands struct {
+	order   []string
+	groups  map[string]*commandGroup
+	singles map[string][]string
+}
+
+func groupCommands(commands []string) groupedCommands {
+	gc := groupedCommands{
+		groups:  make(map[string]*commandGroup),
+		singles: make(map[string][]string),
 	}
-	groups := make(map[string]*group)
-	singles := make(map[string][]string)
 
 	for _, cmd := range commands {
 		tokens := strings.Fields(cmd)
@@ -469,35 +519,41 @@ func buildCodexDecisionRules(decision string, commands []string) []codexRule {
 		}
 		if len(tokens) == 1 {
 			key := "single|" + tokens[0]
-			if _, ok := singles[key]; !ok {
-				singles[key] = tokens
-				order = append(order, key)
+			if _, ok := gc.singles[key]; !ok {
+				gc.singles[key] = tokens
+				gc.order = append(gc.order, key)
 			}
 			continue
 		}
 
 		prefix := strings.Join(tokens[:len(tokens)-1], "\x1f")
 		key := fmt.Sprintf("group|%d|%s", len(tokens), prefix)
-		if _, ok := groups[key]; !ok {
-			groups[key] = &group{
+		if _, ok := gc.groups[key]; !ok {
+			gc.groups[key] = &commandGroup{
 				prefix: tokens[:len(tokens)-1],
 				alts:   []string{},
 				seen:   make(map[string]struct{}),
 			}
-			order = append(order, key)
+			gc.order = append(gc.order, key)
 		}
 
 		last := tokens[len(tokens)-1]
-		if _, ok := groups[key].seen[last]; ok {
+		if _, ok := gc.groups[key].seen[last]; ok {
 			continue
 		}
-		groups[key].seen[last] = struct{}{}
-		groups[key].alts = append(groups[key].alts, last)
+		gc.groups[key].seen[last] = struct{}{}
+		gc.groups[key].alts = append(gc.groups[key].alts, last)
 	}
 
+	return gc
+}
+
+func buildCodexDecisionRules(decision string, commands []string) []codexRule {
+	gc := groupCommands(commands)
+
 	var rules []codexRule
-	for _, key := range order {
-		if tokens, ok := singles[key]; ok {
+	for _, key := range gc.order {
+		if tokens, ok := gc.singles[key]; ok {
 			rules = append(rules, codexRule{
 				PatternPrefix: tokens,
 				Decision:      decision,
@@ -505,7 +561,7 @@ func buildCodexDecisionRules(decision string, commands []string) []codexRule {
 			})
 			continue
 		}
-		group := groups[key]
+		group := gc.groups[key]
 		if group == nil {
 			continue
 		}
@@ -592,29 +648,108 @@ type opencodeRule struct {
 }
 
 func writeOpencodePermissions(cfg config, path string) error {
-	rules := buildOpencodeRules(cfg)
-	bashJSON := renderOpencodeBashJSON(rules)
+	sections := buildOpencodeSections(cfg)
+	permissionsJSON := renderOpencodePermissionsJSON(sections)
+	lines, err := opencodePermissionsLinesFromJSON(permissionsJSON)
+	if err != nil {
+		return err
+	}
 
 	return updateFileIfChanged(path, "skipping opencode: %s not found", func(contents string) (string, error) {
-		return replaceOpencodeBash(contents, bashJSON)
+		return replaceOpencodePermissions(contents, permissionsJSON, lines)
 	})
 }
 
-func buildOpencodeRules(cfg config) []opencodeRule {
-	defaultDecision := strings.TrimSpace(cfg.Opencode.Bash.Default)
-	if defaultDecision == "" {
-		defaultDecision = "allow"
+type opencodeSection struct {
+	Name     string
+	Rules    []opencodeRule
+	Scalar   string
+	IsScalar bool
+}
+
+func buildOpencodeSections(cfg config) []opencodeSection {
+	var sections []opencodeSection
+	if cfg.Opencode.Bash.IsScalar {
+		sections = append(sections, opencodeSection{
+			Name:     "bash",
+			Scalar:   cfg.Opencode.Bash.Scalar,
+			IsScalar: true,
+		})
+	} else {
+		sections = append(sections, opencodeSection{
+			Name:  "bash",
+			Rules: buildOpencodeBashRules(cfg),
+		})
 	}
 
-	rules := []opencodeRule{{Pattern: "*", Decision: defaultDecision}}
-	rules = append(rules, buildOpencodeDecisionRules("allow", cfg.Bash.Allow, cfg.Opencode.Bash.Allow)...)
-	rules = append(rules, buildOpencodeDecisionRules("ask", cfg.Bash.Ask, cfg.Opencode.Bash.Ask)...)
-	rules = append(rules, buildOpencodeDecisionRules("deny", cfg.Bash.Deny, cfg.Opencode.Bash.Deny)...)
+	if len(cfg.Opencode.Others) == 0 {
+		return sections
+	}
+
+	var names []string
+	for name := range cfg.Opencode.Others {
+		if name == "bash" {
+			continue
+		}
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		section := cfg.Opencode.Others[name]
+		if section.IsScalar {
+			sections = append(sections, opencodeSection{
+				Name:     name,
+				Scalar:   section.Scalar,
+				IsScalar: true,
+			})
+			continue
+		}
+		rules := buildOpencodeSectionRules(section)
+		sections = append(sections, opencodeSection{Name: name, Rules: rules})
+	}
+	return sections
+}
+
+func buildOpencodeBashRules(cfg config) []opencodeRule {
+	return buildOpencodeRulesForSection(
+		cfg.Opencode.Bash.Default,
+		append(cfg.Bash.Allow, cfg.Opencode.Bash.Allow...),
+		append(cfg.Bash.Ask, cfg.Opencode.Bash.Ask...),
+		append(cfg.Bash.Deny, cfg.Opencode.Bash.Deny...),
+		true,
+	)
+}
+
+func buildOpencodeSectionRules(section opencodeSectionConfig) []opencodeRule {
+	return buildOpencodeRulesForSection(
+		section.Default,
+		section.Allow,
+		section.Ask,
+		section.Deny,
+		false,
+	)
+}
+
+func buildOpencodeRulesForSection(defaultDecision string, allow, ask, deny []string, expand bool) []opencodeRule {
+	decision := strings.TrimSpace(defaultDecision)
+	if decision == "" {
+		decision = "allow"
+	}
+
+	rules := []opencodeRule{{Pattern: "*", Decision: decision}}
+	rules = append(rules, buildOpencodeDecisionRules("allow", allow, expand)...)
+	rules = append(rules, buildOpencodeDecisionRules("ask", ask, expand)...)
+	rules = append(rules, buildOpencodeDecisionRules("deny", deny, expand)...)
 	return rules
 }
 
-func buildOpencodeDecisionRules(decision string, common, specific []string) []opencodeRule {
-	patterns := expandOpencodePatterns(append(common, specific...))
+func buildOpencodeDecisionRules(decision string, values []string, expand bool) []opencodeRule {
+	var patterns []string
+	if expand {
+		patterns = expandOpencodePatterns(values)
+	} else {
+		patterns = normalizeList(values, true)
+	}
 	rules := make([]opencodeRule, 0, len(patterns))
 	for _, pattern := range patterns {
 		rules = append(rules, opencodeRule{
@@ -645,7 +780,7 @@ func containsWildcard(value string) bool {
 	return strings.ContainsAny(value, "*?")
 }
 
-func renderOpencodeBashJSON(rules []opencodeRule) string {
+func renderOpencodeSectionJSON(rules []opencodeRule) string {
 	var builder strings.Builder
 	builder.WriteString("{\n")
 	for i, rule := range rules {
@@ -662,44 +797,48 @@ func renderOpencodeBashJSON(rules []opencodeRule) string {
 	return builder.String()
 }
 
-func replaceOpencodeBash(contents, bashJSON string) (string, error) {
-	start := strings.Index(contents, opencodeStartMarker)
-	end := strings.Index(contents, opencodeEndMarker)
-
-	if start != -1 && end != -1 && start < end {
-		return replaceOpencodeWithMarkers(contents, bashJSON, start, end)
+func renderOpencodePermissionsJSON(sections []opencodeSection) string {
+	var builder strings.Builder
+	builder.WriteString("{\n")
+	for i, section := range sections {
+		builder.WriteString("  ")
+		builder.WriteString(jsonString(section.Name))
+		builder.WriteString(": ")
+		if section.IsScalar {
+			builder.WriteString(jsonString(section.Scalar))
+		} else {
+			builder.WriteString(indentMultilineValue(renderOpencodeSectionJSON(section.Rules), "  "))
+		}
+		if i < len(sections)-1 {
+			builder.WriteString(",")
+		}
+		builder.WriteString("\n")
 	}
-
-	return replaceOpencodeBashJSON(contents, bashJSON)
+	builder.WriteString("}")
+	return builder.String()
 }
 
-func replaceOpencodeWithMarkers(contents, bashJSON string, start, end int) (string, error) {
-	indent, err := lineIndent(contents, start)
-	if err != nil {
-		return "", err
-	}
-
-	indented := indentMultilineValue(bashJSON, indent)
-	block := opencodeStartMarker + "\n" + indent + indented + "\n" + indent + opencodeEndMarker
-
-	return contents[:start] + block + contents[end+len(opencodeEndMarker):], nil
+func opencodePermissionsLinesFromJSON(permissionsJSON string) ([]string, error) {
+	return innerJSONLines(permissionsJSON)
 }
 
-func replaceOpencodeBashJSON(contents, bashJSON string) (string, error) {
-	_, permStart, permEnd, err := findObjectForKey(contents, "permission")
+func replaceOpencodePermissions(contents, permissionsJSON string, lines []string) (string, error) {
+	start := strings.Index(contents, startMarker)
+	end := strings.Index(contents, endMarker)
+	if start == -1 || end == -1 || start >= end {
+		return replaceOpencodePermissionsJSON(contents, permissionsJSON)
+	}
+	return replaceBlockWithLines(contents, start, end, lines)
+}
+
+func replaceOpencodePermissionsJSON(contents, permissionsJSON string) (string, error) {
+	permKeyPos, permStart, permEnd, err := findObjectForKey(contents, "permission")
 	if err != nil {
 		return "", err
 	}
-
-	bashKeyPos, bashStart, bashEnd, err := findKeyValueInObject(contents, permStart, permEnd, "bash")
-	if err != nil {
-		return "", err
-	}
-
-	indent := lineIndentForPos(contents, bashKeyPos)
-	replacement := indentMultilineValue(bashJSON, indent)
-
-	return contents[:bashStart] + replacement + contents[bashEnd+1:], nil
+	indent := lineIndentForPos(contents, permKeyPos)
+	replacement := indentMultilineValue(permissionsJSON, indent)
+	return contents[:permStart] + replacement + contents[permEnd+1:], nil
 }
 
 func indentMultilineValue(value, indent string) string {
@@ -713,151 +852,6 @@ func indentMultilineValue(value, indent string) string {
 func lineIndentForPos(contents string, pos int) string {
 	lineStart := strings.LastIndex(contents[:pos], "\n") + 1
 	return contents[lineStart:pos]
-}
-
-func findObjectForKey(contents, key string) (int, int, int, error) {
-	keyPos, valueStart, err := findKeyInRange(contents, 0, len(contents)-1, key)
-	if err != nil {
-		return 0, 0, 0, fmt.Errorf("%s object not found: %w", key, err)
-	}
-	if contents[valueStart] != '{' {
-		return 0, 0, 0, fmt.Errorf("%s value must be object", key)
-	}
-	valueEnd, err := findMatchingBrace(contents, valueStart)
-	if err != nil {
-		return 0, 0, 0, err
-	}
-	return keyPos, valueStart, valueEnd, nil
-}
-
-func findKeyValueInObject(contents string, objStart, objEnd int, key string) (int, int, int, error) {
-	keyPos, valueStart, err := findKeyInRange(contents, objStart, objEnd, key)
-	if err != nil {
-		return 0, 0, 0, fmt.Errorf("%s key not found: %w", key, err)
-	}
-	valueEnd, err := findValueEnd(contents, valueStart)
-	if err != nil {
-		return 0, 0, 0, err
-	}
-	return keyPos, valueStart, valueEnd, nil
-}
-
-func findKeyInRange(contents string, start, end int, key string) (int, int, error) {
-	depth := 0
-	for i := start; i <= end; i++ {
-		switch contents[i] {
-		case '"':
-			token, strEnd, err := scanString(contents, i)
-			if err != nil {
-				return 0, 0, err
-			}
-			if depth == 1 && token == key {
-				keyPos := i
-				j := skipSpaces(contents, strEnd+1)
-				if j >= len(contents) || contents[j] != ':' {
-					return 0, 0, fmt.Errorf("%s key missing colon", key)
-				}
-				j = skipSpaces(contents, j+1)
-				if j >= len(contents) {
-					return 0, 0, fmt.Errorf("%s missing value", key)
-				}
-				return keyPos, j, nil
-			}
-			i = strEnd
-		case '{':
-			depth++
-		case '}':
-			depth--
-		}
-	}
-	return 0, 0, fmt.Errorf("key %q not found", key)
-}
-
-func findValueEnd(contents string, start int) (int, error) {
-	switch contents[start] {
-	case '{':
-		return findMatchingBrace(contents, start)
-	case '[':
-		return findMatchingBracket(contents, start)
-	case '"':
-		_, end, err := scanString(contents, start)
-		return end, err
-	default:
-		for i := start; i < len(contents); i++ {
-			switch contents[i] {
-			case ',', '\n', '\r', '\t', ' ':
-				return i - 1, nil
-			case '}':
-				return i - 1, nil
-			}
-		}
-		return len(contents) - 1, nil
-	}
-}
-
-func findMatchingBrace(contents string, start int) (int, error) {
-	return findMatchingDelimiter(contents, start, '{', '}', "object")
-}
-
-func findMatchingBracket(contents string, start int) (int, error) {
-	return findMatchingDelimiter(contents, start, '[', ']', "array")
-}
-
-func findMatchingDelimiter(contents string, start int, open, close byte, name string) (int, error) {
-	if contents[start] != open {
-		return 0, fmt.Errorf("expected %s start at %d", name, start)
-	}
-	depth := 0
-	for i := start; i < len(contents); i++ {
-		switch contents[i] {
-		case '"':
-			_, end, err := scanString(contents, i)
-			if err != nil {
-				return 0, err
-			}
-			i = end
-		case open:
-			depth++
-		case close:
-			depth--
-			if depth == 0 {
-				return i, nil
-			}
-		}
-	}
-	return 0, fmt.Errorf("unterminated %s starting at %d", name, start)
-}
-
-func scanString(contents string, start int) (string, int, error) {
-	if contents[start] != '"' {
-		return "", 0, fmt.Errorf("expected string at %d", start)
-	}
-	escaped := false
-	for i := start + 1; i < len(contents); i++ {
-		if escaped {
-			escaped = false
-			continue
-		}
-		switch contents[i] {
-		case '\\':
-			escaped = true
-		case '"':
-			return contents[start+1 : i], i, nil
-		}
-	}
-	return "", 0, fmt.Errorf("unterminated string at %d", start)
-}
-
-func skipSpaces(contents string, start int) int {
-	for i := start; i < len(contents); i++ {
-		switch contents[i] {
-		case ' ', '\n', '\r', '\t':
-			continue
-		default:
-			return i
-		}
-	}
-	return len(contents)
 }
 
 func jsonString(value string) string {

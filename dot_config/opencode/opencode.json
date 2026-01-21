@@ -156,7 +156,8 @@
       "wipe *": "deny",
       "wipefs": "deny",
       "wipefs *": "deny"
-    }
+    },
+    "webfetch": "allow"
   },
   "$schema": "https://opencode.ai/config.json"
 }

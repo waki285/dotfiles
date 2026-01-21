@@ -6,10 +6,12 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 )
 
 func TestNormalizeList(t *testing.T) {
-	got := normalizeList([]string{" foo ", "", "  ", "bar"})
+	got := normalizeList([]string{" foo ", "", "  ", "bar"}, false)
 	want := []string{"foo", "bar"}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("normalizeList() = %#v, want %#v", got, want)
@@ -217,7 +219,74 @@ func TestExpandOpencodePatterns(t *testing.T) {
 	}
 }
 
-func TestReplaceOpencodeBash(t *testing.T) {
+func TestBuildOpencodeDecisionRules_NoWildcard(t *testing.T) {
+	got := buildOpencodeDecisionRules("allow", []string{"foo", "foo", "bar *"}, false)
+	want := []opencodeRule{
+		{Pattern: "foo", Decision: "allow"},
+		{Pattern: "bar *", Decision: "allow"},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("buildOpencodeDecisionRules() = %#v, want %#v", got, want)
+	}
+}
+
+func TestReplaceOpencodePermissions_WithMarkers(t *testing.T) {
+	input := strings.Join([]string{
+		"{",
+		"  \"permission\": {",
+		"    " + startMarker,
+		"    \"old\": \"value\"",
+		"    " + endMarker,
+		"  }",
+		"}",
+		"",
+	}, "\n")
+	sections := []opencodeSection{
+		{
+			Name: "bash",
+			Rules: []opencodeRule{
+				{Pattern: "*", Decision: "ask"},
+			},
+		},
+		{
+			Name: "webfetch",
+			Rules: []opencodeRule{
+				{Pattern: "*", Decision: "allow"},
+			},
+		},
+	}
+	permissionsJSON := renderOpencodePermissionsJSON(sections)
+	lines, err := opencodePermissionsLinesFromJSON(permissionsJSON)
+	if err != nil {
+		t.Fatalf("opencodePermissionsLinesFromJSON() error = %v", err)
+	}
+
+	got, err := replaceOpencodePermissions(input, permissionsJSON, lines)
+	if err != nil {
+		t.Fatalf("replaceOpencodePermissions() error = %v", err)
+	}
+
+	want := strings.Join([]string{
+		"{",
+		"  \"permission\": {",
+		"    " + startMarker,
+		"    \"bash\": {",
+		"      \"*\": \"ask\"",
+		"    },",
+		"    \"webfetch\": {",
+		"      \"*\": \"allow\"",
+		"    }",
+		"    " + endMarker,
+		"  }",
+		"}",
+		"",
+	}, "\n")
+	if got != want {
+		t.Fatalf("replaceOpencodePermissions() output mismatch\n--- got ---\n%s\n--- want ---\n%s", got, want)
+	}
+}
+
+func TestReplaceOpencodePermissions_FallbackJSON(t *testing.T) {
 	input := strings.Join([]string{
 		"{",
 		"  \"permission\": {",
@@ -229,34 +298,82 @@ func TestReplaceOpencodeBash(t *testing.T) {
 		"}",
 		"",
 	}, "\n")
-	bashJSON := "{\n  \"x\": \"y\",\n  \"z\": \"w\"\n}"
-
-	got, err := replaceOpencodeBash(input, bashJSON)
+	permissionsJSON := strings.Join([]string{
+		"{",
+		"  \"bash\": {",
+		"    \"*\": \"ask\"",
+		"  },",
+		"  \"webfetch\": {",
+		"    \"*\": \"allow\"",
+		"  }",
+		"}",
+	}, "\n")
+	lines, err := opencodePermissionsLinesFromJSON(permissionsJSON)
 	if err != nil {
-		t.Fatalf("replaceOpencodeBash() error = %v", err)
+		t.Fatalf("opencodePermissionsLinesFromJSON() error = %v", err)
+	}
+
+	got, err := replaceOpencodePermissions(input, permissionsJSON, lines)
+	if err != nil {
+		t.Fatalf("replaceOpencodePermissions() error = %v", err)
 	}
 
 	want := strings.Join([]string{
 		"{",
 		"  \"permission\": {",
 		"    \"bash\": {",
-		"      \"x\": \"y\",",
-		"      \"z\": \"w\"",
+		"      \"*\": \"ask\"",
 		"    },",
-		"    \"other\": 1",
+		"    \"webfetch\": {",
+		"      \"*\": \"allow\"",
+		"    }",
 		"  }",
 		"}",
 		"",
 	}, "\n")
 	if got != want {
-		t.Fatalf("replaceOpencodeBash() output mismatch\n--- got ---\n%s\n--- want ---\n%s", got, want)
+		t.Fatalf("replaceOpencodePermissions() output mismatch\n--- got ---\n%s\n--- want ---\n%s", got, want)
 	}
 }
 
-func TestReplaceOpencodeBash_MissingPermission(t *testing.T) {
-	_, err := replaceOpencodeBash("{}", "{}")
+func TestRenderOpencodePermissionsJSON_ScalarSection(t *testing.T) {
+	sections := []opencodeSection{
+		{
+			Name: "bash",
+			Rules: []opencodeRule{
+				{Pattern: "*", Decision: "ask"},
+			},
+		},
+		{
+			Name:     "webfetch",
+			Scalar:   "allow",
+			IsScalar: true,
+		},
+	}
+
+	got := renderOpencodePermissionsJSON(sections)
+	want := strings.Join([]string{
+		"{",
+		"  \"bash\": {",
+		"    \"*\": \"ask\"",
+		"  },",
+		"  \"webfetch\": \"allow\"",
+		"}",
+	}, "\n")
+	if got != want {
+		t.Fatalf("renderOpencodePermissionsJSON() = %q, want %q", got, want)
+	}
+}
+
+func TestReplaceOpencodePermissions_MissingPermission(t *testing.T) {
+	permissionsJSON := "{\n  \"bash\": {}\n}"
+	lines, err := opencodePermissionsLinesFromJSON(permissionsJSON)
+	if err != nil {
+		t.Fatalf("opencodePermissionsLinesFromJSON() error = %v", err)
+	}
+	_, err = replaceOpencodePermissions("{}", permissionsJSON, lines)
 	if err == nil {
-		t.Fatal("replaceOpencodeBash() expected error for missing permission object")
+		t.Fatal("replaceOpencodePermissions() expected error for missing permission object")
 	}
 }
 
@@ -326,5 +443,30 @@ func TestResolvePath(t *testing.T) {
 	}
 	if got != want {
 		t.Fatalf("resolvePath() = %q, want %q", got, want)
+	}
+}
+
+func TestOpencodeSectionConfig_ScalarValue(t *testing.T) {
+	input := []byte(strings.Join([]string{
+		"opencode:",
+		"  bash: ask",
+		"  webfetch: allow",
+	}, "\n"))
+
+	var cfg config
+	if err := yaml.Unmarshal(input, &cfg); err != nil {
+		t.Fatalf("yaml.Unmarshal() error = %v", err)
+	}
+
+	if !cfg.Opencode.Bash.IsScalar || cfg.Opencode.Bash.Scalar != "ask" {
+		t.Fatalf("opencode bash scalar = (%v, %q), want (%v, %q)", cfg.Opencode.Bash.IsScalar, cfg.Opencode.Bash.Scalar, true, "ask")
+	}
+
+	webfetch, ok := cfg.Opencode.Others["webfetch"]
+	if !ok {
+		t.Fatal("opencode webfetch section missing")
+	}
+	if !webfetch.IsScalar || webfetch.Scalar != "allow" {
+		t.Fatalf("opencode webfetch scalar = (%v, %q), want (%v, %q)", webfetch.IsScalar, webfetch.Scalar, true, "allow")
 	}
 }

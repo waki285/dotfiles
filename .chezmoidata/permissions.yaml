@@ -104,3 +104,4 @@ opencode:
       - "find * -ok * rmdir *"
       - "find * -exec * mv *"
     deny: []
+  webfetch: allow
