@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$REPO = "waki285/dotfiles"
+$REPO = "waki285/dotfiles-tools"
 $HOOKS_DIR = Join-Path $env:USERPROFILE ".claude\hooks"
 $OPENCODE_PLUGIN_DIR = Join-Path $env:USERPROFILE ".config\opencode\plugin"
 $BINARY_NAME = "agent_hooks_claude.exe"

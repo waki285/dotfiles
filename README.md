@@ -11,7 +11,9 @@ This repository contains the following configuration files:
 - **Editors**: Vim, Zed configurations
 - **Oh My Zsh**: Custom theme (`zenith`, managed via `.chezmoiexternal.toml`) and plugin settings
 - **AI Tools**: Claude Code, Codex, Gemini, OpenCode configurations
-- **agent_hooks**: Custom hook system for Claude Code and OpenCode (see [agent_hooks/README.md](agent_hooks/README.md))
+- **tools**: Development tools as a Git submodule (see [dotfiles-tools](https://github.com/waki285/dotfiles-tools))
+  - **agent_hooks**: Custom hook system for Claude Code and OpenCode
+  - **permissions-gen**: Tool permission generator
 - **Others**: Karabiner-Elements, Deno completions, VS Code prompt instructions, etc.
 
 ## Requirements
@@ -73,7 +75,6 @@ generated into tool-specific configs.
 ```
 .
 ├── .chezmoiscripts/      # Post-apply scripts (run_after_*.sh, run_after_*.ps1)
-├── agent_hooks/          # Coding Agent hook system (Apache 2.0 licensed)
 ├── AppData/              # Windows application settings (Zed)
 ├── completions/          # Shell completion files
 ├── docs/                 # Documentation (permissions.md, etc.)
@@ -82,7 +83,7 @@ generated into tool-specific configs.
 ├── dot_config/           # XDG config directory (opencode, karabiner, etc.)
 ├── dot_gemini/           # Gemini configuration
 ├── Library/              # macOS application settings (VS Code prompts)
-├── tools/                # Development tools (permissions-gen, etc.)
+├── tools/                # Development tools (Git submodule -> dotfiles-tools)
 ├── dot_gitconfig.tmpl    # Git configuration (template)
 ├── dot_vimrc.tmpl        # Vim configuration (Unix)
 ├── _vimrc.tmpl           # Vim configuration (Windows)
@@ -136,11 +137,11 @@ Available modules:
 | `pre-tool-use` | `--additional-context <msg>` | Appends custom message to denial reason |
 | `pre-tool-use` | `--check-package-manager` | Denies mismatched package manager commands |
 
-See [agent_hooks/README.md](agent_hooks/README.md) for details.
+See [tools/agent_hooks/README.md](tools/agent_hooks/README.md) for details.
 
 ## License
 
 - **Repository (excluding third-party files listed in THIRD_PARTY.md)**: Apache License 2.0 (see [LICENSE](LICENSE))
 - **Third-party components**: see [THIRD_PARTY.md](THIRD_PARTY.md)
-- **agent_hooks/**: Apache License 2.0 (see [agent_hooks/LICENSE](agent_hooks/LICENSE))
+- **agent_hooks/**: Apache License 2.0 (see [tools/agent_hooks/LICENSE](tools/agent_hooks/LICENSE))
 - **tools/**: Apache License 2.0 (see [tools/LICENSE](tools/LICENSE))

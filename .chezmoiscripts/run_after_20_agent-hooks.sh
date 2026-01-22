@@ -4,7 +4,7 @@ set -eu
 # Download agent_hooks binaries from GitHub releases
 # Version is fetched from the latest release (source of truth: Cargo.toml)
 
-REPO="waki285/dotfiles"
+REPO="waki285/dotfiles-tools"
 HOOKS_DIR="$HOME/.claude/hooks"
 OPENCODE_PLUGIN_DIR="$HOME/.config/opencode/plugin"
 BINARY_NAME="agent_hooks_claude"
