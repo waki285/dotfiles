@@ -99,6 +99,11 @@
         },
       },
     },
+    "markdownlint": {
+      "settings": {
+        "MD013": false
+      }
+    }
   },
   "resize_all_panels_in_dock": ["left", "right", "bottom"],
 }
