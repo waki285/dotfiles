@@ -5,6 +5,7 @@ tools
 docs
 target
 .github
+.gitmodules
 justfile
 LICENSE
 renovate.json
