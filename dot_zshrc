@@ -1,3 +1,4 @@
+{{- $is_wsl := eq (includeTemplate "is_wsl" . | trim) "true" -}}
 # Add deno completions to search path
 if [[ ":$FPATH:" != *":$HOME/completions:"* ]]; then export FPATH="$HOME/completions:$FPATH"; fi
 # If you come from bash you might have to change your $PATH.
@@ -132,3 +133,8 @@ if [ -f "$HOME/.zshrc.secrets" ]; then
   source "$HOME/.zshrc.secrets"
 fi
 . "/Users/suzuneu/.deno/env"
+
+{{- if $is_wsl }}
+# WSL specific settings
+alias cargo="/mnt/c/Users/suzuneu/.cargo/bin/cargo.exe"
+{{- end }}

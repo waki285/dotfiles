@@ -1,10 +1,8 @@
 {{- $is_windows := eq .chezmoi.os "windows" -}}
 
-{{- /* remove WSL */ -}}
-{{- $is_wsl := or
-      (ne (env "WSL_INTEROP") "")
-      (ne (env "WSL_DISTRO_NAME") "")
-      (ne (env "WSLENV") "")
+{{- $is_wsl := and
+      (eq .chezmoi.os "linux")
+      (.chezmoi.kernel.osrelease | lower | contains "microsoft")
   -}}
 
 {{- $msystem := env "MSYSTEM" -}}

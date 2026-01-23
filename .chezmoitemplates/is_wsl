@@ -1,6 +1,4 @@
-{{- $is_wsl := false -}}
-{{- if eq .chezmoi.os "linux" -}}
-  {{- if (.chezmoi.kernel.osrelease | lower | contains "microsoft") -}}
-    {{- $is_wsl = true -}}
-  {{- end -}}
-{{- end -}}
+{{- and
+  (eq .chezmoi.os "linux")
+  (.chezmoi.kernel.osrelease | lower | contains "microsoft")
+-}}
