@@ -1,3 +1,5 @@
+{{- $is_powershell := eq (includeTemplate "is_powershell" . | trim) "true" -}}
+{{- $is_wsl := eq (includeTemplate "is_wsl" . | trim) "true" -}}
 {
   "env": {
     "API_TIMEOUT_MS": "600000",
@@ -114,8 +116,10 @@
             "type": "command",
 {{- if eq .chezmoi.os "darwin" }}
             "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
-{{- else if eq .chezmoi.os "windows" }}
+{{- else if $is_powershell }}
             "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\""
+{{- else if $is_wsl }}
+            "command": "bash -lc 'powershell.exe -NoProfile -Command \"[System.Media.SystemSounds]::Asterisk.Play(); Start-Sleep -Milliseconds 300\"'"
 {{- else }}
             "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga"
 {{- end }}
@@ -130,8 +134,10 @@
             "type": "command",
 {{- if eq .chezmoi.os "darwin" }}
             "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
-{{- else if eq .chezmoi.os "windows" }}
+{{- else if $is_powershell }}
             "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\""
+{{- else if $is_wsl }}
+            "command": "bash -lc 'powershell.exe -NoProfile -Command \"[System.Media.SystemSounds]::Asterisk.Play(); Start-Sleep -Milliseconds 300\"'"
 {{- else }}
             "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga"
 {{- end }}
@@ -146,7 +152,7 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --deny-rust-allow --expect"
+            "command": "$HOME/.claude/hooks/agent_hooks_claude.exe pre-tool-use --deny-rust-allow --expect"
 {{- else }}
             "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --deny-rust-allow --expect"
 {{- end }}
@@ -159,7 +165,7 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --check-package-manager"
+            "command": "$HOME/.claude/hooks/agent_hooks_claude.exe pre-tool-use --check-package-manager"
 {{- else }}
             "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --check-package-manager"
 {{- end }}
@@ -174,7 +180,7 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME\\.claude\\hooks\\agent_hooks_claude.exe permission-request --block-rm --confirm-destructive-find"
+            "command": "$HOME/.claude/hooks/agent_hooks_claude.exe permission-request --block-rm --confirm-destructive-find"
 {{- else }}
             "command": "$HOME/.claude/hooks/agent_hooks_claude permission-request --block-rm --confirm-destructive-find"
 {{- end }}

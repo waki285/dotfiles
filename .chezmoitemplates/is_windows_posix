@@ -1,0 +1,24 @@
+{{- $is_windows := eq .chezmoi.os "windows" -}}
+
+{{- /* remove WSL */ -}}
+{{- $is_wsl := or
+      (ne (env "WSL_INTEROP") "")
+      (ne (env "WSL_DISTRO_NAME") "")
+      (ne (env "WSLENV") "")
+  -}}
+
+{{- $msystem := env "MSYSTEM" -}}
+{{- $ostype := lower (env "OSTYPE") -}}
+{{- $shell := env "SHELL" -}}
+{{- $shell_l := lower $shell -}}
+
+{{- $posixish := or
+      (ne $msystem "")
+      (contains $ostype "msys")
+      (contains $ostype "cygwin")
+      (contains $ostype "mingw")
+      (hasPrefix $shell "/")
+      (contains $shell_l "bash.exe")
+  -}}
+
+{{- and $is_windows (not $is_wsl) $posixish -}}

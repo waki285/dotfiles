@@ -6,6 +6,11 @@ ITEM_NAME="context7-api-key"
 KEY_NAME="CONTEXT7_API_KEY"
 URL="https://mcp.context7.com/mcp"
 
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: jq is not installed. Please install jq first." >&2
+  exit 1
+fi
+
 API_KEY="$(bw get password "$ITEM_NAME")"
 
 if [ ! -f "$FILE" ]; then

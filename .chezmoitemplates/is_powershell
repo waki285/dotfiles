@@ -1,0 +1,6 @@
+{{- or
+  (ne (env "PSExecutionPolicyPreference") "")
+  (ne (env "POWERSHELL_DISTRIBUTION_CHANNEL") "")
+  (ne (env "POWERSHELL_UPDATECHECK") "")
+  (ne (env "POWERSHELL_TELEMETRY_OPTOUT") "")
+-}}
