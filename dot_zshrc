@@ -121,7 +121,7 @@ export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
-export PATH="$PATH:$HOME/.local/bin"
+export PATH="$PATH:$HOME/.local/bin:/snap/bin"
 
 export JAVA_21_HOME=$(/usr/libexec/java_home -v 21)
 alias java21="export JAVA_HOME=$JAVA_21_HOME"
