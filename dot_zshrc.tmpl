@@ -141,7 +141,7 @@ if [ -f "$HOME/.zshrc.secrets" ]; then
   source "$HOME/.zshrc.secrets"
 fi
 
-{{- if stat "/Users/suzuneu/.deno/env" -}}
+{{ if stat "/Users/suzuneu/.deno/env" -}}
 # deno
 . "/Users/suzuneu/.deno/env"
 {{- end -}}
