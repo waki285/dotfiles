@@ -35,6 +35,7 @@ bash:
     - pnpm build
     - pnpm i
     - pnpm install
+    - pnpm lint
     - pnpm run build
     - pwd
     - sort
