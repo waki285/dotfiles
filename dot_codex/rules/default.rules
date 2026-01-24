@@ -121,6 +121,7 @@ prefix_rule(
     "build",
     "i",
     "install",
+    "lint",
   ]],
   decision = "allow",
   match = ["pnpm add"],
