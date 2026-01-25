@@ -116,6 +116,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["npx", "tsc"],
+  decision = "allow",
+  match = ["npx tsc"],
+)
+
+prefix_rule(
   pattern = ["pnpm", [
     "add",
     "build",

@@ -31,6 +31,7 @@ bash:
     - ls
     - mkdir
     - npm info
+    - npx tsc
     - pnpm add
     - pnpm build
     - pnpm i

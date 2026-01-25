@@ -74,6 +74,8 @@
       "mkdir *": "allow",
       "npm info": "allow",
       "npm info *": "allow",
+      "npx tsc": "allow",
+      "npx tsc *": "allow",
       "pnpm add": "allow",
       "pnpm add *": "allow",
       "pnpm build": "allow",
