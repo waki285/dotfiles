@@ -78,7 +78,7 @@
   "ui_font_size": 15,
   "buffer_font_size": 14.0,
   "buffer_font_family": "PlemolJP35 Console NF",
-  "theme": "Github Dark",
+  "theme": "GitHub Dark",
   "inlay_hints": {
     "enabled": true,
     "show_type_hints": true,
