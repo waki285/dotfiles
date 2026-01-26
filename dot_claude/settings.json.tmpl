@@ -116,6 +116,7 @@
         "hooks": [
           {
             "type": "command",
+            "async": true,
 {{- if eq .chezmoi.os "darwin" }}
             "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
 {{- else if $is_powershell }}
@@ -134,6 +135,7 @@
         "hooks": [
           {
             "type": "command",
+            "async": true,
 {{- if eq .chezmoi.os "darwin" }}
             "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
 {{- else if $is_powershell }}
