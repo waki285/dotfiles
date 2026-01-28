@@ -2,16 +2,21 @@
 set -eu
 
 FILE="$HOME/.claude.json"
-ITEM_NAME="context7-api-key"
-KEY_NAME="CONTEXT7_API_KEY"
-URL="https://mcp.context7.com/mcp"
+
+# context7 settings
+CONTEXT7_ITEM_NAME="context7-api-key"
+CONTEXT7_KEY_NAME="CONTEXT7_API_KEY"
+CONTEXT7_URL="https://mcp.context7.com/mcp"
+
+# searxng settings
+SEARXNG_URL="http://127.0.0.1:8080"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "Error: jq is not installed. Please install jq first." >&2
   exit 1
 fi
 
-API_KEY="$(bw get password "$ITEM_NAME")"
+CONTEXT7_API_KEY="$(bw get password "$CONTEXT7_ITEM_NAME")"
 
 if [ ! -f "$FILE" ]; then
   printf '%s\n' '{}' > "$FILE"
@@ -24,16 +29,23 @@ fi
 
 tmp="$(mktemp)"
 jq \
-  --arg api_key "$API_KEY" \
-  --arg url "$URL" \
-  --arg key_name "$KEY_NAME" \
+  --arg context7_api_key "$CONTEXT7_API_KEY" \
+  --arg context7_url "$CONTEXT7_URL" \
+  --arg context7_key_name "$CONTEXT7_KEY_NAME" \
+  --arg searxng_url "$SEARXNG_URL" \
   '
   .hasCompletedOnboarding = true
   | .mcpServers = (.mcpServers // {})
   | .mcpServers.context7 = {
       type: "http",
-      url: $url,
-      headers: { ($key_name): $api_key }
+      url: $context7_url,
+      headers: { ($context7_key_name): $context7_api_key }
+    }
+  | .mcpServers.searxng = {
+      type: "stdio",
+      command: "npx",
+      args: ["-y", "mcp-searxng"],
+      env: { "SEARXNG_URL": $searxng_url }
     }
   ' \
   "$FILE" > "$tmp"

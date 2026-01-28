@@ -4,3 +4,11 @@ args = ["-NoLogo"]
 
 [diff]
 exclude = ["scripts"]
+
+[hooks.read-source-state.pre]
+{{- if eq .chezmoi.os "windows" }}
+command = "pwsh"
+args = ["-NoLogo", "-File", ".local/share/chezmoi/.check-bitwarden.ps1"]
+{{- else }}
+command = ".local/share/chezmoi/.check-bitwarden.sh"
+{{- end }}

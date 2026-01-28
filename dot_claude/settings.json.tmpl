@@ -4,12 +4,21 @@
   "env": {
     "API_TIMEOUT_MS": "600000",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
+    {{- if eq .claude.profile "copilot" }}
+    "ANTHROPIC_BASE_URL": "http://localhost:4141",
+    "ANTHROPIC_MODEL": "claude-opus-4.5",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-4.1-2025-04-14",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4.5",
+    {{- else }}
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
     "ANTHROPIC_MODEL": "ag/claude-opus-4-5-thinking",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "ag/claude-opus-4-5-thinking",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "ag/claude-sonnet-4-5-thinking",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ag/gemini-2.5-flash-lite[1m]",
     "CLAUDE_CODE_SUBAGENT_MODEL": "ag/claude-sonnet-4-5-thinking",
+    {{- end }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
@@ -63,10 +72,9 @@
       "Bash(tree:*)",
       "Bash(uniq:*)",
       "Bash(wc:*)",
-      "mcp__context7__resolve-library-id",
-      "mcp__context7__query-docs",
-      "mcp__mcp-server-github__get_file_contents",
-      "mcp__mcp-server-github__search_code",
+      "mcp__context7,
+      "mcp__mcp-server-github",
+      "mcp__searxng",
       "Skill",
       "WebFetch",
       "WebSearch"

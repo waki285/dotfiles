@@ -2,11 +2,16 @@
 $ErrorActionPreference = "Stop"
 
 $File = Join-Path $env:USERPROFILE ".claude.json"
-$ItemName = "context7-api-key"
-$KeyName = "CONTEXT7_API_KEY"
-$Url = "https://mcp.context7.com/mcp"
 
-$ApiKey = bw get password $ItemName
+# context7 settings
+$Context7ItemName = "context7-api-key"
+$Context7KeyName = "CONTEXT7_API_KEY"
+$Context7Url = "https://mcp.context7.com/mcp"
+
+# searxng settings
+$SearxngUrl = "http://127.0.0.1:8080"
+
+$Context7ApiKey = bw get password $Context7ItemName
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Failed to get password from Bitwarden"
     exit 1
@@ -39,12 +44,23 @@ if ($json.PSObject.Properties["hasCompletedOnboarding"]) {
 # Set context7 MCP server
 $context7Config = [PSCustomObject]@{
     type = "http"
-    url = $Url
+    url = $Context7Url
     headers = [PSCustomObject]@{
-        $KeyName = $ApiKey
+        $Context7KeyName = $Context7ApiKey
     }
 }
 $json.mcpServers | Add-Member -NotePropertyName "context7" -NotePropertyValue $context7Config -Force
+
+# Set searxng MCP server
+$searxngConfig = [PSCustomObject]@{
+    type = "stdio"
+    command = "npx"
+    args = @("-y", "mcp-searxng")
+    env = [PSCustomObject]@{
+        SEARXNG_URL = $SearxngUrl
+    }
+}
+$json.mcpServers | Add-Member -NotePropertyName "searxng" -NotePropertyValue $searxngConfig -Force
 
 # Write back to file
 $json | ConvertTo-Json -Depth 10 | Set-Content -Path $File -Encoding UTF8 -NoNewline
