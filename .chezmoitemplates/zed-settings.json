@@ -19,12 +19,18 @@
     },
   },
   "languages": {
+    "CSS": {
+      "tab_size": 2
+    },
     "Rust": {
       "formatter": "language_server",
     },
     "JSON": {
       "tab_size": 2,
     },
+  },
+  "file_types": {
+    "JSON": [".prettierrc"]
   },
   "context_servers": {
     "mcp-server-context7": {
