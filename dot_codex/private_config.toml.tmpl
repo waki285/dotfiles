@@ -12,6 +12,9 @@ notify = ["pwsh", "-c", "[System.Media.SystemSounds]::Asterisk.Play()"]
 notify = ["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"]
 {{- end }}
 
+[notice]
+hide_rate_limit_model_nudge = true
+
 [model_providers.voids]
 name = "voids"
 base_url = "{{ (bitwarden "item" "codexv").login.username }}"
