@@ -109,6 +109,11 @@
       "settings": {
         "MD013": false
       }
+    },
+    "cargo-tom": {
+      "initialization_options": {
+        "hide_docs_info_message": true
+      }
     }
   },
   "resize_all_panels_in_dock": ["left", "right", "bottom"],
