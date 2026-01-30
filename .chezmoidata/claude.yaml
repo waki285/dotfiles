@@ -1,2 +1,3 @@
 claude:
-  profile: copilot
+  profile: voids
+  disableNonEssential: false
