@@ -28,6 +28,9 @@
     "JSON": {
       "tab_size": 2,
     },
+    "SQL": {
+      "tab_size": 2
+    },
   },
   "file_types": {
     "JSON": [".prettierrc"]
