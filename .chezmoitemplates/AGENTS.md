@@ -28,4 +28,5 @@
 ## Language-specified
 
 - actions/checkout は v6 を使用しなさい。
-- Rust において新規に once_cell クレートを採用しないでください。std::sync::LazyLock などを使ってください。
+- Rust において新規に once_cell クレートを採用しないこと。std::sync::LazyLock などを使いなさい。
+- パッケージを追加する際は、`cargo info` や Context7 などで最新のバージョンを確認するか、`cargo add` コマンドなどの自動的に最新バージョンを使用してくれるコマンドを使用しなさい。

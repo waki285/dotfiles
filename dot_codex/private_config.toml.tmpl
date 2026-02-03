@@ -6,6 +6,8 @@ sandbox_mode = "workspace-write"
 network_access = true
 suppress_unstable_features_warning = true
 web_search = "live" 
+personality = "pragmatic"
+model_personality = "pragmatic"
 
 {{ if eq .chezmoi.os "darwin" -}}
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Ping.aiff"]
