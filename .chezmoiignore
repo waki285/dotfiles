@@ -26,6 +26,7 @@ Library/
 
 {{- if ne .chezmoi.os "windows" }}
 .chezmoiscripts/*.ps1
+dot_codex/notify.ps1
 _gvimrc
 AppData/
 {{- end }}

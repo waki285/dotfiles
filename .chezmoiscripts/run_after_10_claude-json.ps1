@@ -54,8 +54,8 @@ $json.mcpServers | Add-Member -NotePropertyName "context7" -NotePropertyValue $c
 # Set searxng MCP server
 $searxngConfig = [PSCustomObject]@{
     type = "stdio"
-    command = "npx"
-    args = @("-y", "mcp-searxng")
+    command = "pwsh"
+    args = @("-Command", "npx -y mcp-searxng")
     env = [PSCustomObject]@{
         SEARXNG_URL = $SearxngUrl
     }

@@ -12,7 +12,7 @@ model_personality = "pragmatic"
 {{ if eq .chezmoi.os "darwin" -}}
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Ping.aiff"]
 {{- else if eq .chezmoi.os "windows" -}}
-notify = ["pwsh", "-c", "[System.Media.SystemSounds]::Asterisk.Play()"]
+notify = ["pwsh", "-NoProfile", "-NonInteractive", "-File", "{{ joinPath .chezmoi.homeDir ".codex" "notify.ps1" | replace "\\" "/" }}"]
 {{- else -}}
 notify = ["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"]
 {{- end }}
