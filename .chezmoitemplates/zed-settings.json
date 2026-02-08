@@ -67,6 +67,10 @@
     "show_menus": false,
     "show_branch_icon": true,
   },
+  "status_bar": {
+    "active_encoding_button": "enabled",
+    "line_endings_button": true,
+  },
   "prettier": {
     "allowed": true,
   },
