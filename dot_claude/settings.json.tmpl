@@ -80,15 +80,6 @@
       "Skill",
       "WebFetch"
     ],
-    "ask": [
-      "Bash(chmod:*)",
-      "Bash(chown:*)",
-      "Bash(kill:*)",
-      "Bash(killall:*)",
-      "Bash(pkill:*)",
-      "Bash(trash:*)",
-      "Bash(unlink:*)"
-    ],
     "deny": [
       "Bash(dd:*)",
       "Bash(fdisk:*)",
@@ -112,15 +103,18 @@
       "Bash(wipefs:*)",
       "WebSearch"
     ],
+    "ask": [
+      "Bash(chmod:*)",
+      "Bash(chown:*)",
+      "Bash(kill:*)",
+      "Bash(killall:*)",
+      "Bash(pkill:*)",
+      "Bash(unlink:*)"
+    ],
     "additionalDirectories": [
       "//tmp"
     ]
     {{/* PERMISSIONS:END */}}
-  },
-  "defaultMode": "default",
-  "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "context7@claude-plugins-official": true
   },
   "hooks": {
     "Notification": [
@@ -128,16 +122,16 @@
         "hooks": [
           {
             "type": "command",
-            "async": true,
 {{- if eq .chezmoi.os "darwin" }}
-            "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
+            "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'",
 {{- else if $is_powershell }}
-            "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\""
+            "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\"",
 {{- else if $is_wsl }}
-            "command": "bash -lc 'powershell.exe -NoProfile -Command \"[System.Media.SystemSounds]::Asterisk.Play(); Start-Sleep -Milliseconds 300\"'"
+            "command": "bash -lc 'powershell.exe -NoProfile -Command \"[System.Media.SystemSounds]::Asterisk.Play(); Start-Sleep -Milliseconds 300\"'",
 {{- else }}
-            "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga"
+            "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga",
 {{- end }}
+            "async": true
           }
         ]
       }
@@ -147,16 +141,16 @@
         "hooks": [
           {
             "type": "command",
-            "async": true,
 {{- if eq .chezmoi.os "darwin" }}
-            "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'"
+            "command": "bash -lc 'afplay /System/Library/Sounds/Ping.aiff'",
 {{- else if $is_powershell }}
-            "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\""
+            "command": "pwsh -c \"[System.Media.SystemSounds]::Asterisk.Play()\"",
 {{- else if $is_wsl }}
-            "command": "bash -lc 'powershell.exe -NoProfile -Command \"[System.Media.SystemSounds]::Asterisk.Play(); Start-Sleep -Milliseconds 300\"'"
+            "command": "bash -lc 'powershell.exe -NoProfile -Command \"[System.Media.SystemSounds]::Asterisk.Play(); Start-Sleep -Milliseconds 300\"'",
 {{- else }}
-            "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga"
+            "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga",
 {{- end }}
+            "async": true
           }
         ]
       }
@@ -213,5 +207,10 @@
 {{- else }}
     "command": "$HOME/.claude/hooks/claude_statusline"
 {{- end }}
-  }
+  },
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "context7@claude-plugins-official": true
+  },
+  "defaultMode": "default"
 }

@@ -200,12 +200,6 @@ prefix_rule(
 )
 
 prefix_rule(
-  pattern = ["trash"],
-  decision = "prompt",
-  match = ["trash"],
-)
-
-prefix_rule(
   pattern = ["unlink"],
   decision = "prompt",
   match = ["unlink"],
