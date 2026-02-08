@@ -49,7 +49,6 @@ bash:
     - kill
     - killall
     - pkill
-    - trash
     - unlink
   deny:
     - dd

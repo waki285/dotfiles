@@ -1,1 +1,5 @@
-{{- template "AGENTS.md" . -}}
+{{- template "AGENTS.md" . }}
+
+## Agent-specified
+
+- `trash` を使う際は、必ず `require_escalated` を使って権限を要求すること。(あなたはゴミ箱のフォルダに既定でアクセスできないため。)

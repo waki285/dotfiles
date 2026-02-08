@@ -11,7 +11,7 @@ fi
 
 DESTINATIONS="
 $HOME/.claude/skills
-$HOME/.codex/skills
+$HOME/.agents/skills
 $HOME/.config/opencode/skills
 "
 

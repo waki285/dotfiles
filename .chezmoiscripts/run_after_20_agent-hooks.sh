@@ -1,41 +1,62 @@
 #!/bin/sh
 set -eu
 
-# Download agent_hooks binaries from GitHub releases
-# Version is fetched from the latest release (source of truth: Cargo.toml)
+# Download agent_hooks and claude_statusline binaries from GitHub releases
 
 REPO="waki285/dotfiles-tools"
 HOOKS_DIR="$HOME/.claude/hooks"
 OPENCODE_PLUGIN_DIR="$HOME/.config/opencode/plugin"
-BINARY_NAME="agent_hooks_claude"
-VERSION_FILE="$HOOKS_DIR/.agent_hooks_version"
+CLAUDE_BINARY_NAME="agent_hooks_claude"
+STATUSLINE_BINARY_NAME="claude_statusline"
+AGENT_HOOKS_VERSION_FILE="$HOOKS_DIR/.agent_hooks_version"
+STATUSLINE_VERSION_FILE="$HOOKS_DIR/.claude_statusline_version"
 
-# Get latest version from GitHub API
-get_latest_version() {
+download_file() {
+  url="$1"
+  target="$2"
+
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "https://api.github.com/repos/${REPO}/releases" | \
-      grep -o '"tag_name": *"agent_hooks-v[^"]*"' | \
-      head -1 | \
-      sed 's/.*"agent_hooks-\(v[^"]*\)".*/\1/'
+    curl -fsSL -o "$target" "$url"
   elif command -v wget >/dev/null 2>&1; then
-    wget -qO- "https://api.github.com/repos/${REPO}/releases" | \
-      grep -o '"tag_name": *"agent_hooks-v[^"]*"' | \
-      head -1 | \
-      sed 's/.*"agent_hooks-\(v[^"]*\)".*/\1/'
+    wget -qO "$target" "$url"
   else
     echo "Error: Neither curl nor wget is available" >&2
     exit 1
   fi
 }
 
-VERSION="$(get_latest_version)"
+get_latest_version() {
+  prefix="$1"
 
-if [ -z "$VERSION" ]; then
-  echo "Error: Could not determine latest version" >&2
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "https://api.github.com/repos/${REPO}/releases" | \
+      grep -o "\"tag_name\": *\"${prefix}-v[^\"]*\"" | \
+      head -1 | \
+      sed "s/.*\"${prefix}-\\(v[^\"]*\\)\".*/\\1/"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO- "https://api.github.com/repos/${REPO}/releases" | \
+      grep -o "\"tag_name\": *\"${prefix}-v[^\"]*\"" | \
+      head -1 | \
+      sed "s/.*\"${prefix}-\\(v[^\"]*\\)\".*/\\1/"
+  else
+    echo "Error: Neither curl nor wget is available" >&2
+    exit 1
+  fi
+}
+
+AGENT_HOOKS_VERSION="$(get_latest_version "agent_hooks")"
+STATUSLINE_VERSION="$(get_latest_version "claude_statusline")"
+
+if [ -z "$AGENT_HOOKS_VERSION" ]; then
+  echo "Error: Could not determine latest agent_hooks version" >&2
   exit 1
 fi
 
-# Detect OS and architecture
+if [ -z "$STATUSLINE_VERSION" ]; then
+  echo "Error: Could not determine latest claude_statusline version" >&2
+  exit 1
+fi
+
 OS="$(uname -s)"
 ARCH="$(uname -m)"
 
@@ -45,10 +66,12 @@ case "$OS" in
       x86_64)
         CLAUDE_ASSET="agent_hooks_claude-macos-x86_64"
         OPENCODE_ASSET="agent_hooks_opencode-macos-x86_64.node"
+        STATUSLINE_ASSET="claude_statusline-macos-x86_64"
         ;;
       arm64)
         CLAUDE_ASSET="agent_hooks_claude-macos-arm64"
         OPENCODE_ASSET="agent_hooks_opencode-macos-arm64.node"
+        STATUSLINE_ASSET="claude_statusline-macos-arm64"
         ;;
       *)
         echo "Unsupported macOS architecture: $ARCH" >&2
@@ -61,10 +84,12 @@ case "$OS" in
       x86_64)
         CLAUDE_ASSET="agent_hooks_claude-linux-x86_64"
         OPENCODE_ASSET="agent_hooks_opencode-linux-x86_64.node"
+        STATUSLINE_ASSET="claude_statusline-linux-x86_64"
         ;;
       aarch64|arm64)
         CLAUDE_ASSET="agent_hooks_claude-linux-arm64"
         OPENCODE_ASSET="agent_hooks_opencode-linux-arm64.node"
+        STATUSLINE_ASSET="claude_statusline-linux-arm64"
         ;;
       *)
         echo "Unsupported Linux architecture: $ARCH" >&2
@@ -78,48 +103,58 @@ case "$OS" in
     ;;
 esac
 
-CLAUDE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/agent_hooks-${VERSION}/${CLAUDE_ASSET}"
-OPENCODE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/agent_hooks-${VERSION}/${OPENCODE_ASSET}"
-CLAUDE_TARGET_PATH="$HOOKS_DIR/$BINARY_NAME"
+CLAUDE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/agent_hooks-${AGENT_HOOKS_VERSION}/${CLAUDE_ASSET}"
+OPENCODE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/agent_hooks-${AGENT_HOOKS_VERSION}/${OPENCODE_ASSET}"
+STATUSLINE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/claude_statusline-${STATUSLINE_VERSION}/${STATUSLINE_ASSET}"
+
+CLAUDE_TARGET_PATH="$HOOKS_DIR/$CLAUDE_BINARY_NAME"
+STATUSLINE_TARGET_PATH="$HOOKS_DIR/$STATUSLINE_BINARY_NAME"
 OPENCODE_TARGET_PATH="$OPENCODE_PLUGIN_DIR/agent_hooks.node"
 
-# Check if already installed with correct version
-if [ -f "$CLAUDE_TARGET_PATH" ] && [ -f "$VERSION_FILE" ]; then
-  INSTALLED_VERSION="$(cat "$VERSION_FILE")"
-  if [ "$INSTALLED_VERSION" = "$VERSION" ]; then
-    echo "agent_hooks $VERSION is already installed, skipping download"
-    exit 0
-  fi
-fi
-
-# Create directories if they don't exist
 mkdir -p "$HOOKS_DIR"
 mkdir -p "$OPENCODE_PLUGIN_DIR"
 
-# Download the Claude CLI binary
-echo "Downloading $CLAUDE_ASSET $VERSION from $CLAUDE_DOWNLOAD_URL..."
-if command -v curl >/dev/null 2>&1; then
-  curl -fsSL -o "$CLAUDE_TARGET_PATH" "$CLAUDE_DOWNLOAD_URL"
-elif command -v wget >/dev/null 2>&1; then
-  wget -qO "$CLAUDE_TARGET_PATH" "$CLAUDE_DOWNLOAD_URL"
+NEED_AGENT_HOOKS_DOWNLOAD=1
+if [ -f "$CLAUDE_TARGET_PATH" ] && [ -f "$OPENCODE_TARGET_PATH" ] && [ -f "$AGENT_HOOKS_VERSION_FILE" ]; then
+  INSTALLED_AGENT_HOOKS_VERSION="$(cat "$AGENT_HOOKS_VERSION_FILE")"
+  if [ "$INSTALLED_AGENT_HOOKS_VERSION" = "$AGENT_HOOKS_VERSION" ]; then
+    NEED_AGENT_HOOKS_DOWNLOAD=0
+  fi
 fi
 
-# Make it executable
-chmod +x "$CLAUDE_TARGET_PATH"
-
-echo "Successfully installed $BINARY_NAME $VERSION to $CLAUDE_TARGET_PATH"
-
-# Download the OpenCode NAPI binary
-echo "Downloading $OPENCODE_ASSET $VERSION from $OPENCODE_DOWNLOAD_URL..."
-if command -v curl >/dev/null 2>&1; then
-  curl -fsSL -o "$OPENCODE_TARGET_PATH" "$OPENCODE_DOWNLOAD_URL"
-elif command -v wget >/dev/null 2>&1; then
-  wget -qO "$OPENCODE_TARGET_PATH" "$OPENCODE_DOWNLOAD_URL"
+NEED_STATUSLINE_DOWNLOAD=1
+if [ -f "$STATUSLINE_TARGET_PATH" ] && [ -f "$STATUSLINE_VERSION_FILE" ]; then
+  INSTALLED_STATUSLINE_VERSION="$(cat "$STATUSLINE_VERSION_FILE")"
+  if [ "$INSTALLED_STATUSLINE_VERSION" = "$STATUSLINE_VERSION" ]; then
+    NEED_STATUSLINE_DOWNLOAD=0
+  fi
 fi
 
-echo "Successfully installed agent_hooks.node $VERSION to $OPENCODE_TARGET_PATH"
+if [ "$NEED_AGENT_HOOKS_DOWNLOAD" -eq 0 ] && [ "$NEED_STATUSLINE_DOWNLOAD" -eq 0 ]; then
+  echo "agent_hooks ${AGENT_HOOKS_VERSION} and claude_statusline ${STATUSLINE_VERSION} are already installed, skipping download"
+  exit 0
+fi
 
-# Save version file
-printf '%s\n' "$VERSION" > "$VERSION_FILE"
+if [ "$NEED_AGENT_HOOKS_DOWNLOAD" -eq 1 ]; then
+  echo "Downloading $CLAUDE_ASSET $AGENT_HOOKS_VERSION from $CLAUDE_DOWNLOAD_URL..."
+  download_file "$CLAUDE_DOWNLOAD_URL" "$CLAUDE_TARGET_PATH"
+  chmod +x "$CLAUDE_TARGET_PATH"
+  echo "Successfully installed $CLAUDE_BINARY_NAME $AGENT_HOOKS_VERSION to $CLAUDE_TARGET_PATH"
 
-echo "agent_hooks $VERSION installation complete"
+  echo "Downloading $OPENCODE_ASSET $AGENT_HOOKS_VERSION from $OPENCODE_DOWNLOAD_URL..."
+  download_file "$OPENCODE_DOWNLOAD_URL" "$OPENCODE_TARGET_PATH"
+  echo "Successfully installed agent_hooks.node $AGENT_HOOKS_VERSION to $OPENCODE_TARGET_PATH"
+
+  printf '%s\n' "$AGENT_HOOKS_VERSION" > "$AGENT_HOOKS_VERSION_FILE"
+fi
+
+if [ "$NEED_STATUSLINE_DOWNLOAD" -eq 1 ]; then
+  echo "Downloading $STATUSLINE_ASSET $STATUSLINE_VERSION from $STATUSLINE_DOWNLOAD_URL..."
+  download_file "$STATUSLINE_DOWNLOAD_URL" "$STATUSLINE_TARGET_PATH"
+  chmod +x "$STATUSLINE_TARGET_PATH"
+  echo "Successfully installed $STATUSLINE_BINARY_NAME $STATUSLINE_VERSION to $STATUSLINE_TARGET_PATH"
+
+  printf '%s\n' "$STATUSLINE_VERSION" > "$STATUSLINE_VERSION_FILE"
+fi
+
+echo "Installation complete: agent_hooks=${AGENT_HOOKS_VERSION}, claude_statusline=${STATUSLINE_VERSION}"

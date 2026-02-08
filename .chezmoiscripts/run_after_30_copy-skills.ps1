@@ -16,7 +16,7 @@ if (-not (Test-Path $SkillsSrc -PathType Container)) {
 
 $Destinations = @(
     Join-Path $env:USERPROFILE ".claude\skills"
-    Join-Path $env:USERPROFILE ".codex\skills"
+    Join-Path $env:USERPROFILE ".agents\skills"
     Join-Path $env:USERPROFILE ".config\opencode\skills"
 )
 
