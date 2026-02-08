@@ -12,6 +12,12 @@
     "diagnostics": true,
     "metrics": false
   },
+  "agent": {
+    "commit_message_model": {
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini"
+    },
+  },
   "agent_servers": {
     "claude": {
       "default_model": "ag/claude-opus-4-5-thinking",
