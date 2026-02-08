@@ -207,6 +207,7 @@
   },
   "statusLine": {
     "type": "command",
+    "padding": 0,
 {{- if eq .chezmoi.os "windows" }}
     "command": "%USERPROFILE%\\.claude\\hooks\\claude_statusline.exe"
 {{- else }}
