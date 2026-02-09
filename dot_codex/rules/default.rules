@@ -40,6 +40,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["claude", "--version"],
+  decision = "allow",
+  match = ["claude --version"],
+)
+
+prefix_rule(
   pattern = ["cut"],
   decision = "allow",
   match = ["cut"],
@@ -52,6 +58,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["file"],
+  decision = "allow",
+  match = ["file"],
+)
+
+prefix_rule(
   pattern = ["grep"],
   decision = "allow",
   match = ["grep"],
@@ -61,6 +73,12 @@ prefix_rule(
   pattern = ["head"],
   decision = "allow",
   match = ["head"],
+)
+
+prefix_rule(
+  pattern = ["gh", "issue", "view"],
+  decision = "allow",
+  match = ["gh issue view"],
 )
 
 prefix_rule(

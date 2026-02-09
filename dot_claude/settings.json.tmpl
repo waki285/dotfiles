@@ -47,11 +47,12 @@
     {{- end }}
     {{- if eq .claude.disableNonEssential true }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    {{- end }}
     "DISABLE_TELEMETRY": "1",
     "DISABLE_ERROR_REPORTING": "1",
     "DISABLE_BUG_COMMAND": "1",
+    {{- end }}
+    {{/* Experimental */}}
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": 1,
     "API_TIMEOUT_MS": "600000"
   },
   "permissions": {
@@ -77,10 +78,13 @@
       "Bash(cargo update:*)",
       "Bash(cat:*)",
       "Bash(cd:*)",
+      "Bash(claude --version:*)",
       "Bash(cut:*)",
       "Bash(echo:*)",
+      "Bash(file:*)",
       "Bash(grep:*)",
       "Bash(head:*)",
+      "Bash(gh issue view:*)",
       "Bash(gh release list:*)",
       "Bash(gh release view:*)",
       "Bash(git diff:*)",

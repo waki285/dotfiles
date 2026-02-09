@@ -16,10 +16,13 @@ bash:
     - cargo update
     - cat
     - cd
+    - claude --version
     - cut
     - echo
+    - file
     - grep
     - head
+    - gh issue view
     - gh release list
     - gh release view
     - git diff
