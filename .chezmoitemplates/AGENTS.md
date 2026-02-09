@@ -25,6 +25,11 @@
   - ただし、先回りして抽象化しないこと。
 - (rustdoc を除く) コメントは「なぜ」に集中。「何を」はコードで示す。
 
+## Environments
+
+- このマシンにおいて、構成ファイル (いわゆる dotfiles) は chezmoi で管理されている。
+  - `~/.local/share/chezmoi` 以下にファイルがあるので、構成ファイルを確認する場合はまずそこを確認しなさい。
+
 ## Language-specified
 
 - actions/checkout は v6 を使用しなさい。

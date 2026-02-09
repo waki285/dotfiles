@@ -43,6 +43,7 @@ bash:
     - pnpm run build
     - pwd
     - sort
+    - strings
     - tree
     - uniq
     - wc
@@ -78,6 +79,7 @@ bash:
 claude:
   allow:
     - "Read(~/.claude/**)"
+    - "Read(~/.local/share/chezmoi/**)"
     - "Read(//tmp/**)"
     - "Edit(//tmp/**)"
     - "Write(//tmp/**)"

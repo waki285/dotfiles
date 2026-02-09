@@ -98,6 +98,8 @@
       "pwd *": "allow",
       "sort": "allow",
       "sort *": "allow",
+      "strings": "allow",
+      "strings *": "allow",
       "tree": "allow",
       "tree *": "allow",
       "uniq": "allow",
