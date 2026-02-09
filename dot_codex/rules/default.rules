@@ -46,6 +46,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["codex", "exec"],
+  decision = "allow",
+  match = ["codex exec"],
+)
+
+prefix_rule(
   pattern = ["cut"],
   decision = "allow",
   match = ["cut"],
@@ -93,6 +99,7 @@ prefix_rule(
 prefix_rule(
   pattern = ["git", [
     "diff",
+    "show",
     "status",
   ]],
   decision = "allow",

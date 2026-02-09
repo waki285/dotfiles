@@ -17,6 +17,7 @@ bash:
     - cat
     - cd
     - claude --version
+    - codex exec
     - cut
     - echo
     - file
@@ -26,6 +27,7 @@ bash:
     - gh release list
     - gh release view
     - git diff
+    - git show
     - git status
     - gofmt
     - go build
