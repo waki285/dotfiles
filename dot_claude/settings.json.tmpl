@@ -1,8 +1,10 @@
 {{- $is_powershell := eq (includeTemplate "is_powershell" . | trim) "true" -}}
 {{- $is_wsl := eq (includeTemplate "is_wsl" . | trim) "true" -}}
 {
+  "telemetry": false,
+  "disableErrorReporting": true,
+  "disableBugCommand": true,
   "env": {
-    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
     {{- if eq .claude.profile "copilot" }}
     "ANTHROPIC_BASE_URL": "http://localhost:4141",
     "ANTHROPIC_MODEL": "claude-opus-4.5",
@@ -10,18 +12,46 @@
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-4.1-2025-04-14",
     "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4.5",
+    {{- else if or (eq .claude.profile "cliproxy") (eq .claude.profile "vcliproxy") }}
+    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "cliproxy-apikey").login.password }}",
+    {{- if eq .claude.profile "vcliproxy" }}
+    "ANTHROPIC_MODEL": "v/gpt-5.3-codex(xhigh)",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "v/gpt-5.3-codex(xhigh)",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "v/gpt-5.3-codex(high)",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "v/gpt-5.3-codex(high)",
     {{- else }}
+    "ANTHROPIC_MODEL": "gpt-5.3-codex(xhigh)",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.3-codex(xhigh)",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.3-codex(high)",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "gpt-5.3-codex(high)",
+    {{- end }}
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-2.5-flash-lite",
+    {{- else if or (eq .claude.profile "isrouter") (eq .claude.profile "vrouter") }}
+    {{- if eq .claude.profile "vrouter" }}
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
-    "ANTHROPIC_MODEL": "ag/claude-opus-4-5-thinking",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
+    {{- else }}
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "isrouter-url").login.username }}",
+    "ANTHROPIC_AUTH_TOKEN": "abc",
+    {{- end }}
+    "ANTHROPIC_MODEL": "opus",
+    {{- if eq .claude.profile "vrouter" }}
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "ag/claude-opus-4-5-thinking",
+    {{- else }}
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "ag/claude-opus-4-6-thinking",
+    {{- end }}
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "ag/claude-sonnet-4-5-thinking",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ag/gemini-2.5-flash-lite[1m]",
     "CLAUDE_CODE_SUBAGENT_MODEL": "ag/claude-sonnet-4-5-thinking",
     {{- end }}
     {{- if eq .claude.disableNonEssential true }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     {{- end }}
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_BUG_COMMAND": "1",
     "API_TIMEOUT_MS": "600000"
   },
   "permissions": {
