@@ -126,6 +126,8 @@
       "find * -ok * rm *": "ask",
       "find * -ok * rmdir *": "ask",
       "find * -exec * mv *": "ask",
+      "chezmoi apply": "deny",
+      "chezmoi apply *": "deny",
       "dd": "deny",
       "dd *": "deny",
       "fdisk": "deny",

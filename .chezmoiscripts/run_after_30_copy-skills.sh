@@ -2,7 +2,7 @@
 set -eu
 
 CHEZMOI_SOURCE_DIR="${CHEZMOI_SOURCE_DIR:-$(chezmoi source-path)}"
-SKILLS_SRC="$CHEZMOI_SOURCE_DIR/.chezmoitemplates/skills"
+SKILLS_SRC="$CHEZMOI_SOURCE_DIR/.skills"
 
 if [ ! -d "$SKILLS_SRC" ]; then
   echo "Skills source directory not found: $SKILLS_SRC" >&2

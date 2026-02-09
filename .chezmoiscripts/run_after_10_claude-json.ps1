@@ -8,6 +8,9 @@ $Context7ItemName = "context7-api-key"
 $Context7KeyName = "CONTEXT7_API_KEY"
 $Context7Url = "https://mcp.context7.com/mcp"
 
+# github settings
+$GitHubMcpUrl = "https://api.githubcopilot.com/mcp"
+
 # searxng settings
 $SearxngUrl = "http://127.0.0.1:8080"
 
@@ -61,6 +64,25 @@ $searxngConfig = [PSCustomObject]@{
     }
 }
 $json.mcpServers | Add-Member -NotePropertyName "searxng" -NotePropertyValue $searxngConfig -Force
+
+# Set github MCP server
+$GitHubMcpApiToken = if ($env:GITHUB_MCP_API_TOKEN) { $env:GITHUB_MCP_API_TOKEN } else { "" }
+$githubConfig = [PSCustomObject]@{
+    type = "http"
+    url = $GitHubMcpUrl
+    headers = [PSCustomObject]@{
+        Authorization = "Bearer $GitHubMcpApiToken"
+    }
+}
+$json.mcpServers | Add-Member -NotePropertyName "mcp-server-github" -NotePropertyValue $githubConfig -Force
+
+# Set playwright MCP server
+$playwrightConfig = [PSCustomObject]@{
+    type = "stdio"
+    command = "npx"
+    args = @("-y", "@playwright/mcp@latest")
+}
+$json.mcpServers | Add-Member -NotePropertyName "playwright" -NotePropertyValue $playwrightConfig -Force
 
 # Write back to file
 $json | ConvertTo-Json -Depth 10 | Set-Content -Path $File -Encoding UTF8 -NoNewline

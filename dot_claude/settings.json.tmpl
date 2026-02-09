@@ -1,9 +1,6 @@
 {{- $is_powershell := eq (includeTemplate "is_powershell" . | trim) "true" -}}
 {{- $is_wsl := eq (includeTemplate "is_wsl" . | trim) "true" -}}
 {
-  "telemetry": false,
-  "disableErrorReporting": true,
-  "disableBugCommand": true,
   "env": {
     {{- if eq .claude.profile "copilot" }}
     "ANTHROPIC_BASE_URL": "http://localhost:4141",
@@ -51,15 +48,15 @@
     "DISABLE_ERROR_REPORTING": "1",
     "DISABLE_BUG_COMMAND": "1",
     {{- end }}
-    {{/* Experimental */}}
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": 1,
+    {{- /* Experimental */}}
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "API_TIMEOUT_MS": "600000",
     "EDITOR": "zed --wait",
     "VISUAL": "zed --wait",
     "DISABLE_ZOXIDE": "1"
   },
   "permissions": {
-    {{/* PERMISSIONS:START */}}
+    {{- /* PERMISSIONS:START */}}
     "allow": [
       "Read(~/.claude/**)",
       "Read(~/.local/share/chezmoi/**)",
@@ -115,11 +112,13 @@
       "Bash(wc:*)",
       "mcp__context7",
       "mcp__mcp-server-github",
+      "mcp__playwright",
       "mcp__searxng",
       "Skill",
       "WebFetch"
     ],
     "deny": [
+      "Bash(chezmoi apply:*)",
       "Bash(dd:*)",
       "Bash(fdisk:*)",
       "Bash(git checkout:*)",
@@ -150,10 +149,11 @@
       "Bash(pkill:*)",
       "Bash(unlink:*)"
     ],
+    "defaultMode": "default",
     "additionalDirectories": [
       "//tmp"
     ]
-    {{/* PERMISSIONS:END */}}
+    {{- /* PERMISSIONS:END */}}
   },
   "hooks": {
     "Notification": [
@@ -240,16 +240,18 @@
   },
   "statusLine": {
     "type": "command",
-    "padding": 0,
 {{- if eq .chezmoi.os "windows" }}
-    "command": "%USERPROFILE%\\.claude\\hooks\\claude_statusline.exe"
+    "command": "%USERPROFILE%\\.claude\\hooks\\claude_statusline.exe",
 {{- else }}
-    "command": "$HOME/.claude/hooks/claude_statusline"
+    "command": "$HOME/.claude/hooks/claude_statusline",
 {{- end }}
+    "padding": 0
   },
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "context7@claude-plugins-official": true
+    "context7@claude-plugins-official": true,
+    "github@claude-plugins-official": true
   },
+  "language": "日本語",
   "defaultMode": "default"
 }

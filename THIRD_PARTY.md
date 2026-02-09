@@ -18,5 +18,5 @@ components listed below.
 ## Anthropic skills (frontend-design)
 
 - Source: anthropics/skills
-- Files: .chezmoitemplates/skills/frontend-design
-- License: Apache License 2.0 (see .chezmoitemplates/skills/frontend-design/LICENSE.txt)
+- Files: `.chezmoitemplates/skills/frontend-design/*`, `dot_claude/skills/skill-creator/*`
+- License: Apache License 2.0 (see `skills/*/LICENSE.txt`)

@@ -230,6 +230,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["chezmoi", "apply"],
+  decision = "forbidden",
+  match = ["chezmoi apply"],
+)
+
+prefix_rule(
   pattern = ["dd"],
   decision = "forbidden",
   match = ["dd"],

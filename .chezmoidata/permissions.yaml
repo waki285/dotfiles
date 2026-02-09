@@ -55,6 +55,7 @@ bash:
     - pkill
     - unlink
   deny:
+    - chezmoi apply
     - dd
     - fdisk
     - git checkout
@@ -86,6 +87,7 @@ claude:
     - __BASH__
     - mcp__context7
     - mcp__mcp-server-github
+    - mcp__playwright
     - mcp__searxng
     - Skill
     - WebFetch

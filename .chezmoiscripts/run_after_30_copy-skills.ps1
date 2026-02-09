@@ -7,7 +7,7 @@ $ChezmoiSourceDir = if ($env:CHEZMOI_SOURCE_DIR) {
     chezmoi source-path
 }
 
-$SkillsSrc = Join-Path $ChezmoiSourceDir ".chezmoitemplates\skills"
+$SkillsSrc = Join-Path $ChezmoiSourceDir ".skills"
 
 if (-not (Test-Path $SkillsSrc -PathType Container)) {
     Write-Error "Skills source directory not found: $SkillsSrc"
