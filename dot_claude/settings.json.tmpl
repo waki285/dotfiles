@@ -29,8 +29,8 @@
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
     {{- else }}
-    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "isrouter-url").login.username }}",
-    "ANTHROPIC_AUTH_TOKEN": "abc",
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "isrouter-api-token").login.username }}",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "isrouter-api-token").login.password }}",
     {{- end }}
     "ANTHROPIC_MODEL": "opus",
     {{- if eq .claude.profile "vrouter" }}

@@ -3,10 +3,11 @@ name: codex-consult
 description: >-
   Consult OpenAI Codex CLI (codex exec) for second opinions, alternative approaches,
   and expert analysis. Use when: (1) user explicitly asks to consult Codex ("Codexに聞いて",
-  "Codexに相談して", "ask Codex", "consult Codex"), (2) debugging obscure errors after
-  initial attempts fail, (3) complex algorithmic or architectural decisions with multiple
-  valid approaches, (4) unfamiliar libraries/APIs where Context7 lacks coverage, (5) wanting
-  to validate a non-trivial solution before presenting it.
+  "Codexに相談して", "ask Codex", "consult Codex"), (2) stuck on an obscure error after
+  2+ failed attempts, (3) facing an architectural decision with significant trade-offs,
+  (4) working with an unfamiliar library/API not covered by Context7, (5) the user's
+  problem has multiple valid solutions and a second perspective would help, (6) after
+  completing a plan in plan mode to validate the approach and catch blind spots.
 ---
 
 # Codex Consult
