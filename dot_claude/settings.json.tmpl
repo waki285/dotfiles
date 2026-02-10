@@ -58,11 +58,13 @@
   "permissions": {
     {{- /* PERMISSIONS:START */}}
     "allow": [
-      "Read(~/.claude/**)",
-      "Read(~/.local/share/chezmoi/**)",
+      "Read({{ .chezmoi.homeDir }}/.claude/**)",
+      "Read({{ .chezmoi.homeDir }}/.local/share/chezmoi/**)",
       "Read(//tmp/**)",
       "Edit(//tmp/**)",
+      "Edit({{ .chezmoi.homeDir }}/.claude/**)",
       "Write(//tmp/**)",
+      "Write({{ .chezmoi.homeDir }}/.claude/**)",
       "Bash(basename:*)",
       "Bash(cargo add:*)",
       "Bash(cargo build:*)",
@@ -151,8 +153,10 @@
       "Bash(pkill:*)",
       "Bash(unlink:*)"
     ],
+    "defaultMode": "bypassPermissions",
     "additionalDirectories": [
-      "//tmp"
+      "//tmp",
+      "{{ .chezmoi.homeDir }}/.claude"
     ]
     {{- /* PERMISSIONS:END */}}
   },
@@ -250,8 +254,7 @@
   },
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "github@claude-plugins-official": true
+    "context7@claude-plugins-official": true
   },
   "language": "日本語",
   "defaultMode": "bypassPermissions"

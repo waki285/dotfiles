@@ -27,17 +27,28 @@ Do NOT auto-trigger when:
 
 ## Execution
 
-Run the wrapper script via Bash:
+Run `codex exec` directly via the Bash tool. Do NOT use wrapper scripts.
+
+The output directory `~/.claude/second-opinions/` should already exist. If it does not,
+the `-o` flag will create it implicitly via `codex exec`.
+
+### Step 1: Run with voids provider (primary)
 
 ```bash
-bash <skill-dir>/scripts/codex-consult.sh "<prompt>" "<topic-slug>"
+codex exec -c model_provider=voids --full-auto --skip-git-repo-check -o ~/.claude/second-opinions/<TIMESTAMP>_<TOPIC>.md "<PROMPT>"
 ```
 
-Where `<skill-dir>` is this skill's directory. The script:
-1. Tries `codex exec -c model_provider=voids --full-auto --skip-git-repo-check` first
-2. Falls back to default provider on error
-3. Saves the response to `~/.claude/second-opinions/YYYY-MM-DD_HH-MM-SS_<topic>.md`
-4. Prints the output file path to stdout
+- `<TIMESTAMP>`: Use `$(date +%Y-%m-%d_%H-%M-%S)` format
+- `<TOPIC>`: Lowercase, alphanumeric + hyphens only, max 30 chars (e.g., `rust-lifetime`, `api-design`)
+- `<PROMPT>`: The consultation prompt (see Prompt Formulation below)
+
+### Step 2: Fallback (if Step 1 fails)
+
+If the voids provider errors, retry without `-c model_provider=voids`:
+
+```bash
+codex exec --full-auto --skip-git-repo-check -o ~/.claude/second-opinions/<TIMESTAMP>_<TOPIC>.md "<PROMPT>"
+```
 
 ## Prompt Formulation
 

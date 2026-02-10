@@ -85,7 +85,9 @@ claude:
     - "Read(~/.local/share/chezmoi/**)"
     - "Read(//tmp/**)"
     - "Edit(//tmp/**)"
+    - "Edit(~/.claude/**)"
     - "Write(//tmp/**)"
+    - "Write(~/.claude/**)"
     - __BASH__
     - mcp__context7
     - mcp__mcp-server-github
@@ -94,11 +96,13 @@ claude:
     - Skill
     - WebFetch
   ask: []
-  deny: 
+  deny:
     - __BASH__
     - WebSearch
+  defaultMode: bypassPermissions
   additionalDirectories:
     - "//tmp"
+    - "~/.claude"
 
 opencode:
   bash:
