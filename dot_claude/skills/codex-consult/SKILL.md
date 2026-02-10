@@ -30,6 +30,9 @@ Do NOT auto-trigger when:
 
 Run `codex exec` directly via the Bash tool. Do NOT use wrapper scripts.
 
+**Timeout**: Codex can take up to 10 minutes or more for complex queries. Always set the
+Bash tool's `timeout` parameter to `600000` (10 minutes) when invoking `codex exec`.
+
 The output directory `~/.claude/second-opinions/` should already exist. If it does not,
 the `-o` flag will create it implicitly via `codex exec`.
 
