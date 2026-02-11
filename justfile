@@ -1,3 +1,5 @@
+set windows-shell := ["pwsh", "-NoLogo", "-NoProfile", "-Command"]
+
 default:
   @just --list
 

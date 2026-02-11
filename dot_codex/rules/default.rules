@@ -58,6 +58,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["date"],
+  decision = "allow",
+  match = ["date"],
+)
+
+prefix_rule(
   pattern = ["echo"],
   decision = "allow",
   match = ["echo"],

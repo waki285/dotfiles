@@ -50,6 +50,8 @@
       "codex exec *": "allow",
       "cut": "allow",
       "cut *": "allow",
+      "date": "allow",
+      "date *": "allow",
       "echo": "allow",
       "echo *": "allow",
       "file": "allow",

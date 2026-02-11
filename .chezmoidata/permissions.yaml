@@ -19,6 +19,7 @@ bash:
     - claude --version
     - codex exec
     - cut
+    - date
     - echo
     - file
     - grep
