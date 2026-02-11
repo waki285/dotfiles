@@ -79,8 +79,8 @@ $json.mcpServers | Add-Member -NotePropertyName "mcp-server-github" -NotePropert
 # Set playwright MCP server
 $playwrightConfig = [PSCustomObject]@{
     type = "stdio"
-    command = "npx"
-    args = @("-y", "@playwright/mcp@latest")
+    command = "pwsh"
+    args = @("-Command", "npx -y @playwright/mcp@latest")
 }
 $json.mcpServers | Add-Member -NotePropertyName "playwright" -NotePropertyValue $playwrightConfig -Force
 
