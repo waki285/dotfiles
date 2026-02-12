@@ -28,6 +28,9 @@ wire_api = "responses"
 [sandbox_workspace_write]
 network_access = true
 
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-used"]
+
 [features]
 apps = true
 collaboration_modes = true
@@ -88,6 +91,3 @@ trust_level = "untrusted"
 
 [projects."/Users/suzuneu/Projects/bjrs"]
 trust_level = "trusted"
-
-[notice.model_migrations]
-"gpt-5.2" = "gpt-5.2-codex"
