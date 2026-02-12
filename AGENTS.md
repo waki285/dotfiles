@@ -23,15 +23,16 @@ This updates:
 - `dot_codex/rules/default.rules`
 - `dot_config/opencode/opencode.json`
 
-### agent_hooks (Rust)
+### agent_hooks / claude_statusline (Rust)
 
 ```bash
-cd agent_hooks
-cargo build --release           # Build all packages
+cd tools
+cargo build --workspace --release       # Build all workspace members
 cargo build -p agent_hooks_claude --release  # Build Claude CLI only
-cargo test                      # Run tests
-cargo clippy --all-targets --all-features -- -D warnings     # Lint
-cargo fmt --all -- --check      # Format check
+cargo build -p claude_statusline --release   # Build statusline only
+cargo test --workspace                  # Run tests
+cargo clippy --workspace --all-targets --all-features -- -D warnings  # Lint
+cargo fmt --all -- --check              # Format check
 ```
 
 ### permissions-gen (Go)
@@ -66,14 +67,27 @@ agent_hooks/
 └── opencode/  # OpenCode NAPI bindings (.node file)
 ```
 
-Core functions:
+Key functions:
 - `is_rm_command()` - Block rm commands
 - `check_destructive_find()` - Detect dangerous find patterns
+- `is_rust_file()` - Check if a file path is a Rust file
 - `check_rust_allow_attributes()` - Detect #[allow(...)] in Rust code
 - `check_dangerous_path_command()` - Protect configured paths
 - `check_package_manager()` - Detect package manager mismatches
 
 The Claude CLI reads JSON from stdin and outputs hook responses. OpenCode uses NAPI bindings.
+
+### claude_statusline
+
+A Rust binary that renders a powerline-style statusline for the Claude Status hook.
+
+Displayed segments:
+- Model name
+- CWD
+- Project directory (when different from CWD)
+- Git branch/ref
+- Session cost
+- Context window usage percentage
 
 ### chezmoi Naming Conventions
 
@@ -84,6 +98,11 @@ The Claude CLI reads JSON from stdin and outputs hook responses. OpenCode uses N
 
 ## CI Workflows
 
-- **ci-agent-hooks.yml**: Runs on agent_hooks changes; check/fmt/clippy/test/build across platforms
+Root (`.github/workflows/`):
 - **ci-permissions-gen.yml**: Verifies generated files match source; runs `just perms` and checks for drift
+
+Tools submodule (`tools/.github/workflows/`):
+- **ci-agent-hooks.yml**: Runs on agent_hooks changes; check/fmt/clippy/test/build across platforms
+- **ci-claude-statusline.yml**: Runs on claude_statusline changes; check/fmt/clippy/test/build
 - **release-agent-hooks.yml**: Builds and releases agent_hooks binaries
+- **release-claude-statusline.yml**: Builds and releases claude_statusline binaries
