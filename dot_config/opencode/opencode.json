@@ -68,6 +68,8 @@
       "gh release view *": "allow",
       "git diff": "allow",
       "git diff *": "allow",
+      "git log": "allow",
+      "git log *": "allow",
       "git show": "allow",
       "git show *": "allow",
       "git status": "allow",

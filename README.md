@@ -119,10 +119,10 @@ Custom hooks for Claude Code that provide safety checks. Each hook type has a si
 
 ```bash
 # permission-request: Bash command checks
-agent_hooks permission-request --block-rm --confirm-destructive-find --dangerous-paths "~/"
+agent_hooks permission-request --block-rm --dangerous-paths "~/"
 
-# pre-tool-use: Edit/Write tool checks
-agent_hooks pre-tool-use --deny-rust-allow --expect --check-package-manager
+# pre-tool-use: Edit/Write/Bash tool checks
+agent_hooks pre-tool-use --deny-rust-allow --expect --check-package-manager --deny-destructive-find
 ```
 
 Available modules:
@@ -130,12 +130,12 @@ Available modules:
 | Hook Type | Flag | Description |
 |-----------|------|-------------|
 | `permission-request` | `--block-rm` | Prevents `rm` commands, suggests `trash` instead |
-| `permission-request` | `--confirm-destructive-find` | Confirms destructive `find` commands |
 | `permission-request` | `--dangerous-paths <paths>` | Protects specified paths from rm/trash/mv |
 | `pre-tool-use` | `--deny-rust-allow` | Prevents `#[allow(...)]` attributes in Rust files |
 | `pre-tool-use` | `--expect` | With `--deny-rust-allow`: allow `#[expect]`, deny `#[allow]` |
 | `pre-tool-use` | `--additional-context <msg>` | Appends custom message to denial reason |
 | `pre-tool-use` | `--check-package-manager` | Denies mismatched package manager commands |
+| `pre-tool-use` | `--deny-destructive-find` | Denies destructive `find` commands (e.g. `find -delete`) |
 
 See [tools/agent_hooks/README.md](tools/agent_hooks/README.md) for details.
 

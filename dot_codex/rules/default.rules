@@ -105,6 +105,7 @@ prefix_rule(
 prefix_rule(
   pattern = ["git", [
     "diff",
+    "log",
     "show",
     "status",
   ]],

@@ -93,6 +93,7 @@
       "Bash(gh release list:*)",
       "Bash(gh release view:*)",
       "Bash(git diff:*)",
+      "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git status:*)",
       "Bash(gofmt:*)",
@@ -221,9 +222,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "%USERPROFILE%\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --check-package-manager"
+            "command": "%USERPROFILE%\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --check-package-manager --deny-destructive-find"
 {{- else }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --check-package-manager"
+            "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --check-package-manager --deny-destructive-find"
 {{- end }}
           }
         ]
@@ -236,9 +237,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "%USERPROFILE%\\.claude\\hooks\\agent_hooks_claude.exe permission-request --block-rm --confirm-destructive-find"
+            "command": "%USERPROFILE%\\.claude\\hooks\\agent_hooks_claude.exe permission-request --block-rm"
 {{- else }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude permission-request --block-rm --confirm-destructive-find"
+            "command": "$HOME/.claude/hooks/agent_hooks_claude permission-request --block-rm"
 {{- end }}
           }
         ]

@@ -28,6 +28,7 @@ bash:
     - gh release list
     - gh release view
     - git diff
+    - git log
     - git show
     - git status
     - gofmt
