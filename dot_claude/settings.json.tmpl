@@ -24,23 +24,20 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "gpt-5.3-codex(high)",
     {{- end }}
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-2.5-flash-lite",
-    {{- else if or (eq .claude.profile "isrouter") (eq .claude.profile "vrouter") }}
-    {{- if eq .claude.profile "vrouter" }}
+    {{- else if eq .claude.profile "vrouter"}}
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
-    {{- else }}
-    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "isrouter-api-token").login.username }}",
-    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "isrouter-api-token").login.password }}",
-    {{- end }}
-    "ANTHROPIC_MODEL": "opus",
-    {{- if eq .claude.profile "vrouter" }}
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "ag/claude-opus-4-5-thinking",
-    {{- else }}
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "ag/claude-opus-4-6-thinking",
-    {{- end }}
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "ag/claude-sonnet-4-5-thinking",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ag/gemini-2.5-flash-lite[1m]",
     "CLAUDE_CODE_SUBAGENT_MODEL": "ag/claude-sonnet-4-5-thinking",
+    {{- else if eq .claude.profile "isrouter" }}
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "isrouter-api-token").login.username }}",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "isrouter-api-token").login.password }}",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gh/claude-opus-4.6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gh/claude-sonnet-4.5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gh/claude-haiku-4.5",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "gh/claude-sonnet-4.5",
     {{- end }}
     {{- if eq .claude.disableNonEssential true }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
@@ -260,5 +257,6 @@
     "context7@claude-plugins-official": true
   },
   "language": "日本語",
+  "skipDangerousModePermissionPrompt": true,
   "defaultMode": "bypassPermissions"
 }
