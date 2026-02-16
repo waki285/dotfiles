@@ -136,6 +136,7 @@ Available modules:
 | `pre-tool-use` | `--additional-context <msg>` | Appends custom message to denial reason |
 | `pre-tool-use` | `--check-package-manager` | Denies mismatched package manager commands |
 | `pre-tool-use` | `--deny-destructive-find` | Denies destructive `find` commands (e.g. `find -delete`) |
+| `pre-tool-use` | `--deny-nul-redirect` | Windows only. Denies `> nul`/`2> nul`/`&> nul` redirects and suggests `/dev/null` |
 
 See [tools/agent_hooks/README.md](tools/agent_hooks/README.md) for details.
 

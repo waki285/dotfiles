@@ -222,7 +222,7 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "%USERPROFILE%\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --check-package-manager --deny-destructive-find"
+            "command": "%USERPROFILE%\\.claude\\hooks\\agent_hooks_claude.exe pre-tool-use --check-package-manager --deny-destructive-find --deny-nul-redirect"
 {{- else }}
             "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --check-package-manager --deny-destructive-find"
 {{- end }}
