@@ -34,11 +34,11 @@ status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branc
 [features]
 apps = true
 collaboration_modes = true
-collab = true
 {{- if eq .chezmoi.os "windows" }}
 elevated_windows_sandbox = true
 experimental_windows_sandbox = true
 {{- end }}
+multi_agent = true
 personality = true
 rmcp_client = true
 steer = true
