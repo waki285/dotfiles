@@ -25,6 +25,12 @@ name = "voids"
 base_url = "{{ (bitwarden "item" "codexv").login.username }}"
 wire_api = "responses"
 
+[model_providers.rb]
+name = "rb"
+base_url = "{{ (bitwarden "item" "rbrouter").login.username }}"
+wire_api = "responses"
+http_headers = { "X-Api-Key" = "{{ (bitwarden "item" "rbrouter").login.password }}" }
+
 [sandbox_workspace_write]
 network_access = true
 
@@ -43,6 +49,10 @@ personality = true
 rmcp_client = true
 steer = true
 unified_exec = true
+
+[agents.explorer]
+description = "Fast, authoritative codebase explorer for discovery and analysis. Use for locating files, symbols, and implementation details without making edits."
+config_file = "agents/explorer.toml"
 
 [mcp_servers.context7]
 args = ["-y", "@upstash/context7-mcp"]
