@@ -22,6 +22,9 @@
     },
   },
   "agent_servers": {
+    "github-copilot": {
+      "type": "registry"
+    },
     "claude": {
       "default_model": "ag/claude-opus-4-5-thinking",
       "default_mode": "acceptEdits",
@@ -62,6 +65,7 @@
     },
   },
   "edit_predictions": {
+    "disabled_globs": [],
     "provider": "copilot"
   },
   "terminal": {
