@@ -31,6 +31,12 @@ base_url = "{{ (bitwarden "item" "rbrouter").login.username }}"
 wire_api = "responses"
 http_headers = { "X-Api-Key" = "{{ (bitwarden "item" "rbrouter").login.password }}" }
 
+[model_providers.ym]
+name = "ym"
+base_url = "{{ (bitwarden "item" "ymrouter").login.username }}"
+wire_api = "responses"
+experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
+
 [sandbox_workspace_write]
 network_access = true
 
