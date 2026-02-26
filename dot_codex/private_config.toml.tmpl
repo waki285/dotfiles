@@ -2,11 +2,15 @@
 
 model = "gpt-5.3-codex"
 model_reasoning_effort = "xhigh"
+plan_mode_reasoning_effort = "xhigh"
+
 sandbox_mode = "workspace-write"
 network_access = true
-suppress_unstable_features_warning = true
 web_search = "live" 
+
 personality = "pragmatic"
+
+suppress_unstable_features_warning = true
 
 {{ if eq .chezmoi.os "darwin" -}}
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Ping.aiff"]
