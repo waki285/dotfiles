@@ -42,19 +42,15 @@ network_access = true
 
 [tui]
 status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-remaining", "weekly-limit"]
+theme = "monokai-extended-origin"
 
 [features]
 apps = true
-collaboration_modes = true
-{{- if eq .chezmoi.os "windows" }}
-elevated_windows_sandbox = true
-experimental_windows_sandbox = true
-{{- end }}
+memories = true
 multi_agent = true
-personality = true
-rmcp_client = true
-steer = true
+{{- if eq .chezmoi.os "windows" }}
 unified_exec = true
+{{- end }}
 
 [agents.explorer]
 description = "Fast, authoritative codebase explorer for discovery and analysis. Use for locating files, symbols, and implementation details without making edits."
