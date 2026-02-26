@@ -28,6 +28,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["cargo", "+nightly", "fmt"],
+  decision = "allow",
+  match = ["cargo +nightly fmt"],
+)
+
+prefix_rule(
   pattern = ["cat"],
   decision = "allow",
   match = ["cat"],

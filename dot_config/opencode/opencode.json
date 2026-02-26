@@ -28,6 +28,8 @@
       "cargo info *": "allow",
       "cargo fmt": "allow",
       "cargo fmt *": "allow",
+      "cargo +nightly fmt": "allow",
+      "cargo +nightly fmt *": "allow",
       "cargo metadata": "allow",
       "cargo metadata *": "allow",
       "cargo remove": "allow",

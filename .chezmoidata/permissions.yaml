@@ -8,6 +8,7 @@ bash:
     - cargo clippy
     - cargo info
     - cargo fmt
+    - cargo +nightly fmt
     - cargo metadata
     - cargo remove
     - cargo search
