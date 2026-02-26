@@ -46,6 +46,7 @@ bash:
     - pnpm lint
     - pnpm run build
     - pwd
+    - rg
     - sort
     - strings
     - tree

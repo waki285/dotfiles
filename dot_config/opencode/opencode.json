@@ -104,6 +104,8 @@
       "pnpm run build *": "allow",
       "pwd": "allow",
       "pwd *": "allow",
+      "rg": "allow",
+      "rg *": "allow",
       "sort": "allow",
       "sort *": "allow",
       "strings": "allow",

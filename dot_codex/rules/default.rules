@@ -178,6 +178,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["rg"],
+  decision = "allow",
+  match = ["rg"],
+)
+
+prefix_rule(
   pattern = ["sort"],
   decision = "allow",
   match = ["sort"],
