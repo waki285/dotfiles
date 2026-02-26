@@ -112,6 +112,8 @@
       "sort *": "allow",
       "strings": "allow",
       "strings *": "allow",
+      "tail": "allow",
+      "tail *": "allow",
       "tree": "allow",
       "tree *": "allow",
       "uniq": "allow",

@@ -202,6 +202,12 @@ prefix_rule(
 )
 
 prefix_rule(
+  pattern = ["tail"],
+  decision = "allow",
+  match = ["tail"],
+)
+
+prefix_rule(
   pattern = ["tree"],
   decision = "allow",
   match = ["tree"],

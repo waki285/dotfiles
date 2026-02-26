@@ -50,6 +50,7 @@ bash:
     - rg
     - sort
     - strings
+    - tail
     - tree
     - uniq
     - wc
