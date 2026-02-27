@@ -49,11 +49,14 @@ theme = "monokai-extended-origin"
 
 [features]
 apps = true
+default_mode_request_user_input = true
+js_repl = true
 memories = true
 multi_agent = true
 {{- if eq .chezmoi.os "windows" }}
 unified_exec = true
 {{- end }}
+voice_transcription = true
 
 [agents.explorer]
 description = "Fast, authoritative codebase explorer for discovery and analysis. Use for locating files, symbols, and implementation details without making edits."
