@@ -35,9 +35,9 @@
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "isrouter-api-token").login.username }}",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "isrouter-api-token").login.password }}",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gh/claude-opus-4.6",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gh/claude-sonnet-4.5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gh/claude-sonnet-4.6",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gh/gpt-5-mini",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "gh/claude-sonnet-4.5",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "gh/claude-sonnet-4.6",
     {{- end }}
     {{- if eq .claude.disableNonEssential true }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
