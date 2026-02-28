@@ -43,6 +43,11 @@ experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
 [sandbox_workspace_write]
 network_access = true
 
+{{ if eq .chezmoi.os "windows" -}}
+[windows]
+sandbox = "elevated"
+{{- end }}
+
 [tui]
 status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-remaining", "weekly-limit"]
 theme = "monokai-extended-origin"
