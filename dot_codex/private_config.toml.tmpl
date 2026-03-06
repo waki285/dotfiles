@@ -1,6 +1,6 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "xhigh"
 plan_mode_reasoning_effort = "xhigh"
 
@@ -39,12 +39,13 @@ name = "ym"
 base_url = "{{ (bitwarden "item" "ymrouter").login.username }}"
 wire_api = "responses"
 experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
+http_headers = { "DKU-Verbose-Logs" = "1" }
 
 [sandbox_workspace_write]
 network_access = true
 
 [tui]
-status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-remaining", "weekly-limit"]
+status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-remaining", "weekly-limit", "context-window-size"]
 theme = "monokai-extended-origin"
 
 [features]
