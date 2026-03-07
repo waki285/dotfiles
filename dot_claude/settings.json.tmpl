@@ -23,7 +23,6 @@
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.4(xhigh)",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.4(high)",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5.4(low)",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "gpt-5.4(high)",
     "CLAUDE_CODE_EFFORT_LEVEL": "max",
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     {{- else if eq .claude.profile "vrouter"}}
@@ -39,7 +38,6 @@
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gh/claude-opus-4.6",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gh/claude-sonnet-4.6",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gh/gpt-5-mini",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "gh/claude-sonnet-4.6",
     {{- end }}
     {{- if eq .claude.disableNonEssential true }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
