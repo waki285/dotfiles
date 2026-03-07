@@ -36,7 +36,7 @@ http_headers = { "X-Api-Key" = "{{ (bitwarden "item" "rbrouter").login.password 
 
 [model_providers.ym]
 name = "ym"
-base_url = "{{ (bitwarden "item" "ymrouter").login.username }}"
+base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/v1"
 wire_api = "responses"
 experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
 http_headers = { "DKU-Verbose-Logs" = "1" }

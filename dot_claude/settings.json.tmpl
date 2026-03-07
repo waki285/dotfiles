@@ -12,18 +12,20 @@
     {{- else if or (eq .claude.profile "cliproxy") (eq .claude.profile "vcliproxy") }}
     "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "cliproxy-apikey").login.password }}",
-    {{- if eq .claude.profile "vcliproxy" }}
-    "ANTHROPIC_MODEL": "v/gpt-5.3-codex(xhigh)",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "v/gpt-5.3-codex(xhigh)",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "v/gpt-5.3-codex(high)",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "v/gpt-5.3-codex(high)",
-    {{- else }}
     "ANTHROPIC_MODEL": "gpt-5.3-codex(xhigh)",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.3-codex(xhigh)",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.3-codex(high)",
     "CLAUDE_CODE_SUBAGENT_MODEL": "gpt-5.3-codex(high)",
-    {{- end }}
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-2.5-flash-lite",
+    {{- else if eq .claude.profile "ymcodex" }}
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "ymrouter").login.username }}",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "ymrouter").login.password }}",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.4(xhigh)",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.4(high)",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5.4(low)",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "gpt-5.4(high)",
+    "CLAUDE_CODE_EFFORT_LEVEL": "max",
+    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     {{- else if eq .claude.profile "vrouter"}}
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
