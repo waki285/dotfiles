@@ -4,26 +4,26 @@
   "env": {
     {{- if eq .claude.profile "copilot" }}
     "ANTHROPIC_BASE_URL": "http://localhost:4141",
-    "ANTHROPIC_MODEL": "claude-opus-4.5",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.5",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-4.1-2025-04-14",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4.5",
+    "ANTHROPIC_AUTH_TOKEN": "dummy",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-mini",
     {{- else if or (eq .claude.profile "cliproxy") (eq .claude.profile "vcliproxy") }}
     "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "cliproxy-apikey").login.password }}",
-    {{- if eq .claude.profile "vcliproxy" }}
-    "ANTHROPIC_MODEL": "v/gpt-5.3-codex(xhigh)",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "v/gpt-5.3-codex(xhigh)",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "v/gpt-5.3-codex(high)",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "v/gpt-5.3-codex(high)",
-    {{- else }}
     "ANTHROPIC_MODEL": "gpt-5.3-codex(xhigh)",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.3-codex(xhigh)",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.3-codex(high)",
     "CLAUDE_CODE_SUBAGENT_MODEL": "gpt-5.3-codex(high)",
-    {{- end }}
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-2.5-flash-lite",
+    {{- else if eq .claude.profile "ymcodex" }}
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "ymrouter").login.username }}",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "ymrouter").login.password }}",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.4(xhigh)+fast",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.4(high)+fast",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5.4(low)+fast",
+    "CLAUDE_CODE_EFFORT_LEVEL": "max",
+    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     {{- else if eq .claude.profile "vrouter"}}
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "vrouter-api-token").login.username }}",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "vrouter-api-token").login.password }}",
@@ -37,7 +37,6 @@
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "gh/claude-opus-4.6",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "gh/claude-sonnet-4.6",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gh/gpt-5-mini",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "gh/claude-sonnet-4.6",
     {{- end }}
     {{- if eq .claude.disableNonEssential true }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
