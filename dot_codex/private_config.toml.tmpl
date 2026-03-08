@@ -44,6 +44,10 @@ http_headers = { "DKU-Verbose-Logs" = "1" }
 [sandbox_workspace_write]
 network_access = true
 
+[profiles.ym]
+model_provider = "ym"
+service_tier = "fast"
+
 [tui]
 status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-remaining", "weekly-limit", "context-window-size"]
 theme = "monokai-extended-origin"
