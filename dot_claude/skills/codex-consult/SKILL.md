@@ -36,10 +36,10 @@ Bash tool's `timeout` parameter to `600000` (10 minutes) when invoking `codex ex
 The output directory `~/.claude/second-opinions/` should already exist. If it does not,
 the `-o` flag will create it implicitly via `codex exec`.
 
-### Step 1: Run with voids provider (primary)
+### Step 1: Run with ym profile (primary)
 
 ```bash
-codex exec -c model_provider=voids --full-auto --skip-git-repo-check -o ~/.claude/second-opinions/<TIMESTAMP>_<TOPIC>.md "<PROMPT>"
+codex exec -p ym --full-auto --skip-git-repo-check -o ~/.claude/second-opinions/<TIMESTAMP>_<TOPIC>.md "<PROMPT>"
 ```
 
 - `<TIMESTAMP>`: Use `$(date +%Y-%m-%d_%H-%M-%S)` format
@@ -48,7 +48,7 @@ codex exec -c model_provider=voids --full-auto --skip-git-repo-check -o ~/.claud
 
 ### Step 2: Fallback (if Step 1 fails)
 
-If the voids provider errors, retry without `-c model_provider=voids`:
+If the voids provider errors, retry without `-p ym`:
 
 ```bash
 codex exec --full-auto --skip-git-repo-check -o ~/.claude/second-opinions/<TIMESTAMP>_<TOPIC>.md "<PROMPT>"
