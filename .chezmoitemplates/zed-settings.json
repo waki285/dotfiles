@@ -117,6 +117,14 @@
     "scroll_debounce_ms": 50,
   },
   "lsp": {
+    {{- if eq .chezmoi.os "windows" }}
+    "docker-compose": {
+      "binary": {
+        "path": "{{ joinPath .chezmoi.homeDir "AppData" "Local" "Zed" "extensions" "work" "docker-compose" "node_modules" ".bin" "docker-compose-langserver.cmd" | replace "\\" "/" }}",
+        "arguments": ["--stdio"]
+      }
+    },
+    {{- end }}
     "rust-analyzer": {
       "initialization_options": {
         "cargo": {

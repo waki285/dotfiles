@@ -12,9 +12,6 @@ personality = "pragmatic"
 
 suppress_unstable_features_warning = true
 
-[shell_environment_policy]
-exclude = ["^LANG$", "^LC_"]
-
 {{ if eq .chezmoi.os "darwin" -}}
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Ping.aiff"]
 {{- else if eq .chezmoi.os "windows" -}}
@@ -50,6 +47,9 @@ network_access = true
 {{ if eq .chezmoi.os "windows" -}}
 [windows]
 sandbox = "elevated"
+
+[shell_environment_policy]
+exclude = ["^LANG$", "^LC_.*$"]
 {{- end }}
 
 [profiles.ym]
