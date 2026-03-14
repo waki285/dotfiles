@@ -22,7 +22,7 @@ switch ($status) {
         exit 0
     }
     "locked" {
-        Write-Error "Bitwarden is locked. Run: bw unlock"
+        Write-Error "Bitwarden is locked. Run: `$env:BW_SESSION = (bw unlock --raw)"
         exit 1
     }
     "unauthenticated" {

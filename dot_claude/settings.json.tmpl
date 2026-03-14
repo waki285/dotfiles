@@ -31,12 +31,12 @@
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "ag/claude-sonnet-4-5-thinking",
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ag/gemini-2.5-flash-lite[1m]",
     "CLAUDE_CODE_SUBAGENT_MODEL": "ag/claude-sonnet-4-5-thinking",
-    {{- else if eq .claude.profile "isrouter" }}
-    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "isrouter-api-token").login.username }}",
-    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "isrouter-api-token").login.password }}",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gh/claude-opus-4.6",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gh/claude-sonnet-4.6",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gh/gpt-5-mini",
+    {{- else if eq .claude.profile "rbrouter" }}
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "rbrouter").login.username }}",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "rbrouter").login.password }}",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-mini",
     {{- end }}
     {{- if eq .claude.disableNonEssential true }}
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
@@ -260,5 +260,6 @@
   },
   "language": "日本語",
   "skipDangerousModePermissionPrompt": true,
-  "defaultMode": "bypassPermissions"
+  "defaultMode": "bypassPermissions",
+  "effortLevel": "high"
 }

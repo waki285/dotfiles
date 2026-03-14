@@ -12,6 +12,9 @@ personality = "pragmatic"
 
 suppress_unstable_features_warning = true
 
+[shell_environment_policy]
+exclude = ["^LANG$", "^LC_"]
+
 {{ if eq .chezmoi.os "darwin" -}}
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Ping.aiff"]
 {{- else if eq .chezmoi.os "windows" -}}
@@ -30,7 +33,7 @@ wire_api = "responses"
 
 [model_providers.rb]
 name = "rb"
-base_url = "{{ (bitwarden "item" "rbrouter").login.username }}"
+base_url = "{{ (bitwarden "item" "rbrouter").login.username }}/v1"
 wire_api = "responses"
 http_headers = { "X-Api-Key" = "{{ (bitwarden "item" "rbrouter").login.password }}" }
 
