@@ -41,7 +41,7 @@ name = "OpenAI"
 base_url = "{{ (bitwarden "item" "szlb").login.username }}/backend-api/codex"
 wire_api = "responses"
 experimental_bearer_token = "{{ (bitwardenFields "item" "szlb").apikey.value }}"
-supports_websockets = true
+#supports_websockets = true
 
 [sandbox_workspace_write]
 network_access = true
