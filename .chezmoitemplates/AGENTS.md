@@ -35,3 +35,6 @@
 - actions/checkout は v6 を使用しなさい。
 - Rust において新規に once_cell クレートを採用しないこと。std::sync::LazyLock などを使いなさい。
 - パッケージを追加する際は、`cargo info` や Context7 などで最新のバージョンを確認するか、`cargo add` コマンドなどの自動的に最新バージョンを使用してくれるコマンドを使用しなさい。
+{{- if eq .chezmoi.os "darwin" }}
+- ストレージとCPUを圧迫するため、たとえビルドが遅くとも**絶対に** `CARGO_TARGET_DIR` を指定してビルドや clippy を行わないこと。
+{{- end }}

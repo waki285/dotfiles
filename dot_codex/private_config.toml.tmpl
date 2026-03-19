@@ -23,11 +23,6 @@ notify = ["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"]
 [notice]
 hide_rate_limit_model_nudge = true
 
-[model_providers.voids]
-name = "voids"
-base_url = "{{ (bitwarden "item" "codexv").login.username }}"
-wire_api = "responses"
-
 [model_providers.rb]
 name = "rb"
 base_url = "{{ (bitwarden "item" "rbrouter").login.username }}/v1"
@@ -40,6 +35,13 @@ base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/v1"
 wire_api = "responses"
 experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
 http_headers = { "DKU-Verbose-Logs" = "1" }
+
+[model_providers.szlb]
+name = "OpenAI"
+base_url = "{{ (bitwarden "item" "szlb").login.username }}/backend-api/codex"
+wire_api = "responses"
+experimental_bearer_token = "{{ (bitwardenFields "item" "szlb").apikey.value }}"
+supports_websockets = true
 
 [sandbox_workspace_write]
 network_access = true
@@ -54,6 +56,10 @@ exclude = ["^LANG$", "^LC_.*$"]
 
 [profiles.ym]
 model_provider = "ym"
+service_tier = "fast"
+
+[profiles.sz]
+model_provider = "szlb"
 service_tier = "fast"
 
 [tui]
