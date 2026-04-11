@@ -22,12 +22,16 @@
     },
   },
   "agent_servers": {
-    "github-copilot": {
+    "github-copilot-cli": {
       "type": "registry"
     },
-    "claude": {
-      "default_model": "ag/claude-opus-4-5-thinking",
+    "claude-acp": {
+      "type": "registry",
       "default_mode": "acceptEdits",
+      "default_model": "ag/claude-opus-4-5-thinking"
+    },
+    "github-copilot": {
+      "type": "registry"
     },
   },
   "languages": {

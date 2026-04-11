@@ -30,7 +30,7 @@ wire_api = "responses"
 http_headers = { "X-Api-Key" = "{{ (bitwarden "item" "rbrouter").login.password }}" }
 
 [model_providers.ym]
-name = "ym"
+name = "OpenAI"
 base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/v1"
 wire_api = "responses"
 experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
@@ -57,13 +57,14 @@ exclude = ["^LANG$", "^LC_.*$"]
 [profiles.ym]
 model_provider = "ym"
 service_tier = "fast"
+approvals_reviewer = "user"
 
 [profiles.sz]
 model_provider = "szlb"
 service_tier = "fast"
 
 [tui]
-status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-remaining", "weekly-limit", "context-window-size"]
+status_line = ["model-with-reasoning", "current-dir", "project-root", "git-branch", "context-usage", "weekly-limit", "context-window-size", "fast-mode"]
 theme = "monokai-extended-origin"
 
 [features]
@@ -92,7 +93,11 @@ command = "docker"
 [mcp_servers.chrome-devtools]
 type = "stdio"
 command = "npx"
-args = ["chrome-devtools-mcp@latest"]
+{{ if eq .chezmoi.os "windows" -}}
+args = ["-y", "chrome-devtools-mcp@latest", "--browser-url=http://127.0.0.1:9222"]
+{{- else -}}
+args = ["-y", "chrome-devtools-mcp@latest"]
+{{- end }}
 description = "Chrome DevTools MCP: run performance traces, inspect the DOM, and perform real-time debugging of your web pages — useful for browser automation, end-to-end testing, and capturing page artifacts."
 
 [mcp_servers.github]

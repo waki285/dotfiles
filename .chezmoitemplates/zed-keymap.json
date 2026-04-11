@@ -2,22 +2,18 @@
   {
     "context": "Terminal",
     "bindings": {
-      "shift-enter": [
-        "terminal::SendText",
-        "\u001b\r"
+      "shift-enter": ["terminal::SendText", "\u001b\r"],
 {{- if eq .chezmoi.os "windows" }}
-      ],
+      "ctrl-s": null,
       "ctrl-w": ["pane::CloseActiveItem", { "close_pinned": false }],
-      "shift-up": null
-{{- else }}
-      ]
+      "shift-up": null,
 {{- end }}
-    }
+    },
   },
   {
     "context": "Editor",
     "bindings": {
-      "ctrl-t": null
-    }
-  }
+      "ctrl-t": null,
+    },
+  },
 ]
