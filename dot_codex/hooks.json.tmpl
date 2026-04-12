@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{- if eq .chezmoi.os \"windows\" -}}$HOME/.claude/hooks/agent_hooks.exe codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find --deny-nul-redirect{{- else -}}$HOME/.claude/hooks/agent_hooks codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find{{- end -}}"
+            "command": "{{- if eq .chezmoi.os "windows" -}}$HOME/.claude/hooks/agent_hooks.exe codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find --deny-nul-redirect{{- else -}}$HOME/.claude/hooks/agent_hooks codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find{{- end -}}"
           }
         ]
       }
