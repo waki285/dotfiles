@@ -113,30 +113,34 @@ generated into tool-specific configs.
 - Zed as default editor
 - `push.autoSetupRemote = true` for automatic remote setup
 
-### Claude Code Hooks
+### AI Agent Hooks
 
-Custom hooks for Claude Code that provide safety checks. Each hook type has a single command with module flags:
+Custom hooks for Claude Code, Codex, and Copilot CLI that provide safety checks through a unified CLI:
 
 ```bash
-# permission-request: Bash command checks
-agent_hooks permission-request --block-rm --dangerous-paths "~/"
+# Claude permission-request: Bash command checks
+agent_hooks claude permission-request --block-rm --dangerous-paths "~/"
 
-# pre-tool-use: Edit/Write/Bash tool checks
-agent_hooks pre-tool-use --deny-rust-allow --expect --check-package-manager --deny-destructive-find
+# Claude pre-tool-use: Edit/Write/Bash tool checks
+agent_hooks claude pre-tool-use --deny-rust-allow --expect --check-package-manager --deny-destructive-find
+
+# Codex pre-tool-use: Bash-only checks
+agent_hooks codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find
 ```
 
 Available modules:
 
 | Hook Type | Flag | Description |
 |-----------|------|-------------|
-| `permission-request` | `--block-rm` | Prevents `rm` commands, suggests `trash` instead |
-| `permission-request` | `--dangerous-paths <paths>` | Protects specified paths from rm/trash/mv |
-| `pre-tool-use` | `--deny-rust-allow` | Prevents `#[allow(...)]` attributes in Rust files |
-| `pre-tool-use` | `--expect` | With `--deny-rust-allow`: allow `#[expect]`, deny `#[allow]` |
-| `pre-tool-use` | `--additional-context <msg>` | Appends custom message to denial reason |
-| `pre-tool-use` | `--check-package-manager` | Denies mismatched package manager commands |
-| `pre-tool-use` | `--deny-destructive-find` | Denies destructive `find` commands (e.g. `find -delete`) |
-| `pre-tool-use` | `--deny-nul-redirect` | Windows only. Denies `> nul`/`2> nul`/`&> nul` redirects and suggests `/dev/null` |
+| `claude permission-request` | `--block-rm` | Prevents `rm` commands, suggests `trash` instead |
+| `claude permission-request` | `--dangerous-paths <paths>` | Protects specified paths from rm/trash/mv |
+| `claude/copilot pre-tool-use` | `--deny-rust-allow` | Prevents `#[allow(...)]` attributes in Rust files |
+| `claude/copilot pre-tool-use` | `--expect` | With `--deny-rust-allow`: allow `#[expect]`, deny `#[allow]` |
+| `claude/copilot pre-tool-use` | `--additional-context <msg>` | Appends custom message to denial reason |
+| `claude/codex/copilot pre-tool-use` | `--check-package-manager` | Denies mismatched package manager commands |
+| `claude/codex/copilot pre-tool-use` | `--deny-destructive-find` | Denies destructive `find` commands (e.g. `find -delete`) |
+| `codex/copilot pre-tool-use` | `--block-rm` | Blocks `rm` for providers that use pre-tool-use for Bash permissions |
+| `claude/codex/copilot pre-tool-use` | `--deny-nul-redirect` | Windows only. Denies `> nul`/`2> nul`/`&> nul` redirects and suggests `/dev/null` |
 
 See [tools/agent_hooks/README.md](tools/agent_hooks/README.md) for details.
 

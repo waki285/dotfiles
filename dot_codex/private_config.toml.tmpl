@@ -69,6 +69,9 @@ theme = "monokai-extended-origin"
 
 [features]
 apps = true
+{{- if ne .chezmoi.os "windows" }}
+codex_hooks = true
+{{- end }}
 default_mode_request_user_input = true
 js_repl = true
 memories = true

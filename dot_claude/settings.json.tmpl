@@ -207,9 +207,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude.exe pre-tool-use --deny-rust-allow --expect"
+            "command": "$HOME/.claude/hooks/agent_hooks.exe claude pre-tool-use --deny-rust-allow --expect"
 {{- else }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --deny-rust-allow --expect"
+            "command": "$HOME/.claude/hooks/agent_hooks claude pre-tool-use --deny-rust-allow --expect"
 {{- end }}
           }
         ]
@@ -220,9 +220,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude.exe pre-tool-use --check-package-manager --deny-destructive-find --deny-nul-redirect"
+            "command": "$HOME/.claude/hooks/agent_hooks.exe claude pre-tool-use --check-package-manager --deny-destructive-find --deny-nul-redirect"
 {{- else }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude pre-tool-use --check-package-manager --deny-destructive-find"
+            "command": "$HOME/.claude/hooks/agent_hooks claude pre-tool-use --check-package-manager --deny-destructive-find"
 {{- end }}
           }
         ]
@@ -235,9 +235,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude.exe permission-request --block-rm"
+            "command": "$HOME/.claude/hooks/agent_hooks.exe claude permission-request --block-rm"
 {{- else }}
-            "command": "$HOME/.claude/hooks/agent_hooks_claude permission-request --block-rm"
+            "command": "$HOME/.claude/hooks/agent_hooks claude permission-request --block-rm"
 {{- end }}
           }
         ]

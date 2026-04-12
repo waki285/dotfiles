@@ -28,7 +28,7 @@ This updates:
 ```bash
 cd tools
 cargo build --workspace --release       # Build all workspace members
-cargo build -p agent_hooks_claude --release  # Build Claude CLI only
+cargo build -p agent_hooks --release    # Build unified CLI only
 cargo build -p claude_statusline --release   # Build statusline only
 cargo test --workspace                  # Run tests
 cargo clippy --workspace --all-targets --all-features -- -D warnings  # Lint
@@ -63,7 +63,7 @@ A Rust workspace providing safety hooks for AI coding agents:
 ```
 agent_hooks/
 ├── core/      # Core library - pure check functions (no I/O)
-├── claude/    # Claude Code CLI binary (agent_hooks_claude)
+├── cli/       # Unified CLI for Claude Code, Codex, and Copilot CLI
 └── opencode/  # OpenCode NAPI bindings (.node file)
 ```
 
@@ -75,7 +75,7 @@ Key functions:
 - `check_dangerous_path_command()` - Protect configured paths
 - `check_package_manager()` - Detect package manager mismatches
 
-The Claude CLI reads JSON from stdin and outputs hook responses. OpenCode uses NAPI bindings.
+The unified CLI reads provider-specific JSON from stdin and outputs hook responses for Claude Code, Codex, or Copilot CLI. OpenCode uses NAPI bindings.
 
 ### claude_statusline
 

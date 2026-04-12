@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 $REPO = "waki285/dotfiles-tools"
 $HOOKS_DIR = Join-Path $env:USERPROFILE ".claude\hooks"
 $OPENCODE_PLUGIN_DIR = Join-Path $env:USERPROFILE ".config\opencode\plugin"
-$CLAUDE_BINARY_NAME = "agent_hooks_claude.exe"
+$AGENT_HOOKS_BINARY_NAME = "agent_hooks.exe"
 $STATUSLINE_BINARY_NAME = "claude_statusline.exe"
 $AGENT_HOOKS_VERSION_FILE = Join-Path $HOOKS_DIR ".agent_hooks_version"
 $STATUSLINE_VERSION_FILE = Join-Path $HOOKS_DIR ".claude_statusline_version"
@@ -58,12 +58,12 @@ $ARCH = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
 
 switch ($ARCH) {
     "X64" {
-        $CLAUDE_ASSET = "agent_hooks_claude-windows-x86_64.exe"
+        $AGENT_HOOKS_ASSET = "agent_hooks-windows-x86_64.exe"
         $OPENCODE_ASSET = "agent_hooks_opencode-windows-x86_64.node"
         $STATUSLINE_ASSET = "claude_statusline-windows-x86_64.exe"
     }
     "Arm64" {
-        $CLAUDE_ASSET = "agent_hooks_claude-windows-arm64.exe"
+        $AGENT_HOOKS_ASSET = "agent_hooks-windows-arm64.exe"
         $OPENCODE_ASSET = "agent_hooks_opencode-windows-arm64.node"
         $STATUSLINE_ASSET = "claude_statusline-windows-arm64.exe"
     }
@@ -73,11 +73,11 @@ switch ($ARCH) {
     }
 }
 
-$CLAUDE_DOWNLOAD_URL = "https://github.com/$REPO/releases/download/agent_hooks-$AGENT_HOOKS_VERSION/$CLAUDE_ASSET"
+$AGENT_HOOKS_DOWNLOAD_URL = "https://github.com/$REPO/releases/download/agent_hooks-$AGENT_HOOKS_VERSION/$AGENT_HOOKS_ASSET"
 $OPENCODE_DOWNLOAD_URL = "https://github.com/$REPO/releases/download/agent_hooks-$AGENT_HOOKS_VERSION/$OPENCODE_ASSET"
 $STATUSLINE_DOWNLOAD_URL = "https://github.com/$REPO/releases/download/claude_statusline-$STATUSLINE_VERSION/$STATUSLINE_ASSET"
 
-$CLAUDE_TARGET_PATH = Join-Path $HOOKS_DIR $CLAUDE_BINARY_NAME
+$AGENT_HOOKS_TARGET_PATH = Join-Path $HOOKS_DIR $AGENT_HOOKS_BINARY_NAME
 $STATUSLINE_TARGET_PATH = Join-Path $HOOKS_DIR $STATUSLINE_BINARY_NAME
 $OPENCODE_TARGET_PATH = Join-Path $OPENCODE_PLUGIN_DIR "agent_hooks.node"
 
@@ -89,7 +89,7 @@ if (-not (Test-Path $OPENCODE_PLUGIN_DIR)) {
 }
 
 $needAgentHooksDownload = $true
-if ((Test-Path $CLAUDE_TARGET_PATH) -and (Test-Path $OPENCODE_TARGET_PATH) -and (Test-Path $AGENT_HOOKS_VERSION_FILE)) {
+if ((Test-Path $AGENT_HOOKS_TARGET_PATH) -and (Test-Path $OPENCODE_TARGET_PATH) -and (Test-Path $AGENT_HOOKS_VERSION_FILE)) {
     $installedAgentHooksVersion = (Get-Content $AGENT_HOOKS_VERSION_FILE -Raw).Trim()
     if ($installedAgentHooksVersion -eq $AGENT_HOOKS_VERSION) {
         $needAgentHooksDownload = $false
@@ -110,8 +110,8 @@ if (-not $needAgentHooksDownload -and -not $needStatuslineDownload) {
 }
 
 if ($needAgentHooksDownload) {
-    Download-Asset -Url $CLAUDE_DOWNLOAD_URL -OutFile $CLAUDE_TARGET_PATH -Label "$CLAUDE_ASSET $AGENT_HOOKS_VERSION"
-    Write-Host "Successfully installed $CLAUDE_BINARY_NAME $AGENT_HOOKS_VERSION to $CLAUDE_TARGET_PATH"
+    Download-Asset -Url $AGENT_HOOKS_DOWNLOAD_URL -OutFile $AGENT_HOOKS_TARGET_PATH -Label "$AGENT_HOOKS_ASSET $AGENT_HOOKS_VERSION"
+    Write-Host "Successfully installed $AGENT_HOOKS_BINARY_NAME $AGENT_HOOKS_VERSION to $AGENT_HOOKS_TARGET_PATH"
 
     Download-Asset -Url $OPENCODE_DOWNLOAD_URL -OutFile $OPENCODE_TARGET_PATH -Label "$OPENCODE_ASSET $AGENT_HOOKS_VERSION"
     Write-Host "Successfully installed agent_hooks.node $AGENT_HOOKS_VERSION to $OPENCODE_TARGET_PATH"

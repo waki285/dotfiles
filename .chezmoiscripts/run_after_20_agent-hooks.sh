@@ -6,7 +6,7 @@ set -eu
 REPO="waki285/dotfiles-tools"
 HOOKS_DIR="$HOME/.claude/hooks"
 OPENCODE_PLUGIN_DIR="$HOME/.config/opencode/plugin"
-CLAUDE_BINARY_NAME="agent_hooks_claude"
+AGENT_HOOKS_BINARY_NAME="agent_hooks"
 STATUSLINE_BINARY_NAME="claude_statusline"
 AGENT_HOOKS_VERSION_FILE="$HOOKS_DIR/.agent_hooks_version"
 STATUSLINE_VERSION_FILE="$HOOKS_DIR/.claude_statusline_version"
@@ -64,12 +64,12 @@ case "$OS" in
   Darwin)
     case "$ARCH" in
       x86_64)
-        CLAUDE_ASSET="agent_hooks_claude-macos-x86_64"
+        AGENT_HOOKS_ASSET="agent_hooks-macos-x86_64"
         OPENCODE_ASSET="agent_hooks_opencode-macos-x86_64.node"
         STATUSLINE_ASSET="claude_statusline-macos-x86_64"
         ;;
       arm64)
-        CLAUDE_ASSET="agent_hooks_claude-macos-arm64"
+        AGENT_HOOKS_ASSET="agent_hooks-macos-arm64"
         OPENCODE_ASSET="agent_hooks_opencode-macos-arm64.node"
         STATUSLINE_ASSET="claude_statusline-macos-arm64"
         ;;
@@ -82,12 +82,12 @@ case "$OS" in
   Linux)
     case "$ARCH" in
       x86_64)
-        CLAUDE_ASSET="agent_hooks_claude-linux-x86_64"
+        AGENT_HOOKS_ASSET="agent_hooks-linux-x86_64"
         OPENCODE_ASSET="agent_hooks_opencode-linux-x86_64.node"
         STATUSLINE_ASSET="claude_statusline-linux-x86_64"
         ;;
       aarch64|arm64)
-        CLAUDE_ASSET="agent_hooks_claude-linux-arm64"
+        AGENT_HOOKS_ASSET="agent_hooks-linux-arm64"
         OPENCODE_ASSET="agent_hooks_opencode-linux-arm64.node"
         STATUSLINE_ASSET="claude_statusline-linux-arm64"
         ;;
@@ -103,11 +103,11 @@ case "$OS" in
     ;;
 esac
 
-CLAUDE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/agent_hooks-${AGENT_HOOKS_VERSION}/${CLAUDE_ASSET}"
+AGENT_HOOKS_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/agent_hooks-${AGENT_HOOKS_VERSION}/${AGENT_HOOKS_ASSET}"
 OPENCODE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/agent_hooks-${AGENT_HOOKS_VERSION}/${OPENCODE_ASSET}"
 STATUSLINE_DOWNLOAD_URL="https://github.com/${REPO}/releases/download/claude_statusline-${STATUSLINE_VERSION}/${STATUSLINE_ASSET}"
 
-CLAUDE_TARGET_PATH="$HOOKS_DIR/$CLAUDE_BINARY_NAME"
+AGENT_HOOKS_TARGET_PATH="$HOOKS_DIR/$AGENT_HOOKS_BINARY_NAME"
 STATUSLINE_TARGET_PATH="$HOOKS_DIR/$STATUSLINE_BINARY_NAME"
 OPENCODE_TARGET_PATH="$OPENCODE_PLUGIN_DIR/agent_hooks.node"
 
@@ -115,7 +115,7 @@ mkdir -p "$HOOKS_DIR"
 mkdir -p "$OPENCODE_PLUGIN_DIR"
 
 NEED_AGENT_HOOKS_DOWNLOAD=1
-if [ -f "$CLAUDE_TARGET_PATH" ] && [ -f "$OPENCODE_TARGET_PATH" ] && [ -f "$AGENT_HOOKS_VERSION_FILE" ]; then
+if [ -f "$AGENT_HOOKS_TARGET_PATH" ] && [ -f "$OPENCODE_TARGET_PATH" ] && [ -f "$AGENT_HOOKS_VERSION_FILE" ]; then
   INSTALLED_AGENT_HOOKS_VERSION="$(cat "$AGENT_HOOKS_VERSION_FILE")"
   if [ "$INSTALLED_AGENT_HOOKS_VERSION" = "$AGENT_HOOKS_VERSION" ]; then
     NEED_AGENT_HOOKS_DOWNLOAD=0
@@ -136,10 +136,10 @@ if [ "$NEED_AGENT_HOOKS_DOWNLOAD" -eq 0 ] && [ "$NEED_STATUSLINE_DOWNLOAD" -eq 0
 fi
 
 if [ "$NEED_AGENT_HOOKS_DOWNLOAD" -eq 1 ]; then
-  echo "Downloading $CLAUDE_ASSET $AGENT_HOOKS_VERSION from $CLAUDE_DOWNLOAD_URL..."
-  download_file "$CLAUDE_DOWNLOAD_URL" "$CLAUDE_TARGET_PATH"
-  chmod +x "$CLAUDE_TARGET_PATH"
-  echo "Successfully installed $CLAUDE_BINARY_NAME $AGENT_HOOKS_VERSION to $CLAUDE_TARGET_PATH"
+  echo "Downloading $AGENT_HOOKS_ASSET $AGENT_HOOKS_VERSION from $AGENT_HOOKS_DOWNLOAD_URL..."
+  download_file "$AGENT_HOOKS_DOWNLOAD_URL" "$AGENT_HOOKS_TARGET_PATH"
+  chmod +x "$AGENT_HOOKS_TARGET_PATH"
+  echo "Successfully installed $AGENT_HOOKS_BINARY_NAME $AGENT_HOOKS_VERSION to $AGENT_HOOKS_TARGET_PATH"
 
   echo "Downloading $OPENCODE_ASSET $AGENT_HOOKS_VERSION from $OPENCODE_DOWNLOAD_URL..."
   download_file "$OPENCODE_DOWNLOAD_URL" "$OPENCODE_TARGET_PATH"
