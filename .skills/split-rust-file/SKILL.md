@@ -3,10 +3,10 @@ name: split-rust-file
 description: >
   Split large Rust source files into module-based layouts. Use when the user
   asks to split a specific Rust file, or when you need to reduce oversized Rust
-  files and no file was specified, especially for files over 1000 lines. Prefer
-  module extraction, never use `include!`, never leave `A.rs` alongside `A/`,
-  never create `A/A.rs`, and keep `mod.rs` limited to module declarations and
-  re-exports.
+  files and no file was specified, especially by splitting every Rust file over
+  1000 lines. Prefer module extraction, never use `include!`, never leave
+  `A.rs` alongside `A/`, never create `A/A.rs`, and keep `mod.rs` limited to
+  module declarations and re-exports.
 ---
 
 # Split Rust File
@@ -17,17 +17,18 @@ and module paths coherent.
 ## When To Use
 
 - The user explicitly asks to split a Rust file.
-- No file was specified, and you need to split a Rust file that exceeds 1000 lines.
+- No file was specified, and you need to split every Rust file that exceeds 1000 lines.
 
 If no file was specified:
 
 1. Enumerate Rust files under the current project.
 2. Count lines.
 3. Pick files over 1000 lines as candidates.
-4. If there is exactly one clear candidate, use it.
-5. If there are multiple plausible candidates, ask the user which file to split.
+4. Sort candidates into a deterministic order before editing.
+5. Split every candidate in that order.
 
-Do not guess when the target file is ambiguous.
+If no file exceeds 1000 lines, report that and stop.
+Do not ask the user to choose among the discovered candidates.
 
 Count lines with platform-appropriate commands:
 
@@ -65,6 +66,9 @@ Get-ChildItem -Recurse -Filter *.rs |
 If you want to inspect all Rust files before filtering, remove the `Where-Object`
 stage.
 
+When processing multiple candidates, prefer a stable order such as path order or
+descending line count, and state which one you chose.
+
 ## Required Rules
 
 - Split by Rust modules. Do not use `include!`.
@@ -76,7 +80,37 @@ stage.
 
 ## Preferred Layouts
 
-If the original file is `foo.rs`, convert it into a directory module:
+Do not treat sibling extraction or directory-module conversion as the default.
+Choose the layout that best fits the local module topology, API surface,
+cohesion, and likely future ownership.
+
+Use sibling extraction when the original file should stay in place and the split
+is best expressed by adding peer modules in the same directory.
+
+```text
+before:
+src/x/mod.rs
+src/x/a.rs
+src/x/b.rs
+
+after:
+src/x/mod.rs
+src/x/a.rs
+src/x/b.rs
+src/x/c.rs
+src/x/d.rs
+```
+
+Choose this pattern when:
+
+- Keep `a.rs` if it should remain the entry point or facade for that portion of
+  the API.
+- Move extracted responsibilities into `c.rs` and `d.rs`.
+- Update the parent module, such as `x/mod.rs` or `x.rs`, to declare the new
+  sibling modules.
+
+Use a directory module when the target file itself should become a module
+namespace and replacing `foo.rs` entirely produces the clearest structure:
 
 ```text
 before:
@@ -88,6 +122,13 @@ src/foo/types.rs
 src/foo/parse.rs
 src/foo/render.rs
 ```
+
+Choose this pattern when:
+
+- `foo` should own a nested namespace rather than remain a single file.
+- The extracted pieces are naturally children of `foo`.
+- The final layout replaces `foo.rs` entirely, so `foo.rs` and `foo/` do not
+  coexist.
 
 If the original file is already `foo/mod.rs`, keep `foo/mod.rs` thin and move
 definitions into sibling files:
@@ -125,14 +166,22 @@ src/foo/foo.rs
 - Split by responsibility, not by arbitrary line ranges.
 - Prefer a small number of meaningful modules over many tiny files.
 - Keep closely coupled private helpers with the module that owns them.
+- Choose between sibling extraction and directory-module conversion based on the
+  code's actual structure. Do not force either pattern by default.
 - Preserve stable external paths when practical by re-exporting from `mod.rs`.
 
 ### 3. Build the module tree
 
-- For `foo.rs`, move it to `foo/mod.rs` and add child modules under `foo/`.
-- For existing directory modules, keep `foo/mod.rs` and add or expand sibling files.
-- Declare child modules from `mod.rs`.
-- Re-export public items from `mod.rs` when that avoids unnecessary API churn.
+- Decide first whether the original file should remain the owning module or be
+  replaced by a directory module.
+- If the original file should remain the facade or stable API surface, keep it
+  and add sibling modules around it.
+- If the original file should become a namespace, convert `foo.rs` into
+  `foo/mod.rs` only when the final layout fully replaces `foo.rs` and does not
+  leave both `foo.rs` and `foo/`.
+- Declare child or sibling modules from the correct parent module file.
+- Re-export public items from the thinnest appropriate module when that avoids
+  unnecessary API churn.
 
 `mod.rs` should typically look like this:
 
@@ -175,7 +224,7 @@ Do not consider the refactor complete until the crate builds cleanly.
 
 Summarize:
 
-- which file was split
+- which file or files were split
 - which modules were created
 - whether any public paths changed
 - which validation commands were run
