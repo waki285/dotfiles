@@ -4,9 +4,7 @@ description: >
   Split large Rust source files into module-based layouts. Use when the user
   asks to split a specific Rust file, or when you need to reduce oversized Rust
   files and no file was specified, especially by splitting every Rust file over
-  1000 lines. Prefer module extraction, never use `include!`, never leave
-  `A.rs` alongside `A/`, never create `A/A.rs`, and keep `mod.rs` limited to
-  module declarations and re-exports.
+  1000 lines.
 ---
 
 # Split Rust File
