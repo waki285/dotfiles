@@ -58,7 +58,7 @@ exclude = ["^LANG$", "^LC_.*$"]
 model_provider = "ym"
 service_tier = "fast"
 approvals_reviewer = "user"
-chatgpt_base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/v1"
+chatgpt_base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/backend-api"
 
 [profiles.sz]
 model_provider = "szlb"
