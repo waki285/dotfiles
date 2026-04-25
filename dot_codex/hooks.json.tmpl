@@ -1,12 +1,32 @@
 {
   "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{- if eq .chezmoi.os "windows" -}}& '{{ joinPath .chezmoi.homeDir ".claude" "hooks" "agent_hooks.exe" | replace "\\" "/" }}' codex permission-request --block-rm{{- else -}}$HOME/.claude/hooks/agent_hooks codex permission-request --block-rm{{- end -}}"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "{{- if eq .chezmoi.os "windows" -}}$HOME/.claude/hooks/agent_hooks.exe codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find --deny-nul-redirect{{- else -}}$HOME/.claude/hooks/agent_hooks codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find{{- end -}}"
+            "command": "{{- if eq .chezmoi.os "windows" -}}& '{{ joinPath .chezmoi.homeDir ".claude" "hooks" "agent_hooks.exe" | replace "\\" "/" }}' codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find --deny-nul-redirect{{- else -}}$HOME/.claude/hooks/agent_hooks codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find{{- end -}}"
+          }
+        ]
+      },
+      {
+        "matcher": "apply_patch|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{- if eq .chezmoi.os "windows" -}}& '{{ joinPath .chezmoi.homeDir ".claude" "hooks" "agent_hooks.exe" | replace "\\" "/" }}' codex pre-tool-use --deny-rust-allow --expect{{- else -}}$HOME/.claude/hooks/agent_hooks codex pre-tool-use --deny-rust-allow --expect{{- end -}}"
           }
         ]
       }
