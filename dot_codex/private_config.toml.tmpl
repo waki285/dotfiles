@@ -1,8 +1,9 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 plan_mode_reasoning_effort = "xhigh"
+approvals_reviewer = "user"
 
 sandbox_mode = "workspace-write"
 network_access = true
@@ -57,8 +58,8 @@ exclude = ["^LANG$", "^LC_.*$"]
 [profiles.ym]
 model_provider = "ym"
 service_tier = "fast"
-approvals_reviewer = "user"
 chatgpt_base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/backend-api"
+#supports_websockets = true
 
 [profiles.sz]
 model_provider = "szlb"

@@ -19,9 +19,10 @@
     {{- else if eq .claude.profile "ymcodex" }}
     "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "ymrouter").login.username }}",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "ymrouter").login.password }}",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.4(xhigh)+fast",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.4(high)+fast",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5.4(low)+fast",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gpt-5.5(high)+fast",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-5.5(medium)+fast",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5.5(low)+fast",
+    "CLAUDE_CODE_DISABLE_1M_CONTEXT": "1",
     "CLAUDE_CODE_EFFORT_LEVEL": "max",
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     {{- else if eq .claude.profile "vrouter"}}
