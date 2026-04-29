@@ -7,6 +7,15 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "outline_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
   {{- if eq .chezmoi.os "windows" }}
   "auto_update": false,
   {{- end }}
@@ -16,6 +25,8 @@
     "metrics": false
   },
   "agent": {
+    "dock": "right",
+    "sidebar_side": "right",
     "commit_message_model": {
       "provider": "copilot_chat",
       "model": "gpt-5-mini"
@@ -79,6 +90,7 @@
     "font_size": 13.0,
   },
   "project_panel": {
+    "dock": "left",
     "hide_root": true,
   },
   "tabs": {
@@ -87,8 +99,8 @@
     "git_status": true,
   },
   "title_bar": {
+    "show_branch_status_icon": true,
     "show_menus": false,
-    "show_branch_icon": true,
   },
   "status_bar": {
     "active_encoding_button": "enabled",

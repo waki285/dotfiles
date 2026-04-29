@@ -23,6 +23,7 @@ notify = ["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"]
 
 [notice]
 hide_rate_limit_model_nudge = true
+hide_full_access_warning = true
 
 [model_providers.rb]
 name = "rb"
@@ -36,6 +37,7 @@ base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/v1"
 wire_api = "responses"
 experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
 http_headers = { "DKU-Verbose-Logs" = "1" }
+approvals_reviewer = "user"
 
 [model_providers.szlb]
 name = "OpenAI"
@@ -85,10 +87,6 @@ config_file = "agents/explorer.toml"
 [mcp_servers.context7]
 args = ["-y", "@upstash/context7-mcp"]
 command = "npx"
-
-[mcp_servers.markitdown]
-args = ["run", "--rm", "-i", "mcp/markitdown:latest"]
-command = "docker"
 
 [mcp_servers.chrome-devtools]
 type = "stdio"
