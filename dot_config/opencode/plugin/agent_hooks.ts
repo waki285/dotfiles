@@ -29,6 +29,7 @@ type AgentHooksAddon = {
   checkRustAllowAttributes: (content: string) => RustAllowCheck
   checkDangerousPathCommand: (cmd: string, dangerousPaths: string[]) => DangerousPathResult
   checkPackageManager: (cmd: string, startDir: string) => PackageManagerCheckResult
+  detectLegacyPythonCommand: (cmd: string) => string | null
 }
 
 // Configuration from agent_hooks.json
@@ -37,6 +38,7 @@ type AgentHooksConfig = {
   additionalContext?: string
   dangerousPaths?: string[]
   checkPackageManager?: boolean
+  preferUv?: boolean
 }
 
 const require = createRequire(import.meta.url)
@@ -65,6 +67,14 @@ const loadConfig = (): AgentHooksConfig => {
   } catch {
     return {}
   }
+}
+
+const buildUvRedirectMessage = (tool: string): string => {
+  if (tool === "pip") {
+    return "pip is discouraged. Use uv instead: `uv pip ...`, or `uv add <package>` for project dependencies."
+  }
+
+  return `${tool} is discouraged. Use uv instead: \`uv run python ...\`.`
 }
 
 const AgentHooksPlugin: Plugin = async ({ client }) => {
@@ -103,6 +113,7 @@ const AgentHooksPlugin: Plugin = async ({ client }) => {
   const additionalContext = config.additionalContext ?? null
   const dangerousPaths = config.dangerousPaths ?? []
   const checkPackageManagerEnabled = config.checkPackageManager ?? false
+  const preferUv = config.preferUv ?? false
 
   return {
     "tool.execute.before": async (input, output) => {
@@ -130,6 +141,13 @@ const AgentHooksPlugin: Plugin = async ({ client }) => {
               `Dangerous path operation: ${dangerousCheck.commandType} command targets '${dangerousCheck.matchedPath}'. ` +
                 "This operation is not permitted on protected paths."
             )
+          }
+        }
+
+        if (preferUv) {
+          const legacyPythonTool = addon.detectLegacyPythonCommand(command)
+          if (legacyPythonTool) {
+            throw new Error(buildUvRedirectMessage(legacyPythonTool))
           }
         }
 

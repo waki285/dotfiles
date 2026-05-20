@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{{- if eq .chezmoi.os "windows" -}}& '{{ joinPath .chezmoi.homeDir ".claude" "hooks" "agent_hooks.exe" | replace "\\" "/" }}' codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find --deny-nul-redirect{{- else -}}$HOME/.claude/hooks/agent_hooks codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find{{- end -}}"
+            "command": "{{- if eq .chezmoi.os "windows" -}}& '{{ joinPath .chezmoi.homeDir ".claude" "hooks" "agent_hooks.exe" | replace "\\" "/" }}' codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find --deny-nul-redirect --prefer-uv{{- else -}}$HOME/.claude/hooks/agent_hooks codex pre-tool-use --block-rm --check-package-manager --deny-destructive-find --prefer-uv{{- end -}}"
           }
         ]
       },

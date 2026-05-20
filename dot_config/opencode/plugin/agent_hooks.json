@@ -1,4 +1,5 @@
 {
   "allowExpect": true,
-  "dangerousPaths": ["~/"]
+  "dangerousPaths": ["~/"],
+  "preferUv": true
 }
