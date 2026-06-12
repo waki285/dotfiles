@@ -2,12 +2,12 @@
 {{- $is_wsl := eq (includeTemplate "is_wsl" . | trim) "true" -}}
 {
   "env": {
-    {{- if eq .claude.profile "copilot" }}
-    "ANTHROPIC_BASE_URL": "http://localhost:4141",
-    "ANTHROPIC_AUTH_TOKEN": "dummy",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.6",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.6",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-5-mini",
+    {{- if eq .claude.profile "kiro" }}
+    "ANTHROPIC_BASE_URL": "http://x8",
+    "ANTHROPIC_AUTH_TOKEN": "sk-x-x-x",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "kr/claude-opus-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "kr/claude-sonnet-4-5",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kr/claude-haiku-4-5",
     {{- else if or (eq .claude.profile "cliproxy") (eq .claude.profile "vcliproxy") }}
     "ANTHROPIC_BASE_URL": "http://127.0.0.1:8317",
     "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "cliproxy-apikey").login.password }}",
@@ -221,9 +221,9 @@
           {
             "type": "command",
 {{- if eq .chezmoi.os "windows" }}
-            "command": "$HOME/.claude/hooks/agent_hooks.exe claude pre-tool-use --check-package-manager --deny-destructive-find --deny-nul-redirect"
+            "command": "$HOME/.claude/hooks/agent_hooks.exe claude pre-tool-use --check-package-manager --deny-destructive-find --deny-nul-redirect --prefer-uv"
 {{- else }}
-            "command": "$HOME/.claude/hooks/agent_hooks claude pre-tool-use --check-package-manager --deny-destructive-find"
+            "command": "$HOME/.claude/hooks/agent_hooks claude pre-tool-use --check-package-manager --deny-destructive-find --prefer-uv"
 {{- end }}
           }
         ]

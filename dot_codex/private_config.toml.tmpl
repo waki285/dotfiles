@@ -5,7 +5,7 @@ model_reasoning_effort = "xhigh"
 plan_mode_reasoning_effort = "xhigh"
 approvals_reviewer = "user"
 
-sandbox_mode = "workspace-write"
+sandbox_mode = "danger-full-access"
 network_access = true
 web_search = "live" 
 
@@ -26,27 +26,6 @@ hide_rate_limit_model_nudge = true
 hide_full_access_warning = true
 fast_default_opt_out = true
 
-[model_providers.voids]
-name = "OpenAI"
-base_url = "{{ (bitwarden "item" "codexv").login.username }}"
-wire_api = "responses"
-experimental_bearer_token = "{{ (bitwarden "item" "codexv").login.password }}"
-
-[model_providers.ym]
-name = "OpenAI"
-base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/v1"
-wire_api = "responses"
-experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
-http_headers = { "DKU-Verbose-Logs" = "1" }
-approvals_reviewer = "user"
-
-[model_providers.szlb]
-name = "OpenAI"
-base_url = "{{ (bitwarden "item" "szlb").login.username }}/backend-api/codex"
-wire_api = "responses"
-experimental_bearer_token = "{{ (bitwardenFields "item" "szlb").apikey.value }}"
-#supports_websockets = true
-
 [sandbox_workspace_write]
 network_access = true
 
@@ -57,22 +36,6 @@ sandbox = "elevated"
 [shell_environment_policy]
 exclude = ["^LANG$", "^LC_.*$"]
 {{- end }}
-
-[profiles.voids]
-model_provider = "voids"
-service_tier = "fast"
-approvals_reviewer = "guardian_subagent"
-
-[profiles.ym]
-model_provider = "ym"
-service_tier = "fast"
-chatgpt_base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/backend-api"
-approvals_reviewer = "guardian_subagent"
-#supports_websockets = true
-
-[profiles.sz]
-model_provider = "szlb"
-service_tier = "fast"
 
 [tui]
 status_line = ["model-with-reasoning", "current-dir", "project-name", "git-branch", "context-used", "five-hour-limit", "weekly-limit", "context-window-size"]
@@ -86,14 +49,11 @@ default_mode_request_user_input = true
 goals = true
 js_repl = true
 memories = true
+terminal_resize_reflow = true
 {{- if eq .chezmoi.os "windows" }}
 unified_exec = true
 {{- end }}
 voice_transcription = true
-
-[agents.explorer]
-description = "Fast, authoritative codebase explorer for discovery and analysis. Use for locating files, symbols, and implementation details without making edits."
-config_file = "agents/explorer.toml"
 
 [mcp_servers.context7]
 args = ["-y", "@upstash/context7-mcp"]
@@ -119,7 +79,7 @@ bearer_token_env_var = "GITHUB_MCP_API_TOKEN"
 trusted_hash = "sha256:103b53ae193f0c07fa091d9b18f5ebb3556252992416b33254fa2f9af9ea1db0"
 
 [hooks.state.'C:\Users\suzuneu\.codex\hooks.json:pre_tool_use:0:0']
-trusted_hash = "sha256:6b0bdf3d1bb7ea9a5e2f9ecee7826105ae1c946a635cdf5b805996c0fc825d87"
+trusted_hash = "sha256:802a2d33858198cc8e215e7a2b4001218b5cb073cc3e9a4c65f9a46569ae1105"
 
 [hooks.state.'C:\Users\suzuneu\.codex\hooks.json:pre_tool_use:1:0']
 trusted_hash = "sha256:daed125d8d995299c0fdc867ff3af22885e7dcf4df936400f81949652289cf9d"

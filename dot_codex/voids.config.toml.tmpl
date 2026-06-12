@@ -1,0 +1,9 @@
+model_provider = "voids"
+service_tier = "fast"
+approvals_reviewer = "guardian_subagent"
+
+[model_providers.voids]
+name = "openai"
+base_url = "{{ (bitwarden "item" "codexv").login.username }}"
+wire_api = "responses"
+experimental_bearer_token = "{{ (bitwarden "item" "codexv").login.password }}"

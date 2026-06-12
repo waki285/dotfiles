@@ -1,0 +1,11 @@
+model_provider = "codex-everywhere"
+model = "gpt-5.5"
+review_model = "gpt-5.5"
+model_reasoning_effort = "high"
+disable_response_storage = true
+
+[model_providers.codex-everywhere]
+name = "codex-everywhere"
+base_url = "https://codex-everywhere.com/"
+wire_api = "responses"
+experimental_bearer_token = "{{ (bitwardenFields "item" "https://codex-everywhere.com").apikey.value }}"

@@ -1,0 +1,8 @@
+model_provider = "szlb"
+
+[model_providers.szlb]
+name = "openai"
+base_url = "{{ (bitwarden "item" "szlb").login.username }}/backend-api/codex"
+wire_api = "responses"
+experimental_bearer_token = "{{ (bitwardenFields "item" "szlb").apikey.value }}"
+#supports_websockets = true

@@ -1,0 +1,13 @@
+model_provider = "ym"
+service_tier = "fast"
+chatgpt_base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/backend-api"
+approvals_reviewer = "guardian_subagent"
+#supports_websockets = true
+
+[model_providers.ym]
+name = "OpenAI"
+base_url = "{{ (bitwarden "item" "ymrouter").login.username }}/v1"
+wire_api = "responses"
+experimental_bearer_token = "{{ (bitwarden "item" "ymrouter").login.password }}"
+http_headers = { "DKU-Verbose-Logs" = "1" }
+approvals_reviewer = "user"
