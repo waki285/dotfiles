@@ -59,16 +59,6 @@ voice_transcription = true
 args = ["-y", "@upstash/context7-mcp"]
 command = "npx"
 
-[mcp_servers.chrome-devtools]
-type = "stdio"
-command = "npx"
-{{ if eq .chezmoi.os "windows" -}}
-args = ["-y", "chrome-devtools-mcp@latest", "--browser-url=http://127.0.0.1:9222"]
-{{- else -}}
-args = ["-y", "chrome-devtools-mcp@latest"]
-{{- end }}
-description = "Chrome DevTools MCP: run performance traces, inspect the DOM, and perform real-time debugging of your web pages — useful for browser automation, end-to-end testing, and capturing page artifacts."
-
 [mcp_servers.github]
 url = "https://api.githubcopilot.com/mcp"
 bearer_token_env_var = "GITHUB_MCP_API_TOKEN"
