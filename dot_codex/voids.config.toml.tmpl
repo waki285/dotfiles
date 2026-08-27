@@ -1,9 +1,15 @@
 model_provider = "voids"
 service_tier = "fast"
 approvals_reviewer = "guardian_subagent"
+model = "gpt-5.6-terra"
+model_reasoning_effort = "max"
 
 [model_providers.voids]
 name = "openai"
 base_url = "{{ (bitwarden "item" "codexv").login.username }}"
 wire_api = "responses"
 experimental_bearer_token = "{{ (bitwarden "item" "codexv").login.password }}"
+
+[tui]
+status_line = ["model-with-reasoning", "current-dir", "project-name", "git-branch", "context-used", "weekly-limit", "total-input-tokens", "total-output-tokens"]
+status_line_use_colors = true

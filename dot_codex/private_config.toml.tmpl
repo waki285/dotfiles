@@ -1,7 +1,7 @@
 #:schema https://developers.openai.com/codex/config-schema.json
 
-model = "gpt-5.5"
-model_reasoning_effort = "xhigh"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
 plan_mode_reasoning_effort = "xhigh"
 approvals_reviewer = "user"
 
@@ -20,6 +20,8 @@ notify = ["pwsh", "-NoProfile", "-NonInteractive", "-File", "{{ joinPath .chezmo
 {{- else -}}
 notify = ["paplay", "/usr/share/sounds/freedesktop/stereo/complete.oga"]
 {{- end }}
+
+service_tier = "default"
 
 [notice]
 hide_rate_limit_model_nudge = true
@@ -40,6 +42,7 @@ exclude = ["^LANG$", "^LC_.*$"]
 [tui]
 status_line = ["model-with-reasoning", "current-dir", "project-name", "git-branch", "context-used", "five-hour-limit", "weekly-limit", "context-window-size"]
 theme = "monokai-extended-origin"
+status_line_use_colors = true
 
 [tui.keymap.editor]
 insert_newline = ["ctrl-j", "ctrl-m", "enter", "shift-enter", "alt-enter"]
@@ -47,7 +50,6 @@ insert_newline = ["ctrl-j", "ctrl-m", "enter", "shift-enter", "alt-enter"]
 [features]
 default_mode_request_user_input = true
 goals = true
-js_repl = true
 memories = true
 terminal_resize_reflow = true
 {{- if eq .chezmoi.os "windows" }}
@@ -62,6 +64,21 @@ command = "npx"
 [mcp_servers.github]
 url = "https://api.githubcopilot.com/mcp"
 bearer_token_env_var = "GITHUB_MCP_API_TOKEN"
+
+[desktop]
+conversationDetailMode = "STEPS_COMMANDS"
+ambient-suggestions-enabled = false
+reviewDelivery = "detached"
+composerEnterBehavior = "cmdIfMultiline"
+show-context-window-usage = true
+reduced-motion-preference = "on"
+
+[desktop.open-in-target-preferences]
+global = "zed"
+
+[memories]
+generate_memories = false
+use_memories = false
 
 [hooks.state]
 
