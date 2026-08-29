@@ -165,6 +165,11 @@
       "initialization_options": {
         "hide_docs_info_message": true
       }
+    },
+    "gyokuan-lsp": {
+      "binary": {
+        "path": "V:\\Projects\\gyokuan\\target\\release\\gyokuan-lsp.exe"
+      }
     }
   },
   "resize_all_panels_in_dock": ["left", "right", "bottom"],

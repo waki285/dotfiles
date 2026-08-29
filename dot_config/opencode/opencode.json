@@ -10,6 +10,15 @@
     }
   },
   "permission": {
+    "read": {
+      "*": "allow"
+    },
+    "grep": {
+      "*": "allow"
+    },
+    "glob": {
+      "*": "allow"
+    },
     "bash": {
       "*": "allow"
     },

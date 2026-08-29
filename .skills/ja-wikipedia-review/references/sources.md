@@ -2,7 +2,7 @@
 
 ## 使い方
 
-この一覧は2026年8月28日に日本語版ウィキペディアの現行ページとMediaWiki APIで確認した調査記録である。`oldid` はスキル作成時に読んだ固定版であり、査読時には必ずライブ版を開き、ページ冒頭の状態表示、告知、ノート、履歴を再確認する。
+この一覧は2026年8月28日に日本語版ウィキペディアの現行ページとMediaWiki APIで確認した調査記録であり、カテゴリ関連文書は2026年8月29日に追加確認した。`oldid` はスキル作成・更新時に読んだ固定版であり、査読時には必ずライブ版を開き、ページ冒頭の状態表示、告知、ノート、履歴を再確認する。
 
 文書状態は重要である。`方針` は遵守すべき規則、`ガイドライン` は広い合意のある推奨、`提案中` は合意済み規則ではない。解説や私論も、方針・ガイドラインと同じ強さで引用しない。
 
@@ -23,6 +23,8 @@
 | [Wikipedia:出典を明記する](https://ja.wikipedia.org/wiki/Wikipedia:出典を明記する) | ガイドライン | [oldid 110760179](https://ja.wikipedia.org/w/index.php?title=Wikipedia:出典を明記する&oldid=110760179) |
 | [Wikipedia:信頼できる情報源](https://ja.wikipedia.org/wiki/Wikipedia:信頼できる情報源) | ガイドライン | [oldid 110796837](https://ja.wikipedia.org/w/index.php?title=Wikipedia:信頼できる情報源&oldid=110796837) |
 | [Wikipedia:独立記事作成の目安](https://ja.wikipedia.org/wiki/Wikipedia:独立記事作成の目安) | ガイドライン | [oldid 110670909](https://ja.wikipedia.org/w/index.php?title=Wikipedia:独立記事作成の目安&oldid=110670909) |
+| [Wikipedia:特筆性 (人物)](https://ja.wikipedia.org/wiki/Wikipedia:特筆性_(人物)) | 草案（Proposed）。人物別の具体的観点として参照できるが、正式なガイドラインとして断定適用しない | [oldid 110776039](https://ja.wikipedia.org/w/index.php?title=Wikipedia:特筆性_(人物)&oldid=110776039) |
+| [Wikipedia:特筆性 (組織)](https://ja.wikipedia.org/wiki/Wikipedia:特筆性_(組織)) | 草案（Proposed）。組織・製品・サービスの具体的観点として参照できるが、正式なガイドラインとして断定適用しない | [oldid 107416352](https://ja.wikipedia.org/w/index.php?title=Wikipedia:特筆性_(組織)&oldid=107416352) |
 | [Wikipedia:外部リンク](https://ja.wikipedia.org/wiki/Wikipedia:外部リンク) | ガイドライン。旧表示名「外部リンクの選び方」からの参照に注意 | [oldid 110081520](https://ja.wikipedia.org/w/index.php?title=Wikipedia:外部リンク&oldid=110081520) |
 
 主題別に追加確認するページ:
@@ -57,8 +59,18 @@
 - [Wikipedia:専門的な記事も分かり易く](https://ja.wikipedia.org/wiki/Wikipedia:専門的な記事も分かり易く)
 - [Wikipedia:スタイルマニュアル/フィクション関連](https://ja.wikipedia.org/wiki/Wikipedia:スタイルマニュアル/フィクション関連)
 - [Wikipedia:過剰な内容の整理](https://ja.wikipedia.org/wiki/Wikipedia:過剰な内容の整理)
-- [Wikipedia:カテゴリの方針](https://ja.wikipedia.org/wiki/Wikipedia:カテゴリの方針)
 - [Wikipedia:曖昧さ回避](https://ja.wikipedia.org/wiki/Wikipedia:曖昧さ回避)
+
+## カテゴリとソート
+
+| 文書 | 状態・用途 | 調査固定版 |
+| --- | --- | --- |
+| [Wikipedia:カテゴリの方針](https://ja.wikipedia.org/wiki/Wikipedia:カテゴリの方針) | 方針。カテゴリ付与、階層、ソートキーの中心的根拠 | [oldid 110806241](https://ja.wikipedia.org/w/index.php?title=Wikipedia:カテゴリの方針&oldid=110806241) |
+| [Wikipedia:過剰なカテゴライズ](https://ja.wikipedia.org/wiki/Wikipedia:過剰なカテゴライズ) | ガイドライン。定義的でない特徴、恣意的・主観的・過細分な分類を扱う | [oldid 110288177](https://ja.wikipedia.org/w/index.php?title=Wikipedia:過剰なカテゴライズ&oldid=110288177) |
+| [Help:カテゴリ](https://ja.wikipedia.org/wiki/Help:カテゴリ) | ヘルプ。カテゴリ、個別ソートキー、`DEFAULTSORT`、テンプレート付与、隠しカテゴリの技術仕様 | [oldid 110039443](https://ja.wikipedia.org/w/index.php?title=Help:カテゴリ&oldid=110039443) |
+| [Help:マジックワード](https://ja.wikipedia.org/wiki/Help:マジックワード) | ヘルプ。`DEFAULTSORT`等のマジックワードの技術仕様 | [oldid 110769873](https://ja.wikipedia.org/w/index.php?title=Help:マジックワード&oldid=110769873) |
+| [Wikipedia:カテゴリの提案と議論](https://ja.wikipedia.org/wiki/Wikipedia:カテゴリの提案と議論) | カテゴリの改名・統合等の提案手順 | [oldid 110716460](https://ja.wikipedia.org/w/index.php?title=Wikipedia:カテゴリの提案と議論&oldid=110716460) |
+| [プロジェクト:人物伝](https://ja.wikipedia.org/wiki/プロジェクト:人物伝) | 人物記事のカテゴリに関するプロジェクト合意。下位プロジェクトの合意を優先 | [oldid 110406560](https://ja.wikipedia.org/w/index.php?title=プロジェクト:人物伝&oldid=110406560) |
 
 ## 査読依頼と記事選考
 
@@ -78,6 +90,8 @@
 - `Wikipedia:スタイルマニュアル`: 記事名節の改訂提案。
 - `Wikipedia:出典を明記する`: 「最大24か月待つ」および検証不可能とみなす規定の削除提案。
 - `Wikipedia:信頼できる情報源`: 反体制勢力・宗教集団・過激派のウェブサイトに関する誤訳指摘、および歴史教科書に関する議論。
+- `Wikipedia:特筆性 (人物)` と `Wikipedia:特筆性 (組織)`: 「特筆性」という名称に関する議論告知。両ページは草案のため、本文の具体的基準だけを正式な規則として引用しない。
+- `Wikipedia:過剰なカテゴライズ`: 範囲の狭いクロスカテゴリの例に関する提案、および `WP:NOTCATALOG` の文言に関する議論。ライブ版とノートを確認する。
 
 告知があることは規定が変更済みであることを意味しない。本文、ノートでの合意、改訂履歴を確認して、現行規定と提案を分けて報告する。
 
