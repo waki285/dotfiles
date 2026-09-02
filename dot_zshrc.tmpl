@@ -120,9 +120,11 @@ if [[ -d "$HOME/.pyenv" ]]; then
   fi
 fi
 
+{{- if eq .chezmoi.os "darwin" }}
 if [[ -d "$HOME/Library/Android/sdk/platform-tools" ]]; then
   export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
 fi
+{{- end }}
 
 # bun
 if [[ -d "$HOME/.bun" ]]; then
@@ -130,7 +132,10 @@ if [[ -d "$HOME/.bun" ]]; then
   export BUN_INSTALL="$HOME/.bun"
   export PATH="$BUN_INSTALL/bin:$PATH"
 fi
-export PATH="$PATH:$HOME/.local/bin:/snap/bin"
+export PATH="$PATH:$HOME/.local/bin"
+{{- if eq .chezmoi.os "linux" }}
+export PATH="$PATH:/snap/bin"
+{{- end }}
 
 {{- if lookPath "java" }}
 {{- if eq .chezmoi.os "darwin" }}
@@ -162,4 +167,6 @@ alias cargo="/mnt/c/Users/suzuneu/.cargo/bin/cargo.exe"
 # zoxide
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
 
-export PATH="$(brew --prefix binutils)/bin:$PATH"
+if command -v brew >/dev/null 2>&1; then
+  export PATH="$(brew --prefix binutils)/bin:$PATH"
+fi

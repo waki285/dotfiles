@@ -4,7 +4,18 @@ set -eu
 # Check if bw command exists
 if ! command -v bw >/dev/null 2>&1; then
   echo "Error: Bitwarden CLI (bw) is not installed." >&2
-  echo "Install it with: brew install bitwarden-cli" >&2
+  case "$(uname -s)" in
+    Darwin)
+      echo "Install it with: brew install bitwarden-cli" >&2
+      ;;
+    Linux)
+      echo "Install it with your package manager (e.g. 'snap install bitwarden' or 'apt install bitwarden-cli')." >&2
+      echo "See also: https://bitwarden.com/help/cli/" >&2
+      ;;
+    *)
+      echo "See https://bitwarden.com/help/cli/ for installation instructions." >&2
+      ;;
+  esac
   exit 1
 fi
 

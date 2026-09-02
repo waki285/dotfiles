@@ -15,8 +15,10 @@
 [gpg]
 {{- if eq .chezmoi.os "windows" }}
 	program = "C:\\Program Files\\GnuPG\\bin\\gpg.exe"
-{{- else }}
+{{- else if eq .chezmoi.os "darwin" }}
 	program = /opt/homebrew/bin/gpg
+{{- else }}
+	program = /usr/bin/gpg
 {{- end }}
 [push]
 	autoSetupRemote = true

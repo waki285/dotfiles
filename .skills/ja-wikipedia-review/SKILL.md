@@ -17,11 +17,17 @@ description: >
 査読対象に応じて必要な参照だけを読む。
 
 - すべての査読で [content-policy.md](references/content-policy.md) と [sourcing.md](references/sourcing.md) を読む。
+- 記事全体、出典、脚注、参考文献、外部リンク、翻訳記事、Wikipedia・Wiktionary・Wikidata・Commons等のウィキメディア系ページ、またはWikipedia転載サイトを扱うときは [wikimedia-as-sources.md](references/wikimedia-as-sources.md) を読む。
 - 記事全体の査読、立項・削除・統合の適否、特筆性または独立記事作成の目安、人物・組織・製品・サービスの収録可否を扱うときは [notability.md](references/notability.md) を読む。
-- 記事全体、導入部、見出し、リンク、文章品質を査読するときは [style-and-structure.md](references/style-and-structure.md) を読む。
+- 記事全体、導入部、見出し、段落、箇条書き、表、画像、文章品質を査読するときは [style-and-structure.md](references/style-and-structure.md) を読む。
+- 記事全体の査読、リンク不足、反復リンク、赤リンク、`仮リンク`、`ill`、`日本語版にない記事リンク`、`仮リンク2`、`enlink`、`interlang`、他言語版への本文中リンク、または表記揺れからのリダイレクト作成候補を扱うときは [temporary-and-interlanguage-links.md](references/temporary-and-interlanguage-links.md) を読む。
 - 記事全体、カテゴリ、`DEFAULTSORT`、ソートキー、末尾マークアップを査読するときは [categories-and-sorting.md](references/categories-and-sorting.md) を読む。
 - 日本語の文字、句読点、数字、単位、日付、人名などを点検するときは [notation.md](references/notation.md) を読む。
-- 記事全体の査読、掲載前点検、良質・秀逸な記事への準備、または細かなスタイルまで求められたときは [micro-style.md](references/micro-style.md) も読む。脚注位置、括弧、空白、見出しのソース、作品名、列挙、アクセシビリティなどはここで確認する。
+- 記事全体の査読、掲載前点検、良質・秀逸な記事への準備、細かなスタイル、斜体・太字、または翻訳元から引き継いだ書式を扱うときは [micro-style.md](references/micro-style.md) も読む。脚注位置、括弧、空白の細則、見出しのソース、強調、斜体、箇条書きの句読点はここで確認する。
+- 記事全体の査読、外国語の語句、原語併記、`英:`・`英語:`等の直書き、`Lang`・`Lang-en-short`等の言語テンプレート、言語タグ、読み上げを扱うときは [foreign-language-markup.md](references/foreign-language-markup.md) を読む。
+- 記事全体の査読、テンプレートを含むウィキテキスト、インフォボックス、出典テンプレート、ナビゲーション、展開エラーを扱うときは [template-audit.md](references/template-audit.md) を読む。
+- 記事全体の査読、Wikidata由来の値、言語間リンク、典拠管理、`Normdaten`、Wikidata依存テンプレートを扱うときは [wikidata-and-authority-control.md](references/wikidata-and-authority-control.md) を読む。
+- `Coord`、ウィキ座標、`Maplink`、`Mapriver`、`Infobox mapframe`、`座標一覧`、Kartographer、地図、GeoJSON、KMLが現れるとき、または地理的主題の記事全体を査読するときは [maps-and-coordinates.md](references/maps-and-coordinates.md) を読む。
 - `Wikipedia:査読依頼` への投稿案、査読依頼の適否、良質・秀逸な記事への準備状況を求められたときは [peer-review-process.md](references/peer-review-process.md) を読む。
 - 根拠文書の状態、調査時点、固定版、追加で確認すべき主題別文書は [sources.md](references/sources.md) を読む。
 
@@ -60,33 +66,32 @@ description: >
 
 ### 3. 記述と出典を対応付ける
 
-- 重要な主張を文または意味のまとまりごとに分け、直近の脚注がどこまでを支えるか確認する。
-- 出典があること、出典が信頼できること、出典が実際にその主張を支えることを別々に判定する。
-- 本文より強い断定、出典にない因果関係、複数資料から編集者が作った結論、一次資料の解釈を見逃さない。
-- 閲覧できない出典は「不支持」と断定せず「支持範囲を未確認」とする。書誌情報不足も別の問題として示す。
+- 重要な主張を意味のまとまりに分け、出典の特定可能性、適格性、本文との整合を [sourcing.md](references/sourcing.md) に従って別々に判定する。
+- Wikipedia・姉妹プロジェクト・転載サイトが関係するときは [wikimedia-as-sources.md](references/wikimedia-as-sources.md) を適用し、本文の根拠、履歴上の帰属、案内、原資料の閲覧先を区別する。
+- 到達不能な外部URLは [sourcing.md](references/sourcing.md) の確認手順に従い、アクセス失敗だけでリンク切れや不支持と断定しない。
 
 ### 4. 独立記事作成の目安を独立して判定する
 
-- 全文査読では、記事中の脚注だけでなく、主題の別名、旧称、原語表記を使って記事外の情報源も調査する。
-- 候補資料ごとに、主題からの独立性、信頼性、二次資料性、言及の深さ、別資料からの転載でないかを分けて記録する。
-- 人物・組織などの主題別文書は、最新版の状態表示を確認する。草案の数値的・職業別基準を正式なガイドラインとして断定適用しない。
-- 「記事中に立証がない」「調査範囲では未立証」「誠実な調査後も根拠が見つからない」を区別する。検索結果が少ないだけで目安不適合と結論しない。
+- 全文査読または収録可否の検討では [notability.md](references/notability.md) に従い、記事外の情報源も調査して、一般基準、主題別文書の状態、資料の系統、言及の深さ、未確認範囲を記録する。
+- 記事内での未立証、調査範囲での未立証、誠実な調査後の判断を区別し、検索結果の少なさや草案の基準だけで結論しない。
 
 ### 5. カテゴリとソートを実効状態で確認する
 
-- ウィキテキストに直接書かれたカテゴリだけでなく、テンプレート経由、隠しカテゴリ、追跡カテゴリを含む実効的な所属カテゴリを確認する。
-- カテゴリの根拠が本文と信頼できる情報源に示されているか、主題を定義する特徴か、最も具体的なカテゴリか、親カテゴリと不要に重複していないかを判定する。
-- `DEFAULTSORT`とカテゴリ個別のソートキーを確認し、読み、清音化、姓名順、配置、重複定義、上書き関係を点検する。
-- 存命人物の犯罪、宗教、性的指向など機微なカテゴリは、存命人物方針の追加要件を満たすか厳格に確認する。
+- [categories-and-sorting.md](references/categories-and-sorting.md) に従い、直接・間接・隠し・追跡カテゴリ、付与根拠、階層、`DEFAULTSORT`、個別キーを実効状態で監査する。
+- 存命人物の機微なカテゴリは内容方針上の問題として厳格に扱う。
 
-### 6. 細部スタイルを表示とソースの両方で確認する
+### 6. 表示とソースの両方で文章・リンクを確認する
 
-- 全文査読では、表示上の文章だけでなくウィキテキストも検索し、`<ref>`、見出し、内部リンク、強調、全角空白、手動改行、紛らわしい記号を確認する。
-- 脚注は、先にどの文・節・語・段落を支えるかを判定してから位置を評価する。日本語文末の脚注は通常句点前だが、段落全体を対象とする注などの例外を機械的に移動しない。
-- 公式文書が複数方式を許す箇所、固有名詞、直接引用、数式、コード、テンプレート引数を一般規則で誤修正しない。
-- 軽微な反復は一件にまとめ、代表例、出現範囲、修正パターンを示す。自動置換を勧める場合は除外条件も示す。
+- 構成は [style-and-structure.md](references/style-and-structure.md)、基本表記は [notation.md](references/notation.md)、脚注位置・括弧・強調・斜体等は [micro-style.md](references/micro-style.md)、外国語タグは [foreign-language-markup.md](references/foreign-language-markup.md)、内部リンクは [temporary-and-interlanguage-links.md](references/temporary-and-interlanguage-links.md) に従って監査する。
+- 表示だけでなくウィキテキストと必要な展開後HTMLを確認し、許容される方式、固有名詞、引用、コード、数式、テンプレート引数を機械的に誤修正しない。
+- 同じ原因による軽微な問題はまとめ、代表例、範囲、修正パターン、除外条件を示す。
 
-### 7. 指摘を再現可能にする
+### 7. テンプレートと外部データの実効状態を確認する
+
+- 共通のテンプレート監査は [template-audit.md](references/template-audit.md)、仮リンクは [temporary-and-interlanguage-links.md](references/temporary-and-interlanguage-links.md)、Wikidata・典拠管理は [wikidata-and-authority-control.md](references/wikidata-and-authority-control.md)、地図・座標は [maps-and-coordinates.md](references/maps-and-coordinates.md)、カテゴリ副作用は [categories-and-sorting.md](references/categories-and-sorting.md) に従う。
+- 直接入力、展開テンプレート、Lua、TemplateStyles、ローカル値、Wikidata・Commons・OSM等の依存元、表示、エラー、追跡カテゴリを対応付け、記事側・共有側・外部データ側の発生元を分ける。
+
+### 8. 指摘を再現可能にする
 
 各指摘に次を含める。
 
@@ -116,9 +121,11 @@ description: >
 3. `優先対応` — 緊急・重大な指摘を優先順で列挙
 4. `その他の指摘` — 中・軽微な指摘
 5. `特筆性評価` — 全文査読または収録可否が対象なら、適用基準、文書状態、根拠となる情報源、調査範囲、判定、統合等の選択肢
-6. `カテゴリ・ソート評価` — 全文査読なら、実効カテゴリ、直接・間接付与、根拠、階層、`DEFAULTSORT`、隠しカテゴリ、未確認事項
-7. `観点別チェック` — 内容方針、出典、特筆性、構成、カテゴリ・ソート、表記を `問題あり / おおむね良好 / 未確認 / 対象外` で示す
-8. `推奨する修正順` — 依存関係を考慮した短い手順
+6. `リンク・仮リンク評価` — 全文査読なら、明示・展開後・ユニーク内部リンク数、未作成、リダイレクト、曖昧さ回避、無効な節・アンカー、意味不一致、反復リンク、未リンク候補と判定、意図的な例外、仮リンクと他言語版対象、表記揺れからのリダイレクト作成候補
+7. `カテゴリ・ソート評価` — 全文査読なら、実効カテゴリ、直接・間接付与、根拠、階層、`DEFAULTSORT`、隠しカテゴリ、未確認事項
+8. `テンプレート・外部データ評価` — 全文査読なら、直接・間接テンプレート、引数、追跡カテゴリ、Wikidata項目、典拠管理、地図・座標、依存元、未確認事項
+9. `観点別チェック` — 内容方針、出典、特筆性、構成、リンク・仮リンク、カテゴリ・ソート、テンプレート、Wikidata・典拠管理、地図・座標、表記を `問題あり / おおむね良好 / 未確認 / 対象外` で示す
+10. `推奨する修正順` — 依存関係を考慮した短い手順
 
 問題が見つからなかった観点も、何を確認したかを一行で示す。「方針違反」と断定できない場合は、より狭い表現で不確実性を明示する。
 
@@ -126,6 +133,9 @@ description: >
 
 - 査読依頼だけでは記事を編集しない。編集、投稿、コメント、削除依頼などの外部変更は、ユーザーが明示的に依頼した場合だけ行う。
 - 出典の存在だけを理由に正確性を保証しない。逆に、オンラインで読めないことだけを理由に紙媒体を不適切としない。
+- DNS、TLS、タイムアウト、403、429、CAPTCHA、JavaScript、認証、購読、地域制限等により外部リンクを開けない場合、エージェント自身の失敗を読者一般の到達不能とみなさない。[sourcing.md](references/sourcing.md)の確認手順に従い、必要なユーザー確認を省略しない。
 - 著作権侵害は文章の似た印象だけで断定しない。比較元、重なる表現、創作性、引用表示を確認し、疑いの場合は疑いとして公式の対処手順を案内する。
 - 独立記事作成の目安は主題についての基準であり、現在の記事の文章量や出来だけから不適合と結論しない。
 - 査読者自身の専門知識を出典の代わりにしない。事実訂正を提案するときも信頼できる情報源を示す。
+- 査読依頼だけではWikipediaの記事、テンプレート、Wikidata項目、Commonsのデータページ、OpenStreetMapを編集しない。外部データの修正先を示す場合も、ユーザーが明示的に依頼するまで変更しない。
+- 記事本文の編集を依頼されても、別ページとなるリダイレクトの新規作成まで当然に許可されたとはみなさない。査読では転送元、転送先、根拠と注意点を提案し、明示的に依頼された場合だけ作成する。

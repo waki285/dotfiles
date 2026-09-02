@@ -80,13 +80,14 @@ global = "zed"
 generate_memories = false
 use_memories = false
 
+{{- $codex_hooks := joinPath .chezmoi.homeDir ".codex" "hooks.json" }}
 [hooks.state]
 
-[hooks.state.'C:\Users\suzuneu\.codex\hooks.json:permission_request:0:0']
+[hooks.state.'{{ $codex_hooks }}:permission_request:0:0']
 trusted_hash = "sha256:103b53ae193f0c07fa091d9b18f5ebb3556252992416b33254fa2f9af9ea1db0"
 
-[hooks.state.'C:\Users\suzuneu\.codex\hooks.json:pre_tool_use:0:0']
+[hooks.state.'{{ $codex_hooks }}:pre_tool_use:0:0']
 trusted_hash = "sha256:802a2d33858198cc8e215e7a2b4001218b5cb073cc3e9a4c65f9a46569ae1105"
 
-[hooks.state.'C:\Users\suzuneu\.codex\hooks.json:pre_tool_use:1:0']
+[hooks.state.'{{ $codex_hooks }}:pre_tool_use:1:0']
 trusted_hash = "sha256:daed125d8d995299c0fdc867ff3af22885e7dcf4df936400f81949652289cf9d"
