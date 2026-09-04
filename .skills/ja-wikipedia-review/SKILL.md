@@ -16,7 +16,7 @@ description: >
 
 査読対象に応じて必要な参照だけを読む。
 
-- すべての査読で [content-policy.md](references/content-policy.md) と [sourcing.md](references/sourcing.md) を読む。
+- すべての査読で [content-policy.md](references/content-policy.md)、[sourcing.md](references/sourcing.md)、[scoring.md](references/scoring.md) を読む。
 - 記事全体、出典、脚注、参考文献、外部リンク、翻訳記事、Wikipedia・Wiktionary・Wikidata・Commons等のウィキメディア系ページ、またはWikipedia転載サイトを扱うときは [wikimedia-as-sources.md](references/wikimedia-as-sources.md) を読む。
 - 記事全体の査読、立項・削除・統合の適否、特筆性または独立記事作成の目安、人物・組織・製品・サービスの収録可否を扱うときは [notability.md](references/notability.md) を読む。
 - 記事全体、導入部、見出し、段落、箇条書き、表、画像、文章品質を査読するときは [style-and-structure.md](references/style-and-structure.md) を読む。
@@ -105,6 +105,12 @@ description: >
 
 同じ原因から生じる反復的な表記ミスは一件にまとめ、代表例と件数または範囲を示す。
 
+### 9. 総合点を確定する
+
+- [scoring.md](references/scoring.md) に従い、全文査読では総合点、採点除外条件に該当するときは `採点対象外`、記事全体を確認していないときは `採点不能` とする。
+- 採点は指摘件数の単純な加減算にせず、内容方針、情報源、網羅性、構成、文章・表示品質を記事全体として評価する。
+- 総合点は報告の最後の節に置き、その後へ別の評価、注記、追伸を加えない。
+
 ## 重大度
 
 - `緊急`: 権利侵害の具体的な疑い、存命人物への無出典の否定的記述など、公開継続自体に強い懸念がある。
@@ -126,6 +132,7 @@ description: >
 8. `テンプレート・外部データ評価` — 全文査読なら、直接・間接テンプレート、引数、追跡カテゴリ、Wikidata項目、典拠管理、地図・座標、依存元、未確認事項
 9. `観点別チェック` — 内容方針、出典、特筆性、構成、リンク・仮リンク、カテゴリ・ソート、テンプレート、Wikidata・典拠管理、地図・座標、表記を `問題あり / おおむね良好 / 未確認 / 対象外` で示す
 10. `推奨する修正順` — 依存関係を考慮した短い手順
+11. `総合点` — 必ず報告の最後に置き、[scoring.md](references/scoring.md) に従って点数と根拠、または `採点対象外`・`採点不能` と理由を示す
 
 問題が見つからなかった観点も、何を確認したかを一行で示す。「方針違反」と断定できない場合は、より狭い表現で不確実性を明示する。
 
