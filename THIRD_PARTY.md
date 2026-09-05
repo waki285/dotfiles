@@ -1,7 +1,15 @@
 # Third-Party Notices
 
-This repository is licensed under the Apache License 2.0, except for the third-party
-components listed below.
+This repository uses the Apache License 2.0 as its default license. Separately
+licensed repository components and third-party components are listed below.
+
+## Separately Licensed Repository Components
+
+### Japanese Wikipedia review skill
+
+- Files: `.skills/ja-wikipedia-review/*`
+- License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0; see `.skills/ja-wikipedia-review/LICENSE`)
+- Attribution notice: `.skills/ja-wikipedia-review/NOTICE.md`
 
 ## Deno Zsh completion
 

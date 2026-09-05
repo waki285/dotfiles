@@ -29,7 +29,7 @@
 
 主題別に追加確認するページ:
 
-- 医学・健康: [Wikipedia:信頼できる情報源/医学](https://ja.wikipedia.org/wiki/Wikipedia:信頼できる情報源/医学)
+- 医学・健康: [Wikipedia:信頼できる情報源 (医学)](https://ja.wikipedia.org/wiki/Wikipedia:信頼できる情報源_(医学))
 - 翻訳記事: [Wikipedia:翻訳のガイドライン](https://ja.wikipedia.org/wiki/Wikipedia:翻訳のガイドライン)
 - 記事内の転記・統合: [Wikipedia:著作権/履歴の保存](https://ja.wikipedia.org/wiki/Wikipedia:著作権/履歴の保存)
 - 著作権の具体的疑い: [Wikipedia:著作権侵害への対処](https://ja.wikipedia.org/wiki/Wikipedia:著作権侵害への対処)

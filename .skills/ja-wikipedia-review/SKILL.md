@@ -5,6 +5,7 @@ description: >
   出典、構成、文体、表記に照らして査読する。記事URL、ウィキテキスト、
   下書き、差分のレビュー、掲載前点検、改善優先順位の提示に使用する。
   一般的な日本語校正だけ、他言語版Wikipediaだけを対象とする依頼には使用しない。
+license: "CC BY-SA 4.0; complete terms in LICENSE"
 ---
 
 # 日本語版ウィキペディア記事査読
@@ -79,6 +80,7 @@ description: >
 
 - [categories-and-sorting.md](references/categories-and-sorting.md) に従い、直接・間接・隠し・追跡カテゴリ、付与根拠、階層、`DEFAULTSORT`、個別キーを実効状態で監査する。
 - 存命人物の機微なカテゴリは内容方針上の問題として厳格に扱う。
+- `DEFAULTSORT` の正誤を指摘する前に、必ず [categories-and-sorting.md] の正規化規則を実際に適用する。本文中の読みとの単純な文字列比較は禁止する。
 
 ### 6. 表示とソースの両方で文章・リンクを確認する
 

@@ -146,7 +146,8 @@ See [tools/agent_hooks/README.md](tools/agent_hooks/README.md) for details.
 
 ## License
 
-- **Repository (excluding third-party files listed in THIRD_PARTY.md)**: Apache License 2.0 (see [LICENSE](LICENSE))
+- **Repository default (excluding separately licensed and third-party components listed below)**: Apache License 2.0 (see [LICENSE](LICENSE))
+- **`.skills/ja-wikipedia-review/`**: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0; see [.skills/ja-wikipedia-review/LICENSE](.skills/ja-wikipedia-review/LICENSE))
 - **Third-party components**: see [THIRD_PARTY.md](THIRD_PARTY.md)
 - **agent_hooks/**: Apache License 2.0 (see [tools/agent_hooks/LICENSE](tools/agent_hooks/LICENSE))
 - **tools/**: Apache License 2.0 (see [tools/LICENSE](tools/LICENSE))
