@@ -1,0 +1,9 @@
+searxng:
+  # Host port the local SearXNG container is published on, and that the
+  # searxng MCP server connects to.
+  defaultPort: 8080
+  # ostwald already runs another container on 8080, so SearXNG moves aside.
+  portByHost:
+    ostwald: 8888
+  # Bitwarden login item whose password holds the instance secret_key.
+  secretItem: "searxng-secret-key"

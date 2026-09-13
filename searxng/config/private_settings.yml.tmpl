@@ -1,0 +1,21 @@
+use_default_settings: true
+
+general:
+  debug: false
+  instance_name: "SearXNG (local)"
+
+search:
+  safe_search: 0
+  autocomplete: "duckduckgo"
+  # mcp-searxng talks to the search API, which returns 403 unless json is allowed.
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "{{ (bitwarden "item" .searxng.secretItem).login.password }}"
+  # Single local client, so rate limiting would only get in the way
+  # and it would pull in a Valkey dependency.
+  limiter: false
+  public_instance: false
+  image_proxy: true

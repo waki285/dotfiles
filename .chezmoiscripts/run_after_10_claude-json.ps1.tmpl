@@ -12,7 +12,8 @@ $Context7Url = "https://mcp.context7.com/mcp"
 $GitHubMcpUrl = "https://api.githubcopilot.com/mcp"
 
 # searxng settings
-$SearxngUrl = "http://127.0.0.1:8080"
+{{- $searxngPort := includeTemplate "searxng_port" . | trim }}
+$SearxngUrl = "http://127.0.0.1:{{ $searxngPort }}"
 
 $Context7ApiKey = bw get password $Context7ItemName
 if ($LASTEXITCODE -ne 0) {

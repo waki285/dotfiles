@@ -91,8 +91,6 @@ claude:
     - "Read(//tmp/**)"
     - "Edit(//tmp/**)"
     - "Edit(~/.claude/**)"
-    - "Write(//tmp/**)"
-    - "Write(~/.claude/**)"
     - __BASH__
     - mcp__context7
     - mcp__mcp-server-github
@@ -106,7 +104,6 @@ claude:
     - WebSearch
   defaultMode: bypassPermissions
   additionalDirectories:
-    - "//tmp"
     - "~/.claude"
 
 opencode:

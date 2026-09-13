@@ -2,7 +2,10 @@
 {{- $is_wsl := eq (includeTemplate "is_wsl" . | trim) "true" -}}
 {
   "env": {
-    {{- if eq .claude.profile "kiro" }}
+    {{- if eq .claude.profile "ccflaregod" }}
+    "ANTHROPIC_BASE_URL": "{{ (bitwarden "item" "1de10922-37a2-4b88-89c1-b4c0001cdf32").login.username }}",
+    "ANTHROPIC_AUTH_TOKEN": "{{ (bitwarden "item" "1de10922-37a2-4b88-89c1-b4c0001cdf32").login.password }}",
+    {{- else if eq .claude.profile "kiro" }}
     "ANTHROPIC_BASE_URL": "http://x8",
     "ANTHROPIC_AUTH_TOKEN": "sk-x-x-x",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "kr/claude-opus-4-6",
@@ -60,8 +63,6 @@
       "Read(//tmp/**)",
       "Edit(//tmp/**)",
       "Edit({{ .chezmoi.homeDir }}/.claude/**)",
-      "Write(//tmp/**)",
-      "Write({{ .chezmoi.homeDir }}/.claude/**)",
       "Bash(basename:*)",
       "Bash(cargo add:*)",
       "Bash(cargo build:*)",
@@ -157,11 +158,11 @@
     ],
     "defaultMode": "bypassPermissions",
     "additionalDirectories": [
-      "//tmp",
       "{{ .chezmoi.homeDir }}/.claude"
     ]
     {{- /* PERMISSIONS:END */}}
   },
+  "model": "claude-fable-5-1[1m]",
   "hooks": {
     "Notification": [
       {
@@ -260,6 +261,12 @@
   },
   "language": "日本語",
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "high"
+    }
+  },
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "defaultMode": "bypassPermissions"
 }

@@ -2,7 +2,7 @@
 
 ## 使い方
 
-この一覧は2026年8月28日に日本語版ウィキペディアの現行ページとMediaWiki APIで確認した調査記録であり、カテゴリ、テンプレート、Wikidata、典拠管理、地図・座標、仮リンク関連文書は2026年8月29日、内部リンクの反復、リンク不足、リダイレクト作成基準は2026年8月31日、外国語表記と言語タグは2026年9月2日に追加確認した。`oldid` はスキル作成・更新時に読んだ固定版であり、査読時には必ずライブ版を開き、ページ冒頭の状態表示、告知、ノート、履歴を再確認する。
+この一覧は2026年8月28日に日本語版ウィキペディアの現行ページとMediaWiki APIで確認した調査記録であり、カテゴリ、テンプレート、Wikidata、典拠管理、地図・座標、仮リンク関連文書は2026年8月29日、内部リンクの反復、リンク不足、リダイレクト作成基準は2026年8月31日、外国語表記と言語タグは2026年9月2日、生成物と翻訳の由来、画像、記事外の資料調査窓口は2026年9月11日に追加確認した。`oldid` はスキル作成・更新時に読んだ固定版であり、査読時には必ずライブ版を開き、ページ冒頭の状態表示、告知、ノート、履歴を再確認する。
 
 文書状態は重要である。`方針` は遵守すべき規則、`ガイドライン` は広い合意のある推奨、`提案中` は合意済み規則ではない。解説や私論も、方針・ガイドラインと同じ強さで引用しない。
 
@@ -15,6 +15,8 @@
 | [Wikipedia:独自研究は載せない](https://ja.wikipedia.org/wiki/Wikipedia:独自研究は載せない) | 方針 | [oldid 110644151](https://ja.wikipedia.org/w/index.php?title=Wikipedia:独自研究は載せない&oldid=110644151) |
 | [Wikipedia:存命人物の伝記](https://ja.wikipedia.org/wiki/Wikipedia:存命人物の伝記) | 方針 | [oldid 105931380](https://ja.wikipedia.org/w/index.php?title=Wikipedia:存命人物の伝記&oldid=105931380) |
 | [Wikipedia:著作権](https://ja.wikipedia.org/wiki/Wikipedia:著作権) | 方針 | [oldid 105273516](https://ja.wikipedia.org/w/index.php?title=Wikipedia:著作権&oldid=105273516) |
+| [Wikipedia:画像利用の方針](https://ja.wikipedia.org/wiki/Wikipedia:画像利用の方針) | 方針 | [oldid 107078418](https://ja.wikipedia.org/w/index.php?title=Wikipedia:画像利用の方針&oldid=107078418) |
+| [Wikipedia:大規模言語モデルの利用](https://ja.wikipedia.org/wiki/Wikipedia:大規模言語モデルの利用) | 提案中（Proposed）。単独で規則として適用せず、検証可能性・出典の実在・著作権に照らした問題として説明する | [oldid 109742451](https://ja.wikipedia.org/w/index.php?title=Wikipedia:大規模言語モデルの利用&oldid=109742451) |
 
 ## 出典と記事収録
 
@@ -39,6 +41,7 @@
 | 文書 | 状態 | 調査固定版 |
 | --- | --- | --- |
 | [Wikipedia:表記ガイド](https://ja.wikipedia.org/wiki/Wikipedia:表記ガイド) | ガイドライン | [oldid 110643400](https://ja.wikipedia.org/w/index.php?title=Wikipedia:表記ガイド&oldid=110643400) |
+| [Wikipedia:外来語表記法](https://ja.wikipedia.org/wiki/Wikipedia:外来語表記法) | 提案中。文書自身が表記を強制しないと明記。「原語は括弧書きで並記」は項目名のみ必須と限定されている | [oldid 105931371](https://ja.wikipedia.org/w/index.php?title=Wikipedia:外来語表記法&oldid=105931371) |
 | [Wikipedia:スタイルマニュアル](https://ja.wikipedia.org/wiki/Wikipedia:スタイルマニュアル) | ガイドライン | [oldid 110730501](https://ja.wikipedia.org/w/index.php?title=Wikipedia:スタイルマニュアル&oldid=110730501) |
 | [Wikipedia:スタイルマニュアル/レイアウト](https://ja.wikipedia.org/wiki/Wikipedia:スタイルマニュアル/レイアウト) | ガイドライン | [oldid 110465645](https://ja.wikipedia.org/w/index.php?title=Wikipedia:スタイルマニュアル/レイアウト&oldid=110465645) |
 | [Wikipedia:スタイルマニュアル/導入部](https://ja.wikipedia.org/wiki/Wikipedia:スタイルマニュアル/導入部) | ガイドライン | [oldid 110580084](https://ja.wikipedia.org/w/index.php?title=Wikipedia:スタイルマニュアル/導入部&oldid=110580084) |

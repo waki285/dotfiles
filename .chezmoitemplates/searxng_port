@@ -1,0 +1,6 @@
+{{- /* Host port for the local SearXNG container, overridable per machine. */ -}}
+{{- $port := .searxng.defaultPort -}}
+{{- with (index .searxng.portByHost .chezmoi.hostname) -}}
+{{-   $port = . -}}
+{{- end -}}
+{{- $port -}}

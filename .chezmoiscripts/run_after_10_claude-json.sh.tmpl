@@ -12,7 +12,8 @@ CONTEXT7_URL="https://mcp.context7.com/mcp"
 GITHUB_MCP_URL="https://api.githubcopilot.com/mcp"
 
 # searxng settings
-SEARXNG_URL="http://127.0.0.1:8080"
+{{- $searxngPort := includeTemplate "searxng_port" . | trim }}
+SEARXNG_URL="http://127.0.0.1:{{ $searxngPort }}"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "Error: jq is not installed. Please install jq first." >&2

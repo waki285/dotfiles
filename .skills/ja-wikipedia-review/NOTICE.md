@@ -51,6 +51,8 @@
 | Wikipedia:過剰なカテゴライズ | [oldid 110288177](https://ja.wikipedia.org/w/index.php?title=Wikipedia:過剰なカテゴライズ&oldid=110288177) |
 | Wikipedia:過剰な内容の整理 | [oldid 105274890](https://ja.wikipedia.org/w/index.php?title=Wikipedia:過剰な内容の整理&oldid=105274890) |
 | Wikipedia:外部リンク | [oldid 110081520](https://ja.wikipedia.org/w/index.php?title=Wikipedia:外部リンク&oldid=110081520) |
+| Wikipedia:外来語表記法 | [oldid 105931371](https://ja.wikipedia.org/w/index.php?title=Wikipedia:外来語表記法&oldid=105931371) |
+| Wikipedia:画像利用の方針 | [oldid 107078418](https://ja.wikipedia.org/w/index.php?title=Wikipedia:画像利用の方針&oldid=107078418) |
 | Wikipedia:記事どうしをつなぐ | [oldid 107788173](https://ja.wikipedia.org/w/index.php?title=Wikipedia:記事どうしをつなぐ&oldid=107788173) |
 | Wikipedia:記事名の付け方 | [oldid 109260768](https://ja.wikipedia.org/w/index.php?title=Wikipedia:記事名の付け方&oldid=109260768) |
 | Wikipedia:検証可能性 | [oldid 105273505](https://ja.wikipedia.org/w/index.php?title=Wikipedia:検証可能性&oldid=105273505) |
@@ -65,6 +67,7 @@
 | Wikipedia:専門的な記事も分かり易く | [oldid 105930855](https://ja.wikipedia.org/w/index.php?title=Wikipedia:専門的な記事も分かり易く&oldid=105930855) |
 | Wikipedia:存命人物の伝記 | [oldid 105931380](https://ja.wikipedia.org/w/index.php?title=Wikipedia:存命人物の伝記&oldid=105931380) |
 | Wikipedia:大言壮語をしない | [oldid 106429342](https://ja.wikipedia.org/w/index.php?title=Wikipedia:大言壮語をしない&oldid=106429342) |
+| Wikipedia:大規模言語モデルの利用 | [oldid 109742451](https://ja.wikipedia.org/w/index.php?title=Wikipedia:大規模言語モデルの利用&oldid=109742451) |
 | Wikipedia:中立的な観点 | [oldid 110696215](https://ja.wikipedia.org/w/index.php?title=Wikipedia:中立的な観点&oldid=110696215) |
 | Wikipedia:著作権 | [oldid 105273516](https://ja.wikipedia.org/w/index.php?title=Wikipedia:著作権&oldid=105273516) |
 | Wikipedia:著作権/履歴の保存 | [oldid 105274927](https://ja.wikipedia.org/w/index.php?title=Wikipedia:著作権/履歴の保存&oldid=105274927) |
