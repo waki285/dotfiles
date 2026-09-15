@@ -34,7 +34,7 @@ jobs:
           submodules: true
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: tools/permissions-gen/go.mod
           cache-dependency-path: tools/permissions-gen/go.sum
@@ -62,7 +62,7 @@ jobs:
           submodules: true
 
       - name: Setup Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: tools/permissions-gen/go.mod
           cache-dependency-path: tools/permissions-gen/go.sum
